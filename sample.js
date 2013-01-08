@@ -21,13 +21,23 @@ team[tim] = true
 // Count down from 100 to 1
 {|i|
   print(i)
-  i > 0 and self(i - 1)
+  i > 0 and proto(i - 1)
 }(100)
 
 // Abstracted as a countDown function
 countDown = { |i, fn|
   fn(i)
-  i > 0 and self(i - 1)
+  i > 0 and proto(i - 1)
+}
+countDown(100, print)
+
+// Rectangle Class
+Rect = {|w, h|
+  area = {
+    w * h
+  }
+  this
 }
 
-countDown(100, print)
+r = Rect(3, 4)
+print(r.area())
