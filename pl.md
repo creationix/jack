@@ -30,7 +30,7 @@
  - Boolean -> Boolean math (and, or, xor, not) (This implementes logical shortcuts and may not eval all arguments)
  - {expr* } closure, evaluates to the last expression
  - {|param1, param2| expr*} closure can take arguments
- - closure have a `self` reference to themselves
+ - closures have a `self` reference to themselves
  - assignment indent=expr return the expression value
   - ident is the local variable.
  - Call block using expr(arg1, arg2) where args are also expressions
