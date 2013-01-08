@@ -18,11 +18,8 @@ team[tim] = true
 // Or in one expression without temporary variables
 {[{name: "Tim", age: 30}]: true}
 
-// Count to 100
+// Count down from 100 to 1
 {|i|
   print(i)
-  if i < 100 self(i+1)
-  else 
-    
-next = (i) -> {
-}
+  if i > 0 bind(self, i - 1)
+}(100)
