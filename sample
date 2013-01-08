@@ -1,0 +1,29 @@
+
+// Create a map representing a person
+tim = {
+  name: "Tim",
+  age: 30
+}
+// Implement a set using the map as the key in this map
+team = {
+  [tim]: true
+}
+
+// Or written in long-form
+tim = {}
+tim["name"] = "Tim"
+tim["age"] = 30
+team = {}
+team[tim] = true
+
+// Or in one expression without temporary variables
+{[{name: "Tim", age: 30}]: true}
+
+// Count to 100
+{|i|
+  print(i)
+  if i < 100 self(i+1)
+  else 
+    
+next = (i) -> {
+}

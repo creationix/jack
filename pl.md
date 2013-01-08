@@ -25,4 +25,18 @@
  - Number/Integer -> Number/Integer math (+, -, *, /, %)
  - Bitwise Integer -> Integer math (<<, >>, |, &, ^)
  - Integer -> Boolean math (<. <=, ==, >, >=, !=)
- - Boolean -> Boolean math (and, or, xor
+ - Boolean -> Boolean math (and, or, xor, not)
+ - {expr* } block, evaluates to the last expression
+ - {|param1, param2| expr*} Blocks can take arguments
+ - if expr block else block - Standard if-else as an expression
+ - assignment indent=expr return the expression value
+  - ident is the local variable.
+
+# Control Flow
+ - loops using tail recursion
+
+# Functions
+ - {|param1, param2, param3| block-sans-braces } - A function looks like a block that takes parameters
+  - Inherits lexical scope of parent variables (closure)
+
+# eh, whatever, let's just use clojurescript!
