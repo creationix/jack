@@ -21,5 +21,5 @@ team[tim] = true
 // Count down from 100 to 1
 {|i|
   print(i)
-  if i > 0 bind(self, i - 1)
+  i > 0 && self(i - 1)
 }(100)
