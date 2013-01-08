@@ -23,3 +23,11 @@ team[tim] = true
   print(i)
   i > 0 and self(i - 1)
 }(100)
+
+// Abstracted as a countDown function
+countDown = { |i, fn|
+  fn(i)
+  if i > 0 and self(i - 1)
+}
+
+countDown(100, print)
