@@ -36,7 +36,3 @@
 # Control Flow
  - loops using tail recursion
 
-# Functions
- - {|param1, param2, param3| block-sans-braces } - A function looks like a block that takes parameters
-  - Inherits lexical scope of parent variables (closure)
-
