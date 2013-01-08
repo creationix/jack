@@ -4,7 +4,8 @@
  - Easy to implement
  - Easy to learn
  - Easy to embed
- - Tiny, easy to compile C implementation
+ - tiny self-hosted compile to C implementation
+ - self-hosted compile to JS implementation
 
 # Values
 
