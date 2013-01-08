@@ -27,7 +27,7 @@ team[tim] = true
 // Abstracted as a countDown function
 countDown = { |i, fn|
   fn(i)
-  if i > 0 and self(i - 1)
+  i > 0 and self(i - 1)
 }
 
 countDown(100, print)
