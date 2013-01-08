@@ -31,7 +31,6 @@
  - {expr* } closure, evaluates to the last expression
  - {|param1, param2| expr*} closure can take arguments
  - closures have a `proto` reference to their function prototype
- - they also have a `this` reference to their current instance scope
  - assignment indent=expr return the expression value
   - "ident" is the local variable.
  - Call block using expr(arg1, arg2) where args are also expressions

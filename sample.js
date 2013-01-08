@@ -33,10 +33,9 @@ countDown(100, print)
 
 // Rectangle Class
 Rect = {|w, h|
-  area = {
-    w * h
+  {
+    area: { w * h }
   }
-  this
 }
 
 r = Rect(3, 4)
