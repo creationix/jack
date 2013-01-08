@@ -32,6 +32,7 @@
  - blocks have a magic `self` variable point to themselves
  - assignment indent=expr return the expression value
   - ident is the local variable.
+ - Call block using expr(arg1, arg2) where args are also expressions
 
 # Control Flow
  - loops using tail recursion
