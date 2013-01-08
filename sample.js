@@ -31,7 +31,7 @@ countDown = { |i, fn|
 }
 countDown(100, print)
 
-// Rectangle Class
+// Rectangle Factory
 Rect = {|w, h|
   {
     area: { w * h }
