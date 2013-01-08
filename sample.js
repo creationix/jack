@@ -40,3 +40,26 @@ Rect = {|w, h|
 
 r = Rect(3, 4)
 print(r.area())
+
+// Square Factory
+Square = {|s|
+  {
+    area: { s * s }
+  }
+}
+
+s = Square(5)
+print(s.area())
+
+// Shared Implementation of area (code sharing without inheritance)
+area = {|w,h| w * h}
+Rect = {|w,h|
+  {
+    area: {area(w, h)}
+  }
+}
+Square = {|s|
+  {
+    area: {area(s, s)}
+  }
+}
