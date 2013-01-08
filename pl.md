@@ -5,7 +5,7 @@
  - Easy to learn
  - Easy to embed
 
-# Language Values
+# Values
 
  - Simple immutable primitives
   - integers for counting, loops, indexes, offsets, lengths.
