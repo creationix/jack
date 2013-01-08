@@ -29,6 +29,7 @@
  - {expr* } block, evaluates to the last expression
  - {|param1, param2| expr*} Blocks can take arguments
  - if expr block else block - Standard if-else as an expression
+ - blocks have a magic `self` variable point to themselves
  - assignment indent=expr return the expression value
   - ident is the local variable.
 
