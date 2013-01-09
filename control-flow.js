@@ -1,7 +1,7 @@
 // New ideas for a better syntax based on conversation with Zef
 print! "Hello World"
 
-// Implementation of if using && short circuting
+// Implementation of if assert
 if := {cond fn|
   assert cond!  // Abort returning nil if cond! returns a falsy value
   fn!           // tail call fn
