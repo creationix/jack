@@ -2,17 +2,22 @@
 
 // Implementation of if using && short circuting
 if := {cond, fn|
-  cond! && fn!
+  assert cond!  // Abort returning nil if cond! returns a falsy value
+  fn!           // tail call fn
 }
 
 // function with two block arguments, the ! means to execute
+b := false
 if! {a < 5} { b = true }
+// Though this particular case would be better written as
+b := a < 5
 
-// Implementation of while using if
+// Implementation of while
 while := {cond fn| // Takes two parameters, the conditon block and the iteration block
-  if cond! {
+  {
+    assert cond!
     fn!
-    self! cond fn
+    loop
   }
 }
 
@@ -23,13 +28,15 @@ while! { i <= 100 } {
   i = i + 1
 }
 
-// Implementation of times using while
+// Implementation of times
 // loops i from 1 to n calling (fn i) for each
 times := {n fn|
   i := 1
-  while! { i <= n } {
+  {
+    assert i <= n
     fn! i
     i = i + 1
+    loop
   }
 }
 
@@ -62,25 +69,30 @@ list.slice! begin  end // -> a new list from begin to end
 
 // iterate method that returns an iterator of the list with optional begin and end
 it := list.iterate! begin end
-while {
-  item := it.next!
-  print! item
-  item
+{
+  item := it.next!     // Get the next item in the iterator
+  assert item ~= nil   // Abort if it's nil
+  print! item          // Print it
+  loop                 // repeat
 }
 
-// Implement forEach helper
-forEach := {it fn|
-  item := it.next!
-  item != nil && 
-    fn! item ||
-    self! it fn
-  }!
+// Implement forEach helper to loop over lists
+forEach := {list fn|
+  it = list.iterate!
+  {
+    item := it.next!      // Get the next item from the iterator
+    assert item ~= nil    // Iterators return nil when they are done, we should bail then
+    fn! item              // call the block once with the item
+    loop                  // repeat using tail-call recursion
+  }
 }
 
-// or using generic forEach helper
-forEach! list.iterate! {item|
-  print! item
-}
+// and now printing each item in the list is much simpler
+forEach! list print
+
+// Implement map that returns a new list
+map := {list fn|
+  
 
 // Map over a list
 map! list.iterate! {item i|
