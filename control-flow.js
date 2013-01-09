@@ -1,4 +1,5 @@
 // New ideas for a better syntax based on conversation with Zef
+print! "Hello World"
 
 // Implementation of if using && short circuting
 if := {cond, fn|
