@@ -2,11 +2,13 @@
 print! "Hello World"
 
 // Implementation of if using && short circuting
-if := {cond, fn|
+if := {cond fn|
   assert cond!  // Abort returning nil if cond! returns a falsy value
   fn!           // tail call fn
 }
 
+// But how do we implement if..else?
+  
 // function with two block arguments, the ! means to execute
 b := false
 if! {a < 5} { b = true }
