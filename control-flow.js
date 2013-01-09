@@ -68,7 +68,7 @@ list.slice! begin  end // -> a new list from begin to end
 //
 
 // iterate method that returns an iterator of the list with optional begin and end
-it := list.iterate! begin end
+it := list.iterate!
 {
   item := it.next!     // Get the next item in the iterator
   assert item ~= nil   // Abort if it's nil
@@ -92,7 +92,7 @@ forEach! list print
 
 // Implement map that returns a new list
 map := {list fn|
-  
+  new := []
 
 // Map over a list
 map! list.iterate! {item i|

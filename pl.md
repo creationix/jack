@@ -43,6 +43,6 @@ Tail recursion is your friend, embrace it!
 
  - `return val?` return early from a block with optional return value
  - `assert expr val?` Return early from a block if the expression is falsy
- - `refute expr val?` Return early if the expression is truthy
+  - If we ever want an inverse to assert, some ideas are "refute", "abort", "deny".
  - `loop args...` Make a tail call to self with optional arguments.  This is also an early return in order to ensure tail calls.
 
