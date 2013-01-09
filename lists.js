@@ -1,5 +1,6 @@
 // lists are simply comma seperated values
 list := 1, 2, 3, 4
+// But how do I make an empty list or a list with a single item?
 
 // lists act like maps in syntax
 // There is a "length" method that is the number of items in the list
