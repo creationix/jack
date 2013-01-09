@@ -1,5 +1,10 @@
 // New ideas for a better syntax based on conversation with Zef
 
+// Implementation of if using && short circuting
+if := {cond, fn|
+  cond! && fn!
+}
+
 // function with two block arguments, the ! means to execute
 if! {a < 5} { b = true }
 
