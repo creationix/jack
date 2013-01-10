@@ -41,6 +41,12 @@
 			<string>constant.numeric</string>
 		</dict>
 		<dict>
+			<key>match</key>
+			<string>0</string>
+			<key>name</key>
+			<string>constant.numeric</string>
+		</dict>
+		<dict>
 			<key>captures</key>
 			<dict>
 				<key>1</key>
@@ -64,7 +70,7 @@
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>{ *((?:[a-zA-Z_][a-zA-Z0-9_]* *)+)\|</string>
+			<string>{ *\| *((?:[a-zA-Z_][a-zA-Z0-9_]* *)+)\|</string>
 		</dict>
 		<dict>
 			<key>match</key>

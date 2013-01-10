@@ -17,6 +17,9 @@
     { "name": "constant.numeric",
       "match": "-?[1-9][0-9]*"
     },
+    { "name": "constant.numeric",
+      "match": "0"
+    },
     { "name": "entity.name.function",
       "match": "[a-zA-Z_][a-zA-Z0-9_]*(!)",
       "captures": {
@@ -24,7 +27,7 @@
       }
     },
     { 
-      "match": "{ *((?:[a-zA-Z_][a-zA-Z0-9_]* *)+)\\|",
+      "match": "{ *\\| *((?:[a-zA-Z_][a-zA-Z0-9_]* *)+)\\|",
       "captures": {
         "1": {"name": "variable.parameter"}
       }
