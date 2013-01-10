@@ -3,21 +3,22 @@ var Parser = require("jison").Parser;
 var grammar = {
   lex: {
     rules: [
-      ["--.*\\n?",               "/* skip line comments */"],
+      ["\\s*$",                  "return 'TERMINATOR';"],
+      ["--.*\\s*",               "/* skip line comments */"],
       ["\\s*\\n\\s*",            "return 'TERMINATOR';"],
       ["[ \t]*;[ \t]*",          "return 'TERMINATOR';"],
       ["(nil|true|false)\\b",    "return 'CONSTANT';"],
-      ["if\\b",                  "return 'IF';"],
-      ["else\\b",                "return 'ELSE';"],
       ["return\\b",              "return 'RETURN';"],
       ["loop\\b",                "return 'LOOP';"],
       ["[a-zA-Z_][a-zA-Z0-9_]*", "return 'IDENT';"],
-      ["-?[1-9][0-9]*"  ,        "return 'INTEGER';"],
+      ["-?[1-9][0-9]*",          "return 'INTEGER';"],
+      ["0",                      "return 'INTEGER';"],
       ["\"((?:\\.|[^\"])*)\"",   "return 'STRING';"],
       ["'((?:\\.|[^'])*)'",      "return 'STRING';"],
       ["[ \t]+",                 "/* skip whitespace */"],
       [":=",                     "return ':=';"],
       ["=",                      "return '=';"],
+      ["!",                      "return '!';"],
       ["\\+",                    "return '+';"],
       ["-",                      "return '-';"],
       ["\\*",                    "return '*';"],
@@ -28,43 +29,47 @@ var grammar = {
       [">=",                     "return '>=';"],
       ["~=",                     "return '~=';"],
       ["==",                     "return '==';"],
-      ["\\!",                    "return '!';"],
-      ["\\{",                    "return '{';"],
-      ["\\}",                    "return '}';"],
+      ["&&",                     "return '&&';"],
+      ["\\.",                    "return '.';"],
+      ["\\|\\|",                 "return '||';"],
+      ["\\^\\^",                 "return '^^';"],
+      ["\\{\\s*",                "return '{';"],
+      ["\\s*\\}",                "return '}';"],
       ["\\(\\s*",                "return '(';"],
-      ["\\)",                    "return ')';"],
-      ["\\|",                    "return '|';"],
-      ["\\[",                    "return '[';"],
-      ["\\]",                    "return ']';"],
-      ["$",                      "return 'TERMINATOR';"],
+      ["\\s*\\)",                "return ')';"],
+      ["\\|\\s*",                "return '|';"],
+      ["\\[\\s*",                "return '[';"],
+      ["\\s*\\]",                "return ']';"],
     ]
   },
 
   operators: [
-    ["left", '=', ':='],
+    ["nonassoc", ':='],
+    ["right", '='],
+    ["left", '||', '^^'],
+    ["left", '&&'],
     ["left", '<', '<=', '>', '>=', '==', '~='],
     ["left", '+', '-'],
     ["left", '*', '/'],
+    ["left", '!'],
+    ["left", '.'],
   ],
 
   bnf: {
-    expressions: [
-      ["blockPart TERMINATOR", "return $$;"],
+    root: [
+      ["", "return []"],
+      ["body", "return $1"],
     ],
-    blockPart: [
-      ["expr", "$$ = [$1];"],
-      ["blockPart TERMINATOR expr", "$$ = $1.concat([$3]);"],
-      ["", "$$ = []"],
+    body: [
+      ["expr", "$$ = [$1]"],
+      ["body TERMINATOR expr", "$$ = $1.concat([$3])"],
+      ["body TERMINATOR", "$$ = $1"],
     ],
     expr: [
-      ["( blockPart )", "$$ = ['BLOCK'].concat($2);"],
-      ["( blockPart TERMINATOR )", "$$ = ['BLOCK'].concat($2);"],
-      ["INTEGER", "$$ = ['INTEGER', $1];"],
-      ["CONSTANT", "$$ = ['CONSTANT', $1];"],
-      ["STRING", "$$ = ['STRING', $1];"],
-      ["IDENT", "$$ = ['IDENT', $1];"],
-      // ["expr ! args", "$$ = ['EXEC', $1, $3];"],
-      // ["expr !", "$$ = ['EXEC', $1, []];"],
+      ["( expr )", "$$ = $2"],
+      ["INTEGER", "$$ = ['VALUE', parseInt($1, 10)];"],
+      ["CONSTANT", "$$ = ['VALUE', $1 === 'true' ? true : $1 === 'false' ? false : null];"],
+      ["STRING", "$$ = ['VALUE', eval($1)];"],
       ["expr + expr", "$$ = ['ADD', $1, $3];"],
       ["expr - expr", "$$ = ['SUB', $1, $3];"],
       ["expr * expr", "$$ = ['MUL', $1, $3];"],
@@ -75,8 +80,15 @@ var grammar = {
       ["expr >= expr", "$$ = ['GTE', $1, $3];"],
       ["expr == expr", "$$ = ['EQ', $1, $3];"],
       ["expr ~= expr", "$$ = ['NEQ', $1, $3];"],
+      ["expr && expr", "$$ = ['AND', $1, $3];"],
+      ["expr || expr", "$$ = ['OR', $1, $3];"],
+      ["expr ^^ expr", "$$ = ['XOR', $1, $3];"],
       ["IDENT := expr", "$$ = ['DEF', $1, $3];"],
-      ["IDENT = expr", "$$ = ['ASSIGN', $1, $3];"],
+      ["expr = expr", "$$ = ['ASSIGN', $1, $3];"],
+      ["expr . IDENT", "$$ = ['LOOKUP', $1, ['IDENT', $3]];"],
+      ["IDENT", "$$ = ['IDENT', $1];"],
+      // ["expr ! args", "$$ = ['EXEC', $1, [$3, $4, $5]];"],
+      ["expr !", "$$ = ['EXEC', $1, []];"],
     ],
     args: [
       ["expr", "$$ = [$1];"],
@@ -85,7 +97,7 @@ var grammar = {
   }
 };
 
-var parser = new Parser(grammar);
+var parser = new Parser(grammar, {type: "lalr"});
 var code = require('fs').readFileSync("sample.jk", "utf8");
 var tree = parser.parse(code);
 var inspect = require('util').inspect;
