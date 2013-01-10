@@ -1,0 +1,78 @@
+-- lists are simply values between square brackets
+list := [1; 2; 3; 4]
+
+-- lists act like maps in syntax
+-- There is a "length" method that is the number of items in the list
+list.length! --> 4
+
+-- Items can be retrieved using integer indexes
+list[0] --> 1
+-- Negative indexes count from end (index + length)
+list[-1] --> 4
+-- invalid indexes return nil
+list[4] --> nil
+-- Assignment replaces values
+list[3] = "Frog" --> "Frog"
+-- list is /1, 2, 3, "Frog"/
+
+-- Removes an item from the list
+list.remove! 2 --> 3
+-- list is /1, 2, "Frog"/
+-- If the argument is nil, the last item is removed
+list.remove! --> "Frog"
+-- list is /1, 2/
+
+-- Insert works the other way with the same meaning of the index
+-- here nil translates to length (after the last item) and 0 is before the first item
+list.insert! "Monkey" nil --> "Monkey"
+-- list is /1, 2, "Monkey"/
+list.insert! 0 0 --> 0
+-- list is /0, 1, 2, "Monkey"/
+
+-- create an iterator from a list
+iterateList := {list|
+  i := 0
+  l := list.length!
+  {
+    assert i < l
+    list[i]
+    loop
+  }
+}
+
+-- iterate over the list using this new iterator
+next := iterateList! list
+{
+  item := next!       -- Get the next item in the iterator
+  assert item ~= nil  -- Abort if it's nil
+  print! item         -- Print it
+  loop                -- repeat
+}!
+
+-- Implement forEach helper to loop over lists
+forEach := {list fn|
+  i := 0
+  l := list.length!
+  {
+    assert i < l     -- Make sure we're still in the list
+    fn! list[i] i    -- call the callback with item and index
+    loop             -- do it again
+  }!
+}
+
+-- and now printing each item in the list is much simpler
+forEach! list print
+
+-- Implement map using forEach
+map := {list fn|
+  new := []
+  forEach list {item i|
+    new.insert! (fn! item i) i
+  }
+  return new
+}
+
+-- Map over a list
+names := map! list {item i|
+  item.name
+}
