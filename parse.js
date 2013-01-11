@@ -3,13 +3,23 @@ var Parser = require("jison").Parser;
 var grammar = {
   lex: {
     rules: [
-      ["\\s*$",                  "return 'TERMINATOR';"],
+      ["\\s*$",                  "return 'EOF';"],
       ["--.*\\s*",               "/* skip line comments */"],
+      ["<<\\s*",                 "return '<<';"],
+      ["\\s*>>",                 "return '>>';"],
+      ["\\[\\s*",                "return '[';"],
+      ["\\s*\\]",                "return ']';"],
+      ["\\{\\s*",                "return '{';"],
+      ["\\s*\\}",                "return '}';"],
+      ["\\(\\s*",                "return '(';"],
+      ["\\s*\\)",                "return ')';"],
       ["\\s*\\n\\s*",            "return 'TERMINATOR';"],
       ["[ \t]*;[ \t]*",          "return 'TERMINATOR';"],
       ["(nil|true|false)\\b",    "return 'CONSTANT';"],
       ["return\\b",              "return 'RETURN';"],
       ["loop\\b",                "return 'LOOP';"],
+      ["if\\b",                  "return 'IF';"],
+      ["else\\b",                "return 'ELSE';"],
       ["[a-zA-Z_][a-zA-Z0-9_]*", "return 'IDENT';"],
       ["-?[1-9][0-9]*",          "return 'INTEGER';"],
       ["0",                      "return 'INTEGER';"],
@@ -17,35 +27,30 @@ var grammar = {
       ["'((?:\\.|[^'])*)'",      "return 'STRING';"],
       ["[ \t]+",                 "/* skip whitespace */"],
       [":=",                     "return ':=';"],
-      ["=",                      "return '=';"],
       ["!",                      "return '!';"],
       ["\\+",                    "return '+';"],
       ["-",                      "return '-';"],
       ["\\*",                    "return '*';"],
       ["\\/",                    "return '/';"],
-      ["<",                      "return '<';"],
       ["<=",                     "return '<=';"],
-      [">",                      "return '>';"],
+      ["<",                      "return '<';"],
       [">=",                     "return '>=';"],
+      [">",                      "return '>';"],
       ["~=",                     "return '~=';"],
       ["==",                     "return '==';"],
+      ["=",                      "return '=';"],
       ["&&",                     "return '&&';"],
+      [":",                      "return ':';"],
       ["\\.",                    "return '.';"],
       ["\\|\\|",                 "return '||';"],
       ["\\^\\^",                 "return '^^';"],
-      ["\\{\\s*",                "return '{';"],
-      ["\\s*\\}",                "return '}';"],
-      ["\\(\\s*",                "return '(';"],
-      ["\\s*\\)",                "return ')';"],
       ["\\|\\s*",                "return '|';"],
-      ["\\[\\s*",                "return '[';"],
-      ["\\s*\\]",                "return ']';"],
     ]
   },
 
   operators: [
-    ["nonassoc", ':=', '|', 'RETURN', 'LOOP'],
     ["right", '='],
+    ["right", "IF", "ELSE"],
     ["left", '||', '^^'],
     ["left", '&&'],
     ["left", '<', '<=', '>', '>=', '==', '~='],
@@ -56,33 +61,56 @@ var grammar = {
   ],
 
   bnf: {
+    // The program is 0 or more items
     root: [
-      ["block", "return $1"],
+      ["block0 EOF", "return $1"],
     ],
-    block: [
+    // Zero or more items with terminators in-between
+    block0: [
       ["", "$$ = []"],
-      ["block line", "$$ = $1.concat([$2])"],
+      ["block1", "$$ = $1"],
     ],
-    multiBlock: [
-      ["line line", "$$ = [$1, $2]"],
-      ["multiBlock line", "$$ = $1.concat([$2])"],
+    // One or more items with terminators in-between
+    block1: [
+      ["item", "$$ = [$1]"],
+      ["block1 term item", "$$ = $1.concat([$3])"],
+    ],
+    // Two or more items with terminators in-between
+    block2: [
+      ["item term item", "$$ = [$1, $3]"],
+      ["block2 term item", "$$ = $1.concat([$3])"],
     ],
     // One or more terminators
     term: ["TERMINATOR", "term TERMINATOR"],
-    line: [
-      ["expr term", "$$ = $1"],
-      ["statement term", "$$ = $1"],
+    item: [
+      ["expr", "$$ = $1"],
+      ["statement", "$$ = $1"],
     ],
     params: [
       ["IDENT", "$$ = [$1]"],
       ["params IDENT", "$$ = $1.concat([$2])"],
     ],
+    pair: [
+      ["IDENT = basic", "$$ = ['PAIR', $1, $3]"],
+    ],
+    map: [
+      ["", "$$ = []"],
+      ["map pair", "$$ = $1.concat([$2])"],
+      ["map pair term", "$$ = $1.concat([$2])"],
+    ],
+    list: [
+      ["", "$$ = []"],
+      ["list basic", "$$ = $1.concat([$2])"],
+      ["list basic term", "$$ = $1.concat([$2])"],
+    ],
     basic: [
-      ["{ block }", "$$ = ['FUNCTION', [], $2]"],
-      ["{ | params | block }", "$$ = ['FUNCTION', $3, $5]"],
+      ["{ block0 }", "$$ = ['FUNCTION', [], $2]"],
+      ["<< map >>", "$$ = ['MAP', $2]"],
+      ["[ list ]", "$$ = ['LIST', $2]"],
+      ["{ | params | block0 }", "$$ = ['FUNCTION', $3, $5]"],
       ["IDENT", "$$ = ['IDENT', $1]"],
       ["( expr )", "$$ = $2"],
-      ["( multiBlock )", "$$ = ['BLOCK', $2]"],
+      ["( block2 )", "$$ = ['BLOCK', $2]"],
       ["INTEGER", "$$ = ['VALUE', parseInt($1, 10)];"],
       ["CONSTANT", "$$ = ['VALUE', $1 === 'true' ? true : $1 === 'false' ? false : null];"],
       ["STRING", "$$ = ['VALUE', eval($1)];"],
@@ -102,13 +130,15 @@ var grammar = {
       ["basic = basic", "$$ = ['ASSIGN', $1, $3];"],
       ["basic . IDENT", "$$ = ['LOOKUP', $1, ['IDENT', $3]];"],
       ["basic !", "$$ = ['EXEC', $1, []]"],
+      ["basic IF basic", "$$ = ['IF', $3, $1]"],
+      ["basic IF basic ELSE basic", "$$ = ['IFELSE', $3, $1, $5]"],
     ],
     statement: [
       ["RETURN", "$$ = ['RETURN', ['VALUE', null]];"],
       ["RETURN expr", "$$ = ['RETURN', $2];"],
       ["LOOP", "$$ = ['LOOP', ['VALUE', null]];"],
       ["LOOP expr", "$$ = ['LOOP', $2];"],
-      ["IDENT := expr", "$$ = ['DEF', $1, $3];"],
+      ["IDENT := expr", "$$ = ['DEF', $1, $3]"],
     ],
     expr: [
       ["basic", "$$ = $1"],
