@@ -4,8 +4,7 @@ var grammar = {
   lex: {
     rules: [
       ["\\s*$",                  "return 'EOF';"],
-      [".--.*",                  "/* skip line comments */"],
-      ["--.*\\s*",               "/* skip line comments */"],
+      ["--.*",                   "return 'LINECOMMENT';"],
       ["<<\\s*",                 "return '<<';"],
       ["\\s*>>",                 "return '>>';"],
       ["\\[\\s*",                "return '[';"],
@@ -85,8 +84,13 @@ var grammar = {
       ["block2 term item", "$$ = $1.concat([$3])"],
     ],
     // One or more terminators
-    term: ["TERMINATOR", "term TERMINATOR"],
+    term: [
+      "TERMINATOR", "term TERMINATOR",
+      "LINECOMMENT TERMINATOR",
+      "term LINECOMMENT TERMINATOR",
+    ],
     item: [
+      ["LINECOMMENT", "$$ = ['COMMENT', $1]"],
       ["expr", "$$ = $1"],
       ["statement", "$$ = $1"],
     ],
