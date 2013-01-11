@@ -2,8 +2,8 @@
 list := <[1 2 3 4]>
 
 -- lists act like maps in syntax
--- There is a "length" method that is the number of items in the list
-list.length! --> 4
+-- There is a "last" property that is the higest numerical index
+list.last --> 3
 
 -- Items can be retrieved using integer indexes
 list[0] --> 1
@@ -32,32 +32,22 @@ list.insert! 0 0 --> 0
 -- create an iterator from a list
 iterateList := {|list|
   i := 0
-  l := list.length!
   {
-    if i >= 1 return
+    return if i > list.last
     list[i]
-    self!
   }
 }
 
 -- iterate over the list using this new iterator
 next := iterateList! list
-{
-  item := next!         -- Get the next item in the iterator
-  if item == nil return -- Abort if it's nil
-  print! item           -- print the item
-  self!                 -- loop
-}!
+while next! print -- Will abort on any falsy value, not just nil
 
 -- Implement forEach helper to loop over lists
 forEach := {|list fn|
   i := 0
-  l := list.length!
-  {
-    if i >= l return -- Make sure we're still in the list
-    fn! list[i] i    
-    self!            -- do it again
-  }!
+  from 0 to list.last {|i|
+    fn! list[i]
+  }
 }
 
 -- and now printing each item in the list is much simpler

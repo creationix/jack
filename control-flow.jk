@@ -2,13 +2,13 @@
 -- function with one argument, ! means to execute
 print! "Hello World"
 
--- if accepts two expressions and returns nil if false, and lazy executes the second as the return value if true
+-- when executes the function if the value is truthy (also passes the truthy value to the function)
 b := false
-if ~a < 5 b = true 
--- Though this particular case would be better written as
+when a < 5 { b = true }
+-- Though this particular case would be better written using the conditional
+b = a < 5 ? true : false
+-- Or even shorter, the result of the < operator is already a boolean
 b = a < 5
--- the conditional operator can be used when you need an else case
-a < 5 ? true : false
 
 -- Parens can be used to put several statements into a single expression, the last one is the value.
 b = (1;2;3;4) --> b == 4
@@ -18,6 +18,10 @@ b = (
   "ignore me"
   "this is the real value"
 )
+
+-- There are two kinds of loops: "from..to..by" and "while"
+-- Both accept a function they call for each iteration of the loop
+-- The while loop passes in the truthy value in case it's useful
 
 -- Print from 1 to 100 using from..to
 from 1 to 100 print
@@ -37,12 +41,12 @@ magicNumbers := <[1 7 3 5 4 2 3 4 5]>
 from 0 to magicNumbers.length! - 1 {|i|
   print! magicNumbers[i]
 }
--- Implementation of times
+-- Implementation of times not using for..to..by or while
 -- loops i from 1 to n calling (fn i) for each
 times := {|n fn|
   i := 1
   {
-    if i > n return
+    return if i > n
     fn! i
     i = i + 1
     self!
