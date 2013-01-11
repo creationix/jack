@@ -3,10 +3,10 @@ number   := 42
 opposite := true
 
 -- Conditions:
-number = -42 if opposite --> number == -42
+number = -42 if opposite
 -- Two-way splitter
 age := 30
-adult := "yes" if age >= 18 else "no" --> adult == "yes"
+adult := "yes" if age >= 18 else "no"
 
 -- Functions:
 square := {|x| x * x }
@@ -19,10 +19,24 @@ array := [
  [0 0 0 1]
 ]
 
+-- Lookup in list using square brackets
+array[2][3]
+
 -- Objects:
 math := <<
   root   = Math.sqrt
   square = square
   cube   = {|x| x * (square! x)}
+  "name with quotes" = works.too!
 >>
 
+math.cube! 3
+
+-- non string keys
+set := <<
+  [<<name="tim">>] = 30
+  [false] = true
+  [42] = "Yes"
+>>
+
+set[dynamic] = value

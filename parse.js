@@ -58,7 +58,7 @@ var grammar = {
     ["left", '+', '-'],
     ["left", '*', '/'],
     ["left", '!'],
-    ["left", '.'],
+    ["left", '.', "[", "]"],
   ],
 
   bnf: {
@@ -92,7 +92,9 @@ var grammar = {
       ["params IDENT", "$$ = $1.concat([$2])"],
     ],
     pair: [
-      ["IDENT = basic", "$$ = ['PAIR', $1, $3]"],
+      ["IDENT = basic", "$$ = ['PAIR', ['VALUE', $1], $3]"],
+      ["string = basic", "$$ = ['PAIR', $1, $3]"],
+      ["[ basic ] = basic", "$$ = ['PAIR', $2, $5]"],
     ],
     map: [
       ["", "$$ = []"],
@@ -104,6 +106,9 @@ var grammar = {
       ["list basic", "$$ = $1.concat([$2])"],
       ["list basic term", "$$ = $1.concat([$2])"],
     ],
+    string: [
+      ["STRING", "$$ = ['VALUE', eval($1)];"],
+    ],
     basic: [
       ["{ block0 }", "$$ = ['FUNCTION', [], $2]"],
       ["<< map >>", "$$ = ['MAP', $2]"],
@@ -114,7 +119,7 @@ var grammar = {
       ["( block2 )", "$$ = ['BLOCK', $2]"],
       ["INTEGER", "$$ = ['VALUE', parseInt($1, 10)];"],
       ["CONSTANT", "$$ = ['VALUE', $1 === 'true' ? true : $1 === 'false' ? false : null];"],
-      ["STRING", "$$ = ['VALUE', eval($1)];"],
+      ["string", "$$ = $1"],
       ["basic + basic", "$$ = ['ADD', $1, $3];"],
       ["basic - basic", "$$ = ['SUB', $1, $3];"],
       ["basic * basic", "$$ = ['MUL', $1, $3];"],
@@ -129,7 +134,8 @@ var grammar = {
       ["basic || basic", "$$ = ['OR', $1, $3];"],
       ["basic ^^ basic", "$$ = ['XOR', $1, $3];"],
       ["basic = basic", "$$ = ['ASSIGN', $1, $3];"],
-      ["basic . IDENT", "$$ = ['LOOKUP', $1, ['IDENT', $3]];"],
+      ["basic . IDENT", "$$ = ['LOOKUP', $1, ['VALUE', $3]];"],
+      ["basic [ basic ]", "$$ = ['LOOKUP', $1, $3];"],
       ["basic !", "$$ = ['EXEC', $1, []]"],
       ["basic IF basic", "$$ = ['IF', $3, $1]"],
       ["basic IF basic ELSE basic", "$$ = ['IFELSE', $3, $1, $5]"],
