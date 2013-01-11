@@ -4,7 +4,6 @@ var grammar = {
   lex: {
     rules: [
       ["\\s*$",                  "return 'EOF';"],
-      ["--.*",                   "return 'LINECOMMENT';"],
       ["<<\\s*",                 "return '<<';"],
       ["\\s*>>",                 "return '>>';"],
       ["\\[\\s*",                "return '[';"],
@@ -86,11 +85,9 @@ var grammar = {
     // One or more terminators
     term: [
       "TERMINATOR", "term TERMINATOR",
-      "LINECOMMENT TERMINATOR",
-      "term LINECOMMENT TERMINATOR",
     ],
     item: [
-      ["LINECOMMENT", "$$ = ['COMMENT', $1]"],
+      // ["LINECOMMENT", "$$ = ['COMMENT', $1]"],
       ["expr", "$$ = $1"],
       ["statement", "$$ = $1"],
     ],
@@ -168,8 +165,54 @@ var grammar = {
   }
 };
 
-var parser = new Parser(grammar, {type: "lalr"});
 var code = require('fs').readFileSync(process.argv[2] || "sample.jk", "utf8");
-var tree = parser.parse(code + "\n");
-var inspect = require('util').inspect;
-console.log(inspect(tree, false, 10, true));
+
+// strip comments and normalize line-endings
+code = code.split(/(?:\n|\r\n|\r)/g).map(function (line) {
+  var state = false;
+  for (var i = 0, l = line.length; i < l; i++) {
+    var c = line.charAt(i);
+    switch (state) {
+      case false:
+        if (c === "'" || c === '"') {
+          state = c;
+        }
+        else if (c === "-") {
+          state = "-";
+        }
+        break;
+      case '\\':
+        state = false;
+        break;
+      case '"': case "'":
+        if (c === "\\") {
+          state = "\\";
+        }
+        else if (c === state) {
+          state = false;
+        }
+        break;
+      case '-':
+        if (c === "-") {
+          return line.substr(0, i - 1).replace(/\s+$/, '');
+        }
+        state = false;
+        break;
+    }
+  }
+  return line.replace(/\s+$/, '');
+}).join("\n");
+
+// Trim lines at beginning and record how many there were
+var lineOffset = 0;
+var match = code.match(/^([ \t]*\n)*/);
+if (match) {
+  lineOffset = match[0].match(/\n/g).length;
+  code = code.substr(match[0].length);
+}
+// Trim all trailing whitespace
+code = code.replace(/\s*$/, "");
+
+var parser = new Parser(grammar, {type: "lalr"});
+var tree = parser.parse(code);
+console.log(require('util').inspect(tree, false, 10, true));
