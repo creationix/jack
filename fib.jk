@@ -1,0 +1,17 @@
+-- Create an empty map to cache values we're seen already
+cache := <<>>
+
+-- Define a function to calculate fib that uses the closure cache
+fib := {|i|
+  -- Special cases, these always return 1
+  if i == 1 || i == 2 return 1
+
+  -- Then look in the cache and return if it's already there
+  if cache[i] return cache[i]
+
+  -- If not, calculate the new value, store in the cache and return
+  cache[i] = (self! i - 2) + (self! i - 1)
+}
+
+-- Call the function and return the fib of 10
+fib! 10

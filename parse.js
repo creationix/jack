@@ -15,11 +15,8 @@ var grammar = {
       ["\\s*\\n\\s*",            "return 'TERMINATOR';"],
       ["[ \t]*;[ \t]*",          "return 'TERMINATOR';"],
       ["(nil|true|false)\\b",    "return 'CONSTANT';"],
-      ["assert\\b",              "return 'ASSERT';"],
       ["return\\b",              "return 'RETURN';"],
-      ["loop\\b",                "return 'LOOP';"],
       ["if\\b",                  "return 'IF';"],
-      ["else\\b",                "return 'ELSE';"],
       ["[a-zA-Z_][a-zA-Z0-9_]*", "return 'IDENT';"],
       ["-?[1-9][0-9]*",          "return 'INTEGER';"],
       ["0",                      "return 'INTEGER';"],
@@ -32,6 +29,8 @@ var grammar = {
       ["-",                      "return '-';"],
       ["\\*",                    "return '*';"],
       ["\\/",                    "return '/';"],
+      ["\\?",                    "return '?';"],
+      [":",                      "return ':';"],
       ["<=",                     "return '<=';"],
       ["<",                      "return '<';"],
       [">=",                     "return '>=';"],
@@ -41,7 +40,6 @@ var grammar = {
       ["==",                     "return '==';"],
       ["=",                      "return '=';"],
       ["&&",                     "return '&&';"],
-      [":",                      "return ':';"],
       ["\\.",                    "return '.';"],
       ["\\[",                    "return '[';"],
       ["\\]",                    "return ']';"],
@@ -53,7 +51,7 @@ var grammar = {
 
   operators: [
     ["right", '='],
-    ["right", "IF", "ELSE"],
+    ["right", "?", ":"],
     ["left", '||', '^^'],
     ["left", '&&'],
     ["left", '<', '<=', '>', '>=', '==', '~='],
@@ -131,6 +129,7 @@ var grammar = {
       ["basic [ basic ]", "$$ = ['LOOKUP', $1, $3];"],
       ["basic . IDENT", "$$ = ['LOOKUP', $1, ['VALUE', $3]];"],
       ["~ basic", "$$ = ['NOT', $2];"],
+      ["basic ? basic : basic", "$$ = ['COND', $1, $3, $5];"],
       ["basic + basic", "$$ = ['ADD', $1, $3];"],
       ["basic - basic", "$$ = ['SUB', $1, $3];"],
       ["basic * basic", "$$ = ['MUL', $1, $3];"],
@@ -144,12 +143,9 @@ var grammar = {
       ["basic && basic", "$$ = ['AND', $1, $3];"],
       ["basic || basic", "$$ = ['OR', $1, $3];"],
       ["basic ^^ basic", "$$ = ['XOR', $1, $3];"],
-      // ["basic = basic", "$$ = ['ASSIGN', $1, $3];"],
-      ["basic IF basic", "$$ = ['IF', $3, $1]"],
-      ["basic IF basic ELSE basic", "$$ = ['IFELSE', $3, $1, $5]"],
     ],
     // calls with arguments can only exist at the toplevel of blocks
-    // or as "return", "loop" values or assignment values.
+    // or as return values or assignment values.
     // use parens to use them elsewhere
     // Same goes for assignments when using as expressions
     expr: [
@@ -164,16 +160,15 @@ var grammar = {
     statement: [
       ["RETURN", "$$ = ['RETURN', ['VALUE', null]];"],
       ["RETURN expr", "$$ = ['RETURN', $2];"],
-      ["ASSERT basic", "$$ = ['ASSERT', $2, []];"],
-      ["ASSERT basic args", "$$ = ['ASSERT', $2, $3];"],
-      ["LOOP", "$$ = ['LOOP', ['VALUE', null]];"],
-      ["LOOP expr", "$$ = ['LOOP', $2];"],
       ["IDENT := expr", "$$ = ['DEF', $1, $3]"],
+      ["IF basic item", "$$ = ['IF', $2, $3]"],
     ],
   }
 };
 
-var code = require('fs').readFileSync(process.argv[2] || "sample.jk", "utf8");
+var filename = process.argv[2] || "sample.jk";
+console.log("Parsing: " + filename);
+var code = require('fs').readFileSync(filename, "utf8");
 
 // strip comments and normalize line-endings
 code = code.split(/(?:\n|\r\n|\r)/g).map(function (line) {

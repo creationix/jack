@@ -34,19 +34,19 @@ iterateList := {|list|
   i := 0
   l := list.length!
   {
-    assert i < l
+    if i >= 1 return
     list[i]
-    loop
+    self!
   }
 }
 
 -- iterate over the list using this new iterator
 next := iterateList! list
 {
-  item := next!       
-  assert item ~= nil  -- Abort if it's nil
-  print! item
-  loop                -- repeat
+  item := next!         -- Get the next item in the iterator
+  if item == nil return -- Abort if it's nil
+  print! item           -- print the item
+  self!                 -- loop
 }!
 
 -- Implement forEach helper to loop over lists
@@ -54,9 +54,9 @@ forEach := {|list fn|
   i := 0
   l := list.length!
   {
-    assert i < l     -- Make sure we're still in the list
+    if i >= l return -- Make sure we're still in the list
     fn! list[i] i    
-    loop             -- do it again
+    self!            -- do it again
   }!
 }
 
@@ -65,7 +65,7 @@ forEach! list print
 
 -- Implement map using forEach
 map := {|list fn|
-  new := []
+  new := <[]>
   forEach! list {|item i|
     new.insert! (fn! item i) i
   }
