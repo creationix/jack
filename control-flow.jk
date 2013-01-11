@@ -4,23 +4,23 @@ print! "Hello World"
 
 -- if accepts two expressions and returns nil if false, and lazy executes the second as the return value if true
 b := false
-if (a < 5) b = true
+b = true if ~a < 5
 -- Though this particular case would be better written as
 b = a < 5
--- if else appears after the second expression it's evaluates in the false case
--- Or could be written as
-b = if a < 5 true
-     else false
+-- else can be used for the false case
+true if a < 5 else false
 
 -- Parens can be used to put several statements into a single expression, the last one is the value.
 b = (1;2;3;4) --> b == 4
 
 -- Newlines and semicolons are interchangable, both are expression terminators
-b = ("ignore me"
-     "this is the real value")
+b = (
+  "ignore me"
+  "this is the real value"
+)
 
 -- Implementation of while
-while := {cond fn| -- Takes two parameters, the conditon block and the iteration block
+while := {|cond fn| -- Takes two parameters, the conditon block and the iteration block
   {
     assert cond!
     fn
@@ -37,7 +37,7 @@ while! { i <= 100 } {
 
 -- Implementation of times
 -- loops i from 1 to n calling (fn i) for each
-times := {n fn|
+times := {|n fn|
   i := 1
   {
     assert i <= n

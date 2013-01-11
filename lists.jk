@@ -1,5 +1,5 @@
 -- lists are simply values between square brackets
-list := [1; 2; 3; 4]
+list := [1 2 3 4]
 
 -- lists act like maps in syntax
 -- There is a "length" method that is the number of items in the list
@@ -30,7 +30,7 @@ list.insert! 0 0 --> 0
 -- list is /0, 1, 2, "Monkey"/
 
 -- create an iterator from a list
-iterateList := {list|
+iterateList := {|list|
   i := 0
   l := list.length!
   {
@@ -43,19 +43,19 @@ iterateList := {list|
 -- iterate over the list using this new iterator
 next := iterateList! list
 {
-  item := next!       -- Get the next item in the iterator
+  item := next!       
   assert item ~= nil  -- Abort if it's nil
-  print! item         -- Print it
+  print! item
   loop                -- repeat
 }!
 
 -- Implement forEach helper to loop over lists
-forEach := {list fn|
+forEach := {|list fn|
   i := 0
   l := list.length!
   {
     assert i < l     -- Make sure we're still in the list
-    fn! list[i] i    -- call the callback with item and index
+    fn! list[i] i    
     loop             -- do it again
   }!
 }
@@ -64,15 +64,15 @@ forEach := {list fn|
 forEach! list print
 
 -- Implement map using forEach
-map := {list fn|
+map := {|list fn|
   new := []
-  forEach list {item i|
+  forEach! list {|item i|
     new.insert! (fn! item i) i
   }
   return new
 }
 
 -- Map over a list
-names := map! list {item i|
+names := map! list {|item i|
   item.name
 }

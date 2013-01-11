@@ -17,6 +17,7 @@ var grammar = {
       ["\\s*\\n\\s*",            "return 'TERMINATOR';"],
       ["[ \t]*;[ \t]*",          "return 'TERMINATOR';"],
       ["(nil|true|false)\\b",    "return 'CONSTANT';"],
+      ["assert\\b",              "return 'ASSERT';"],
       ["return\\b",              "return 'RETURN';"],
       ["loop\\b",                "return 'LOOP';"],
       ["if\\b",                  "return 'IF';"],
@@ -38,6 +39,7 @@ var grammar = {
       [">=",                     "return '>=';"],
       [">",                      "return '>';"],
       ["~=",                     "return '~=';"],
+      ["~",                      "return '~';"],
       ["==",                     "return '==';"],
       ["=",                      "return '=';"],
       ["&&",                     "return '&&';"],
@@ -57,6 +59,7 @@ var grammar = {
     ["left", '<', '<=', '>', '>=', '==', '~='],
     ["left", '+', '-'],
     ["left", '*', '/'],
+    ["left", '~'],
     ["left", '!'],
     ["left", '.', "[", "]"],
   ],
@@ -120,6 +123,7 @@ var grammar = {
       ["INTEGER", "$$ = ['VALUE', parseInt($1, 10)];"],
       ["CONSTANT", "$$ = ['VALUE', $1 === 'true' ? true : $1 === 'false' ? false : null];"],
       ["string", "$$ = $1"],
+      ["~ basic", "$$ = ['NOT', $2];"],
       ["basic + basic", "$$ = ['ADD', $1, $3];"],
       ["basic - basic", "$$ = ['SUB', $1, $3];"],
       ["basic * basic", "$$ = ['MUL', $1, $3];"],
@@ -143,6 +147,8 @@ var grammar = {
     statement: [
       ["RETURN", "$$ = ['RETURN', ['VALUE', null]];"],
       ["RETURN expr", "$$ = ['RETURN', $2];"],
+      ["ASSERT basic", "$$ = ['ASSERT', $2, []];"],
+      ["ASSERT basic args", "$$ = ['ASSERT', $2, $3];"],
       ["LOOP", "$$ = ['LOOP', ['VALUE', null]];"],
       ["LOOP expr", "$$ = ['LOOP', $2];"],
       ["IDENT := expr", "$$ = ['DEF', $1, $3]"],
@@ -159,7 +165,7 @@ var grammar = {
 };
 
 var parser = new Parser(grammar, {type: "lalr"});
-var code = require('fs').readFileSync("sample.jk", "utf8");
+var code = require('fs').readFileSync(process.argv[2] || "sample.jk", "utf8");
 var tree = parser.parse(code + "\n");
 var inspect = require('util').inspect;
 console.log(inspect(tree, false, 10, true));

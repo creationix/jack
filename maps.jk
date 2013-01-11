@@ -1,5 +1,5 @@
 -- Create an empty map
-map := <>
+map := <<>>
 -- set key-value pairs using [] syntax
 map["name"] = "Tim Caswell"
 -- string keys that are also valid identifiers can use the shorthand
@@ -9,19 +9,19 @@ map.title = "Creator"
 map[false] = "Why not?"
 map[map] = map -- recursion anyone?
 -- asking for keys that don't exist return nil
-map[<>] --> nil
+map[<<>>] --> nil
 -- setting a value to nil deletes the key
 map[false] = nil
 
 -- Multiline map literal syntax
-map = <
+map = <<
   name = "Tim"
   age  = 30
->
--- Singleline map literal (remember semicolons represent newlines)
-<name="Compressed";big=false>
+>>
+-- Singleline map literal 
+<< name="Compressed" big=false >>
 -- non-ident keys in literals
-crazy := <
+crazy := <<
   [map] = true
-  [<>]  = false
->
+  [<<>>]  = false
+>>
