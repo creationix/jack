@@ -24,9 +24,39 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(assert|return|loop|if|else)\b</string>
+			<string>(return|if|from|to|by|while|when)\b</string>
 			<key>name</key>
 			<string>keyword.control</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>(self)\b</string>
+			<key>name</key>
+			<string>variable.language.self</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>support.function</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>\.(insert|remove)\b</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>support.property</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>\.(last)\b</string>
 		</dict>
 		<dict>
 			<key>match</key>
@@ -188,7 +218,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\+|-|\*|\/|%|&lt;|&gt;|~=|==|&lt;=|&gt;=|&amp;&amp;|\|\||\^\^</string>
+			<string>\+|-|\*|\/|%|&lt;|&gt;|~=|==|&lt;=|&gt;=|~|&amp;&amp;|\|\||\^\^|\?|:</string>
 			<key>name</key>
 			<string>keyword.operator</string>
 		</dict>

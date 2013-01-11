@@ -9,8 +9,23 @@
       "match": ";"
     },
     { "name": "keyword.control",
-      "match": "(assert|return|loop|if|else)\\b"
-    }, 
+      "match": "(return|if|from|to|by|while|when)\\b"
+    },
+    { "name": "variable.language.self",
+      "match": "(self)\\b"
+    },
+    {
+      "match": "\\.(insert|remove)\\b",
+      "captures": {
+        "1": {"name": "support.function"}
+      }
+    },
+    {
+      "match": "\\.(last)\\b",
+      "captures": {
+        "1": {"name": "support.property"}
+      }
+    },
     { "name": "constant.language",
       "match": "(true|false|nil)\\b"
     },
@@ -105,7 +120,7 @@
     },
     {
       "name": "keyword.operator",
-      "match": "\\+|-|\\*|\\/|%|<|>|~=|==|<=|>=|&&|\\|\\||\\^\\^"
+      "match": "\\+|-|\\*|\\/|%|<|>|~=|==|<=|>=|~|&&|\\|\\||\\^\\^|\\?|:"
     }
  ],
   "uuid": "79497c46-d13d-4b50-8389-c4c8cac6f3a5"
