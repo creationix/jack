@@ -15,6 +15,10 @@ var grammar = {
       ["\\s*\\n\\s*",            "return 'TERMINATOR';"],
       ["[ \t]*;[ \t]*",          "return 'TERMINATOR';"],
       ["(nil|true|false)\\b",    "return 'CONSTANT';"],
+      ["while\\b",               "return 'WHILE';"],
+      ["from\\b",                "return 'FROM';"],
+      ["to\\b",                  "return 'TO';"],
+      ["by\\b",                  "return 'BY';"],
       ["return\\b",              "return 'RETURN';"],
       ["if\\b",                  "return 'IF';"],
       ["[a-zA-Z_][a-zA-Z0-9_]*", "return 'IDENT';"],
@@ -162,6 +166,9 @@ var grammar = {
       ["RETURN expr", "$$ = ['RETURN', $2];"],
       ["IDENT := expr", "$$ = ['DEF', $1, $3]"],
       ["IF basic item", "$$ = ['IF', $2, $3]"],
+      ["FROM basic TO basic basic", "$$ = ['FROM', $2, $4, ['VALUE', 1], $5]"],
+      ["FROM basic TO basic BY basic basic", "$$ = ['FROM', $2, $4, $6, $7]"],
+      ["WHILE basic basic", "$$ = ['WHILE', $2, $3]"],
     ],
   }
 };

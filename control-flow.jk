@@ -19,22 +19,24 @@ b = (
   "this is the real value"
 )
 
--- Implementation of while
-while := {|cond fn| -- Takes two parameters, the conditon block and the iteration block
-  {
-    if ~cond! return
-    fn
-    self!
-  }!
-}
+-- Print from 1 to 100 using from..to
+from 1 to 100 print
 
--- Count from 1 to 100 using while
+-- Print from 100 to 1 using from..to..by
+from 100 to 1 by -1 print
+
+-- Print from 1 to 100 using while
 i := 1 -- declare a new local variable i and set to 1
-while! { i <= 100 } {
+while i <= 100 {
   print! i
   i = i + 1
 }
 
+-- Loop over items in a list
+magicNumbers := <[1 7 3 5 4 2 3 4 5]>
+from 0 to magicNumbers.length! - 1 {|i|
+  print! magicNumbers[i]
+}
 -- Implementation of times
 -- loops i from 1 to n calling (fn i) for each
 times := {|n fn|
