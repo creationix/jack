@@ -4,6 +4,7 @@ var grammar = {
   lex: {
     rules: [
       ["\\s*$",                  "return 'EOF';"],
+      [".--.*",                  "/* skip line comments */"],
       ["--.*\\s*",               "/* skip line comments */"],
       ["<<\\s*",                 "return '<<';"],
       ["\\s*>>",                 "return '>>';"],
