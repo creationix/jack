@@ -24,13 +24,13 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\b(assert|return|loop|if|else)\b</string>
+			<string>(assert|return|loop|if|else)\b</string>
 			<key>name</key>
 			<string>keyword.control</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\b(true|false|nil)\b</string>
+			<string>(true|false|nil)\b</string>
 			<key>name</key>
 			<string>constant.language</string>
 		</dict>
@@ -56,7 +56,7 @@
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>[a-zA-Z_][a-zA-Z0-9_]*(!)</string>
+			<string>[a-zA-Z_][a-zA-Z0-9_]*[ \t]*(!)</string>
 			<key>name</key>
 			<string>entity.name.function</string>
 		</dict>
@@ -164,12 +164,6 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\+|-|\*|\/|%|&lt;|&gt;|~=|==|&lt;=|&gt;=</string>
-			<key>name</key>
-			<string>keyword.operator</string>
-		</dict>
-		<dict>
-			<key>match</key>
 			<string>\{|\}</string>
 			<key>name</key>
 			<string>meta.brace.curly</string>
@@ -182,15 +176,21 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\[|\]</string>
+			<string>&lt;\[|\]&gt;</string>
 			<key>name</key>
-			<string>meta.brace.square</string>
+			<string>support.constant.list</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\&lt;|\&gt;</string>
+			<string>&lt;&lt;|&gt;&gt;</string>
 			<key>name</key>
-			<string>meta.brace.angle</string>
+			<string>support.constant.map</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>\+|-|\*|\/|%|&lt;|&gt;|~=|==|&lt;=|&gt;=|&amp;&amp;|\|\||\^\^</string>
+			<key>name</key>
+			<string>keyword.operator</string>
 		</dict>
 	</array>
 	<key>scopeName</key>

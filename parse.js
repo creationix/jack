@@ -6,8 +6,8 @@ var grammar = {
       ["\\s*$",                  "return 'EOF';"],
       ["<<\\s*",                 "return '<<';"],
       ["\\s*>>",                 "return '>>';"],
-      ["\\[\\s*",                "return '[';"],
-      ["\\s*\\]",                "return ']';"],
+      ["<\\[\\s*",               "return '<[';"],
+      ["\\s*\\]>",               "return ']>';"],
       ["\\{\\s*",                "return '{';"],
       ["\\s*\\}",                "return '}';"],
       ["\\(\\s*",                "return '(';"],
@@ -43,6 +43,8 @@ var grammar = {
       ["&&",                     "return '&&';"],
       [":",                      "return ':';"],
       ["\\.",                    "return '.';"],
+      ["\\[",                    "return '[';"],
+      ["\\]",                    "return ']';"],
       ["\\|\\|",                 "return '||';"],
       ["\\^\\^",                 "return '^^';"],
       ["\\|\\s*",                "return '|';"],
@@ -113,17 +115,21 @@ var grammar = {
     string: [
       ["STRING", "$$ = ['VALUE', eval($1)];"],
     ],
+    // expressions that can be used at function arguments or list items or map literal values.
     basic: [
       ["{ block0 }", "$$ = ['FUNCTION', [], $2]"],
-      ["<< map >>", "$$ = ['MAP', $2]"],
-      ["[ list ]", "$$ = ['LIST', $2]"],
       ["{ | params | block0 }", "$$ = ['FUNCTION', $3, $5]"],
+      ["<< map >>", "$$ = ['MAP', $2]"],
       ["IDENT", "$$ = ['IDENT', $1]"],
       ["( expr )", "$$ = $2"],
       ["( block2 )", "$$ = ['BLOCK', $2]"],
       ["INTEGER", "$$ = ['VALUE', parseInt($1, 10)];"],
       ["CONSTANT", "$$ = ['VALUE', $1 === 'true' ? true : $1 === 'false' ? false : null];"],
       ["string", "$$ = $1"],
+      ["<[ list ]>", "$$ = ['LIST', $2]"],
+      ["basic !", "$$ = ['EXEC', $1, []]"],
+      ["basic [ basic ]", "$$ = ['LOOKUP', $1, $3];"],
+      ["basic . IDENT", "$$ = ['LOOKUP', $1, ['VALUE', $3]];"],
       ["~ basic", "$$ = ['NOT', $2];"],
       ["basic + basic", "$$ = ['ADD', $1, $3];"],
       ["basic - basic", "$$ = ['SUB', $1, $3];"],
@@ -138,12 +144,22 @@ var grammar = {
       ["basic && basic", "$$ = ['AND', $1, $3];"],
       ["basic || basic", "$$ = ['OR', $1, $3];"],
       ["basic ^^ basic", "$$ = ['XOR', $1, $3];"],
-      ["basic = basic", "$$ = ['ASSIGN', $1, $3];"],
-      ["basic . IDENT", "$$ = ['LOOKUP', $1, ['VALUE', $3]];"],
-      ["basic [ basic ]", "$$ = ['LOOKUP', $1, $3];"],
-      ["basic !", "$$ = ['EXEC', $1, []]"],
+      // ["basic = basic", "$$ = ['ASSIGN', $1, $3];"],
       ["basic IF basic", "$$ = ['IF', $3, $1]"],
       ["basic IF basic ELSE basic", "$$ = ['IFELSE', $3, $1, $5]"],
+    ],
+    // calls with arguments can only exist at the toplevel of blocks
+    // or as "return", "loop" values or assignment values.
+    // use parens to use them elsewhere
+    // Same goes for assignments when using as expressions
+    expr: [
+      ["basic", "$$ = $1"],
+      ["basic ! args", "$$ = ['EXEC', $1, $3]"],
+      ["basic = expr", "$$ = ['ASSIGN', $1, $3];"],
+    ],
+    args: [
+      ["basic", "$$ = [$1]"],
+      ["args basic", "$$ = $1.concat([$2])"],
     ],
     statement: [
       ["RETURN", "$$ = ['RETURN', ['VALUE', null]];"],
@@ -154,14 +170,6 @@ var grammar = {
       ["LOOP expr", "$$ = ['LOOP', $2];"],
       ["IDENT := expr", "$$ = ['DEF', $1, $3]"],
     ],
-    expr: [
-      ["basic", "$$ = $1"],
-      ["basic ! args", "$$ = ['EXEC', $1, $3]"],
-    ],
-    args: [
-      ["basic", "$$ = [$1]"],
-      ["args basic", "$$ = $1.concat([$2])"],
-    ]
   }
 };
 
@@ -205,10 +213,10 @@ code = code.split(/(?:\n|\r\n|\r)/g).map(function (line) {
 
 // Trim lines at beginning and record how many there were
 var lineOffset = 0;
-var match = code.match(/^([ \t]*\n)*/);
+var match = code.match(/^([ \t]*\n)*/)[0];
 if (match) {
-  lineOffset = match[0].match(/\n/g).length;
-  code = code.substr(match[0].length);
+  lineOffset = match.match(/\n/g).length;
+  code = code.substr(match.length);
 }
 // Trim all trailing whitespace
 code = code.replace(/\s*$/, "");

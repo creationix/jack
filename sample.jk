@@ -1,7 +1,6 @@
 -- Assignment:
 number   := 42
 opposite := true
-
 -- Conditions:
 number = -42 if opposite
 -- Two-way splitter
@@ -10,14 +9,14 @@ adult := "yes" if age >= 18 else "no"
 
 -- Functions:
 square := {|x| x * x }
-
+a && b
 -- Arrays:
-array := [
- [1 0 0 2]
- [0 1 0 0]
- [1 0 2 3]
- [0 0 0 1]
-]
+array := <[
+ <[1 0 0 2]>
+ <[0 1 0 0]>
+ <[1 0 2 3]>
+ <[0 0 0 1]>
+]>
 
 -- Lookup in list using square brackets
 array[2][3]
