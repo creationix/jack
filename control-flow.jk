@@ -38,21 +38,29 @@ while i <= 100 {
 
 -- Loop over items in a list
 magicNumbers := <[1 7 3 5 4 2 3 4 5]>
-from 0 to magicNumbers.length! - 1 {|i|
+from 0 to magicNumbers.last {|i|
   print! magicNumbers[i]
 }
--- Implementation of times not using for..to..by or while
+-- Implementation of times not using from..to..by or while
 -- loops i from 1 to n calling (fn i) for each
+-- If called without fn, it returns an iterator instead
 times := {|n fn|
-  i := 1
-  {
-    return if i > n
-    fn! i
-    i = i + 1
-    self!
-  }!
+  i := 1               -- Start i at 1
+  loop := {            -- Create a loop using a recursive function
+    return if i > n    -- Abort when i is greater than n
+    when fn {fn! i}    -- Call the user function with i if passed in
+    i = i + 1          -- Increment i
+    return self! if fn -- Tail call to self to form a loop
+    i                  -- emit the iterator value otherwise
+  }
+  return loop if ~fn   -- Return the iterator if no fn
+  loop!                -- Execute the self running loop otherwise.
 }
 
-times! 10 print -- Print from 1 to 10
+-- Print from 1 to 10 using callback mode
+times! 10 print
+--Print from 1 to 10 using iterator mode
+next := times! 10
+while next! print
 
 
