@@ -72,11 +72,11 @@ Like a function except it doesn't accept arguments or return values.  It's an ex
 
 Call a function with args.
 
-## @bind sym val
+## @let sym val
 
 Bind a new local variable with optional value.
 
-## @rebind sym val
+## @assign sym val
 
 Rebind an existing variable to a new value.
 
