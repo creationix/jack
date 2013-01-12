@@ -15,13 +15,15 @@ var grammar = {
       ["\\s*\\n\\s*",            "return 'TERMINATOR';"],
       ["[ \t]*;[ \t]*",          "return 'TERMINATOR';"],
       ["(nil|true|false)\\b",    "return 'CONSTANT';"],
-      ["when\\b",                "return 'WHEN';"],
+      ["error\\b",               "return 'ERROR';"],
       ["while\\b",               "return 'WHILE';"],
       ["from\\b",                "return 'FROM';"],
       ["to\\b",                  "return 'TO';"],
       ["by\\b",                  "return 'BY';"],
       ["return\\b",              "return 'RETURN';"],
       ["if\\b",                  "return 'IF';"],
+      ["elif\\b",                "return 'ELIF';"],
+      ["else\\b",                "return 'ELSE';"],
       ["[a-zA-Z_][a-zA-Z0-9_]*", "return 'IDENT';"],
       ["-?[1-9][0-9]*",          "return 'INTEGER';"],
       ["0",                      "return 'INTEGER';"],
@@ -88,6 +90,9 @@ var grammar = {
       ["block2 term item", "$$ = $1.concat([$3])"],
     ],
     // One or more terminators
+    term0: [
+      "", "term0 TERMINATOR",
+    ],
     term: [
       "TERMINATOR", "term TERMINATOR",
     ],
@@ -166,13 +171,19 @@ var grammar = {
       ["RETURN", "$$ = ['RETURN', ['VALUE', null]];"],
       ["RETURN expr", "$$ = ['RETURN', $2];"],
       ["IDENT := expr", "$$ = ['DEF', $1, $3]"],
-      ["WHEN basic basic", "$$ = ['WHEN', $2, $3]"],
+      ["ERROR basic", "$$ = ['ERROR', $2]"],
+      ["IF basic basic", "$$ = ['IF', $2, $3]"],
+      ["IF basic basic elifs ELSE basic", "$$=['IF', $2, $3].concat($4).concat([$6])"],
       ["RETURN IF expr", "$$ = ['RETURNIF', $3, ['VALUE', null]]"],
       ["RETURN basic IF expr", "$$ = ['RETURNIF', $4, $2]"],
       ["FROM basic TO basic basic", "$$ = ['FROM', $2, $4, ['VALUE', 1], $5]"],
       ["FROM basic TO basic BY basic basic", "$$ = ['FROM', $2, $4, $6, $7]"],
       ["WHILE basic basic", "$$ = ['WHILE', $2, $3]"],
     ],
+    elifs: [
+      ["", "$$ = []"],
+      ["elifs ELIF basic basic", "$$ = $1.concat([$3, $4])"],
+    ]
   }
 };
 
@@ -225,7 +236,9 @@ if (match) {
 }
 // Trim all trailing whitespace
 code = code.replace(/\s*$/, "");
-
+console.log("Creating parser...");
 var parser = new Parser(grammar, {type: "lalr"});
+console.log("Parsing file...");
 var tree = parser.parse(code);
+console.log("Logging abstract syntax tree...");
 console.log(require('util').inspect(tree, false, 10, true));

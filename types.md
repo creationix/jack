@@ -4,6 +4,10 @@
 
 UTF-8 encoded string.
 
+## Buffer
+
+Chunk of raw memory as byte array.
+
 ## Integer
 
 Signed integer.
@@ -36,8 +40,8 @@ is encoded as:
 
 ```jack
 [@add
-  [@mul :a 2]
-  [@div 2 3]]
+  val: [@mul val: :a val: 2]
+  val: [@div val:  2 val: 3]]
 ```
 
 Where `@add`, `@mul` and `@div` are the builtin primitives.
@@ -48,115 +52,111 @@ Where `@add`, `@mul` and `@div` are the builtin primitives.
 
 Contains 0 or more items in order.
 
-## Map
-
-A mapping of arbitrary values to other arbitrary values.
-
-**TODO** Figure out how this part fits in.
+List items, in addition to their list offset, may have offset keys for fast and position independent access.
 
 # Function and Variable Types
 
-## @fn args-array items-array
+## @fn args code
 
 Define a function with args and body.
 
-## @call function args...
+## @call fn args
 
 Call a function with args.
 
-## @bind symbol value?
+## @bind sym val
 
 Bind a new local variable with optional value.
 
-## @rebind symbol value
+## @rebind sym val
 
 Rebind an existing variable to a new value.
 
-## @lookup value value
+## @lookup val key
 
 Treat the first value as either a list or
 
 # Control Flow Types
 
-## @while condition function
+## @while cond fn
 
 Repeatedly evaluate the condition expression and call the function with the result if it's truthy.
 
-## @if (condition function)+ else-function?
+## @if [cond fn]+ else
 
 Execute one of the functions by the first matched condition.  Can have 0 or more elif blocks and an optional else block at the end.  The if and elif block functions get the truthy condition as their first arg.
 
-## @match expr (value-query function)+ default-function?
+## @match val [query fn]+ default
 
 Works much like if..elif..else except checks for equality against the queries.  Queries can match type and structure on lists/objects.  The function is given the query results and the original data if matched.
 
 # Numerical Operators
 
-## @add expr expr
+## @add val val
 
 Add two values.
 
-## @sub expr expr
+## @sub val val
 
 Subtract two values.
 
-## @mul expr expr
+## @mul val val
 
 Multiply two values.
 
-## @div expr expr
+## @div val val
 
 Divide two values.
 
-## @pow expr expr
+## @pow val val
 
 Raise the first value to the pow.er of the second.
 
 # Logical Operators
 
-## @and expr expr
+## @and val val
 
 Boolean and between expressions.
 
-## @or expr expr
+## @or val val
 
 Boolean or between expressions.
 
-## @xor expr expr
+## @xor val val
 
 Boolean xor between expressions.
 
-## @not expr
+## @not val
 
 Boolean not of expression.
 
-## @conditional cond expr expr
+## @conditional cond val val
 
 Choose one of two expressions based on the condition.
 
 # Comparator Operators
 
-## @lt expr expr
+## @lt val val
 
 Less than comparator.
 
-## @lte
+## @lte val val
 
 Less than or equal comparator.
 
-## @gt
+## @gt val val
 
 Greater than comparator.
 
-## @gte
+## @gte val val
 
 Greater than or equal comparator.
 
-## @eq
+## @eq val val
 
 Equal comparator.
 
-## @neq
+## @neq val val
 
 Not equal comparator.
 
