@@ -42,6 +42,10 @@ is encoded as:
 
 Where `@add`, `@mul` and `@div` are the builtin primitives.
 
+## Native
+
+A piece of code implemented outside the language.  A chunk is given the current scope and can modify or use variables.  It can also define new variables.  It can optionally exit with a return value.
+
 # Data Structures
 
 ## List
@@ -60,6 +64,9 @@ Define a function with args and body.
 
 These are kinda like regular expressions except they match not only contents of strings, but also parts of any data structure.  See `query-language.md` for more information.
 
+## @block code
+
+Like a function except it doesn't accept arguments or return values.  It's an expression.  The last expression in it's code body is it's value.
 
 ## @call fn args
 
@@ -111,7 +118,7 @@ Divide two values.
 
 ## @pow val val
 
-Raise the first value to the pow.er of the second.
+Raise the first value to the power of the second.
 
 # Logical Operators
 
