@@ -1,3 +1,59 @@
+# Primatives
+
+## String
+
+UTF-8 encoded string.
+
+## Integer
+
+Signed integer.
+
+## Boolean
+
+True or False.
+
+## Nil
+
+Nil represents nothing or an unitialized value.
+
+## Query
+
+These are kinda like regular expressions except they match not only contents of strings, but also parts of any data structure.  See `query-language.md` for more information.
+
+## Symbol
+
+A symbol represents a variable itself not it's value.
+
+## Builtin
+
+An opaque handle to one of the builtin program fragment types.  These tag lists in representations of program code.  For example, the following expression:
+
+```jack
+a * 2 + 2 / 3
+```
+
+is encoded as:
+
+```jack
+[@add
+  [@mul :a 2]
+  [@div 2 3]]
+```
+
+Where `@add`, `@mul` and `@div` are the builtin primitives.
+
+# Data Structures
+
+## List
+
+Contains 0 or more items in order.
+
+## Map
+
+A mapping of arbitrary values to other arbitrary values.
+
+**TODO** Figure out how this part fits in.
+
 # Function and Variable Types
 
 ## @fn args-array items-array
@@ -15,6 +71,10 @@ Bind a new local variable with optional value.
 ## @rebind symbol value
 
 Rebind an existing variable to a new value.
+
+## @lookup value value
+
+Treat the first value as either a list or
 
 # Control Flow Types
 
@@ -99,3 +159,25 @@ Equal comparator.
 ## @neq
 
 Not equal comparator.
+
+# Bitwise Operators
+
+## @lshift num num
+
+Left shift first expression by second expression bits.
+
+## @rshift num num
+
+Right shift first expression by second expression bits.
+
+## @bxor num num
+
+Bitwise xor the two values
+
+## @band num num
+
+Bitwise and the two values
+
+## @bor num num
+
+Bitwise or the two values
