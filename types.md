@@ -20,10 +20,6 @@ True or False.
 
 Nil represents nothing or an unitialized value.
 
-## Query
-
-These are kinda like regular expressions except they match not only contents of strings, but also parts of any data structure.  See `query-language.md` for more information.
-
 ## Symbol
 
 A symbol represents a variable itself not it's value.
@@ -59,6 +55,11 @@ List items, in addition to their list offset, may have offset keys for fast and 
 ## @fn args code
 
 Define a function with args and body.
+
+## @query path
+
+These are kinda like regular expressions except they match not only contents of strings, but also parts of any data structure.  See `query-language.md` for more information.
+
 
 ## @call fn args
 
