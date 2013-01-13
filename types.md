@@ -95,10 +95,6 @@ Call a function instance with args.
 
 Return early from the current function with an optional value.
 
-## @returnif cond val
-
-Return early if the condition is truthy. It only evaluates the value in the true case.
-
 ## @let sym val
 
 Bind a new local variable with optional value.
