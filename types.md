@@ -1,28 +1,47 @@
+Keep it Simple. Keep it Safe.
+
 # Primatives
 
 ## String
 
-UTF-8 encoded string.
+Unicode string.
+
+### Supported Operators
+
+ - @add string string - concatenates two strings and results in a new string
+ - All comparator operators
+ - @index - extracts a single character at an index
 
 ## Buffer
 
 Chunk of raw memory as byte array.
 
+ - @index - extracts a single byte from the array.
+
 ## Integer
 
 Signed integer.
+
+ - All operators when num to num
+ - ToStrings to base 10 version of number
 
 ## Boolean
 
 True or False.
 
+ - Works with the logical operators.
+
 ## Nil
 
 Nil represents nothing or an unitialized value.
 
+ - Acts as false in logical operations
+
 ## Symbol
 
 A symbol represents a variable itself not it's value.
+
+ - No operators
 
 ## Builtin
 
@@ -60,17 +79,25 @@ List items, in addition to their list offset, may have offset keys for fast and 
 
 Define a function with args and body.
 
-## @query path
+## @fni scope fn
 
-These are kinda like regular expressions except they match not only contents of strings, but also parts of any data structure.  See `query-language.md` for more information.
+An instance of a function with reference to it's parent closure scope and reference to it's function prototype.
 
 ## @block code
 
 Like a function except it doesn't accept arguments or return values.  It's an expression.  The last expression in it's code body is it's value.
 
-## @call fn args
+## @call fni args
 
-Call a function with args.
+Call a function instance with args.
+
+## @return val
+
+Return early from the current function with an optional value.
+
+## @returnif cond val
+
+Return early if the condition is truthy. It only evaluates the value in the true case.
 
 ## @let sym val
 
@@ -80,23 +107,25 @@ Bind a new local variable with optional value.
 
 Rebind an existing variable to a new value.
 
+# Lookup Operators
+
 ## @lookup val key
 
-Treat the first value as either a list or
+Lookup a value in a list by key. Returns `nil` if the key doens't exist.
+
+## @index val num
+
+Lookup a value in a list by index. Negative indexes count from end.
 
 # Control Flow Types
 
-## @while cond fn
+## @while cond block
 
-Repeatedly evaluate the condition expression and call the function with the result if it's truthy.
+Repeatedly evaluate the condition expression and execute the block.
 
-## @if [cond fn]+ else
+## @if [cond block]+ else
 
-Execute one of the functions by the first matched condition.  Can have 0 or more elif blocks and an optional else block at the end.  The if and elif block functions get the truthy condition as their first arg.
-
-## @match val [query fn]+ default
-
-Works much like if..elif..else except checks for equality against the queries.  Queries can match type and structure on lists/objects.  The function is given the query results and the original data if matched.
+Execute one of the blocks by the first matched condition.  Can have 0 or more elif blocks and an optional else block at the end.
 
 # Numerical Operators
 
@@ -114,27 +143,31 @@ Multiply two values.
 
 ## @div val val
 
-Divide two values.
+Divide two values. Rounding down.
 
 ## @pow val val
 
 Raise the first value to the power of the second.
 
+Rounds down when
+
 # Logical Operators
 
-## @and val val
+All values are truthy except for `false`, `nil`.
+
+## @and cond cond
 
 Boolean and between expressions.
 
-## @or val val
+## @or cond cond
 
 Boolean or between expressions.
 
-## @xor val val
+## @xor cond cond
 
 Boolean xor between expressions.
 
-## @not val
+## @not cond
 
 Boolean not of expression.
 
