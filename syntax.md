@@ -103,23 +103,28 @@ To read and write raw alias indexes using `.&ident` or `&[index]`.  For example:
     list.middle            --> "c"
     list.&middle           --> 2
     list&["middle"]        --> 2
+    list.&middle = nil     --> Delete the alias directly.
 
 ## Remove keyword
 
-Remove can be used to remove aliases and optionally the slot they point to from the list.  If `&` syntax is used, only the alias is deleted.  If not, the slot is removed and all aliases pointing to that slot are deleted.  Resuming from the previous example:
+Remove can be used to remove slots from the list.  The `&` syntax cannot be used in this case.  Any aliases pointing to that slot are also removed.  Resuming from the previous example:
 
-    list.anotherLabel& = 2  -- Create a new label
-    remove list.&middle     -- Delete the middle alias, the value "c" is still there as is the new label.
-    remove list.anotherLabel -- The value is removed from the array and so all labels pointing to that slot are also removed.
+    remove list.middle -- The value is removed from the array and so all labels pointing to that slot are also removed.
 
-Remove returns the removed value or the alias index of the removed alias.
+Remove returns the removed value.
 
 It can also be used with numerical indexes.
 
     list = ["this" "is" "neat"]
-    is = remove list[1]          --> "is", the list is now just ["this" "neat"]
+    is = remove list[1]  --> "is", the list is now just ["this" "neat"]
 
+## Insert keyword
 
+Insert can be used to insert new slots into the list.  All indexes and alias indexes after this are incremented by one.  Insert returns the new index of the inserted item.
+
+    insert list[0] "A"     --> the list now has "A" inserted into the front.
+    insert list[] "Z"      --> the list now has "Z" pushed onto the end.
+    insert list.middle "M" --> the "M" is inserted before where "middle" was pointing.  Note that "middle"'s alias index is moved up one.
 
 
 ## Built-ins
