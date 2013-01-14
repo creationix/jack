@@ -117,6 +117,7 @@ It can also be used with numerical indexes.
 
     list = ["this" "is" "neat"]
     is = remove list[1]  --> "is", the list is now just ["this" "neat"]
+    neat = remove list[] --> "neat", the list is now ["this"] (nil index is end of list)
 
 ## Insert keyword
 
