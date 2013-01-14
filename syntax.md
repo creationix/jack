@@ -82,9 +82,9 @@ Aliases can be defined in the literal syntax using `ident:` or `"string":` synta
 
 The `#` operator returns the length of a string, buffer, or list. For example `#[1 2 3]` evaluates to `3`.
 
-## Keys keyword
+## Keysof keyword
 
-To get the alias keys of a list, use (`keys` list).
+To get the alias keys of a list, use (`keysof` list).
 
 ## Indexing
 
