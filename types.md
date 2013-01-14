@@ -143,15 +143,13 @@ Remove an item from the list by index.  This will shift all items after it and a
 
 ## @keys list
 
-Return a list of all the alias keys. (note that if we make keys weak references, this will expose GC behavior, is that desired?)
+Return a list of all the alias keys.
 
-## @setalias list key index
+## @alias list key index
 
-Create a named alias using the val.  If the alias already exists, point it to the new index. Negative indexes are converted before storing with the alias.
+Create a named alias using the string key.  If the alias already exists, point it to the new index. Negative indexes are converted before storing with the alias.
 
-(TODO: Should the keys here be weak references?)
-
-## @readalias list key
+## @read list key
 
 Read the index where the alias is pointing to.  Insert and remove before the alias can change it's position.
 
