@@ -8,11 +8,18 @@ These are the values that make up the core data representation of the abstract l
 
 Unicode string.
 
+
 ### Supported Operators
 
  - @add string string - concatenates two strings and results in a new string
  - All comparator operators
  - @get and @len - extracts a single character at an index and gives character length.
+
+## Buffer
+
+Raw binary data as byte array.
+
+Only @get @set and @len operators can be used on this type.
 
 ## Integer
 
