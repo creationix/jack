@@ -24,7 +24,7 @@ A string is represented as the value between double or single quotes.  It has th
 
 ## Buffer
 
-Buffer values are represented as a series of hex values between angle brackets.  For example, the jack binary format header would look like `<4A 61 63 6B 2A 00>`.
+Buffer values are represented as a series of hex values between angle brackets.  For example, the jack binary format header would look like `<<4A 61 63 6B 2A 00>>`.
 
 ## Block
 
