@@ -6,7 +6,7 @@ The beginning of the file has the following 6 byte magic header:
 
     <4A 61 63 6B 2A 00> or "Jack*\0" or "Jack" + 42 + 0
 
-Followed a ULEB128 <http://en.wikipedia.org/wiki/LEB128> byte-length value of the payload.
+This is followed by a ULEB128 <http://en.wikipedia.org/wiki/LEB128> byte-length value of the payload.
 
 # Code Section
 
