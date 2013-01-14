@@ -124,7 +124,7 @@ It can also be used with numerical indexes.
 
 ## Built-ins
 
-Built-ins are represented by `@` followed by their string name. The possible values are `@add`, `@sub`, `@mul`, `@div`, `@pow`, `@and`, `@or`, `@xor`, `@not`, `@conditional`, `@lte`, `@lt`, `@gte`, `@gt`, `@neq`, `@eq`, `@if`, `@while`, `@fn`, `@block`, `@call`, `@let`, `@assign`, `@fni`, `@len`, `@keys`, `@get`, `@set`, `@insert`, `@remove`, `@slice`, `@alias`, `@read`, `@unalias`, `@aget`, `@aset`, and `@adel`.
+Built-ins are represented by `@` followed by their string name. The possible values are `@add`, `@sub`, `@mul`, `@div`, `@pow`, `@and`, `@or`, `@xor`, `@not`, `@conditional`, `@lte`, `@lt`, `@gte`, `@gt`, `@neq`, `@eq`, `@if`, `@while`, `@def`, `@block`, `@call`, `@let`, `@assign`, `@fn`, `@len`, `@keys`, `@get`, `@set`, `@insert`, `@remove`, `@slice`, `@alias`, `@read`, `@unalias`, `@aget`, `@aset`, and `@adel`.
 
 ## Variables and Symbols
 

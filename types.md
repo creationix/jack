@@ -87,13 +87,33 @@ List items, in addition to their list offset, may have offset keys for fast and 
 
 # Function and Variable Types
 
-## @fn args code
+## @def [args code*]
 
-Define a function with args and body.
+Define a function with args and body.  For example, a square function definition looks like:
 
-## @fni scope fn
+    [@def [[:x]
+      [@mul :x :x]
+    ]]
 
-An instance of a function with reference to it's parent closure scope and reference to it's function prototype.
+## @fn scope [args code*]
+
+An instance of a function with reference to the scope it was defined in and the list that was in the definition.
+
+A scope is just a hash-map that also has the parent scope at index 0.  If the parent it nil, there is no parent.
+
+For example, the following program:
+
+    let name = "Tim"
+    let square = {|x| x * x }
+
+will result in the following `@fn` object:
+
+    [@fn
+      [nil name: "tim" square: [@def ...]]
+      [ [:x]
+        [@add :x :x]
+      ]
+    ]
 
 ## @block code
 

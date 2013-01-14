@@ -44,12 +44,12 @@ The code sections is stored as unstructured data in nested lists.  Each value ca
   - `1001 0101` - @eq
   - `1001 1000` - @if
   - `1001 1001` - @while
-  - `1010 0000` - @fn
+  - `1010 0000` - @def
   - `1010 0001` - @block
   - `1010 0010` - @call
   - `1010 0100` - @let
   - `1010 0101` - @assign
-  - `1011 0000` - @fni
+  - `1011 0000` - @fn
   - `1100 0000` - @len
   - `1100 0001` - @keys
   - `1100 0010` - @get
