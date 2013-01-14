@@ -10,20 +10,13 @@ Unicode string.
 
  - @add string string - concatenates two strings and results in a new string
  - All comparator operators
- - @index - extracts a single character at an index
-
-## Buffer
-
-Chunk of raw memory as byte array.
-
- - @index - extracts a single byte from the array.
+ - @iget and @len - extracts a single character at an index and gives character length.
 
 ## Integer
 
 Signed integer.
 
- - All operators when num to num
- - ToStrings to base 10 version of number
+ - Works with all operators when num to num
 
 ## Boolean
 
@@ -41,11 +34,13 @@ Nil represents nothing or an unitialized value.
 
 A symbol represents a variable itself not it's value.
 
- - No operators
+ - Acts as true in logical operations
 
 ## Builtin
 
 An opaque handle to one of the builtin program fragment types.  These tag lists in representations of program code.  For example, the following expression:
+
+ - Acts as true in logical operations
 
 ```jack
 a * 2 + 2 / 3
@@ -61,9 +56,15 @@ is encoded as:
 
 Where `@add`, `@mul` and `@div` are the builtin primitives.
 
-## Native
+## Native Code
 
 A piece of code implemented outside the language.  A chunk is given the current scope and can modify or use variables.  It can also define new variables.  It can optionally exit with a return value.
+
+ - Acts as true in logical operations
+
+## Native Value
+
+An opaque value that can be created by or used by native code chunks.
 
 # Data Structures
 
@@ -71,7 +72,9 @@ A piece of code implemented outside the language.  A chunk is given the current 
 
 Contains 0 or more items in order.
 
-List items, in addition to their list offset, may have offset keys for fast and position independent access.
+List items, in addition to their list offset, may have offset keys for fast and position independent access.  Any value type may be used as the alias key.
+
+ - Supports all list operations
 
 # Function and Variable Types
 
@@ -103,15 +106,68 @@ Bind a new local variable with optional value.
 
 Rebind an existing variable to a new value.
 
-# Lookup Operators
+# Data Operators
 
-## @lookup val key
+These work with lists and somewhat with other types.
 
-Lookup a value in a list by key. Returns `nil` if the key doens't exist.
+In all operations that accept numerical indexes, a negative index means to count down from list length.  So, for example, a list of 5 items, -2 would be index 3 or the fourth item.
 
-## @index val num
+## @len list-or-string
 
-Lookup a value in a list by index. Negative indexes count from end.
+Return the number of items in the list or the number of unicode characters in the string.
+
+## @slice list-or-string index index
+
+Return a shallow copy of the list or string.  The indexes are start and end indexes.  Passing in nil for the first defaults to 0 and nil for the second defaults to length.  Negative indexes can be used here as well, but remember that -1 is 1 before length.
+
+## @get list-or-string index
+
+Lookup a value in a list or string by index.
+Negative indexes count from end.
+
+## @set list val index
+
+Put a new value in the list at the specified slot index.
+
+## @insert list val index
+
+Insert an item into the list before the index value.  If nil is used, it means to insert on to the end.  Negative indexes still are added to length, but in the case of insert, this means insert before the last item.
+
+This will shift all items after it and any alias index after it as well.
+
+## @remove list index
+
+Remove an item from the list by index.  This will shift all items after it and any alias index after it as well.
+
+## @setalias list key index
+
+Create a named alias using the val.  If the alias already exists, point it to the new index. Negative indexes are converted before storing with the alias.
+
+(TODO: Should the keys here be weak references?)
+
+## @keys
+
+Return a list of all the alias keys. (note that if we make keys weak references, this will expose GC behavior, is that desired?)
+
+## @readalias list key
+
+Read the index where the alias is pointing to.  Insert and remove before the alias can change it's position.
+
+## @unalias list key
+
+Remove a named alias.
+
+## @aget list key
+
+Convenience instruction to ookup a list item by alias
+
+## @aset list val key
+
+Convenience instruction to set a list item by alias.  If the alias doesn't exist, it's inserted to the end.
+
+## @adel list key
+
+Convenience instruction to remove an item by alias and then remove the alias.
 
 # Control Flow Types
 
@@ -197,24 +253,3 @@ Equal comparator.
 
 Not equal comparator.
 
-# Bitwise Operators
-
-## @lshift num num
-
-Left shift first expression by second expression bits.
-
-## @rshift num num
-
-Right shift first expression by second expression bits.
-
-## @bxor num num
-
-Bitwise xor the two values
-
-## @band num num
-
-Bitwise and the two values
-
-## @bor num num
-
-Bitwise or the two values
