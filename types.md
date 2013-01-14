@@ -12,7 +12,7 @@ Unicode string.
 
  - @add string string - concatenates two strings and results in a new string
  - All comparator operators
- - @iget and @len - extracts a single character at an index and gives character length.
+ - @get and @len - extracts a single character at an index and gives character length.
 
 ## Integer
 
