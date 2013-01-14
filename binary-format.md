@@ -61,7 +61,3 @@ The code sections is stored as unstructured data in nested lists.  Each value ca
   - `1100 1000` - @alias
   - `1100 1001` - @read
   - `1100 1010` - @unalias
-  - `1100 1100` - @aget
-  - `1100 1101` - @aset
-  - `1100 1111` - @adel
-

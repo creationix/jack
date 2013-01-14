@@ -1,54 +1,129 @@
 -- Assignment:
-number   := 42
-opposite := true
+let number = 42
+-- also represented as
+[@let :number 42]
+
 -- Conditional execution
-when opposite { number = -42 }
+let opposite = true
+if opposite { number = -42 }
+-- is really shorthand for..
+[@let :opposite true]
+[@if
+  :opposite
+  [@block [
+    [@assign :number -42]
+  ]]
+]
+
+-- Chained if..elif..else
+if name == "tim" {
+  42
+}
+elif name = "bob" {
+  13
+}
+else {
+  7
+}
+-- internally is
+[@if
+  [@eq :name "tim"]
+  [@block [
+    42
+  ]]
+  [@eq :name "bob"]
+  [@block [
+    13
+  ]]
+  [@block [
+    7
+  ]]
+]
+
 -- Conditional expressions
-age := 30
-adult := age >= 18 ? "yes" : "no"
+let age = 30
+let adult = age >= 18 ? "yes" : "no"
+-- looks like
+[@let :age 30]
+[@let :adult
+  [@conditional [@gte :age 18] "yes" "no"]
+]
 
 -- Functions:
-square := {|x| x * x }
+let square = {|x| x * x }
+-- becomes
+[@let :square
+  [@def [:x]
+    [@mul :x :x]
+  ]
+]
 
 -- Lists:
-array := <[
- <[1 0 0 2]>
- <[0 1 0 0]>
- <[1 0 2 9]>
- <[0 0 0 1]>
-]>
-
+let array = [
+  [1 0 0 2]
+  [0 1 0 0]
+  [1 0 2 9]
+  [0 0 0 1]
+]
+-- is simply
+[@let :array [
+  [1 0 0 2]
+  [0 1 0 0]
+  [1 0 2 9]
+  [0 0 0 1]
+]]
+ 
 -- List lookup
-array[2][3]              --> 9
+array[2][3]               --> 9
+-- is described as
+[@get [@get :array 2] 3]
 
 -- List Manupulation
-animals := <["Lions" "Tigers" "Bears"]>
+let animals = ["Lions" "Tigers" "Bears"]
+--
+[@let :animals ["Lions" "Tigers" "Bears"]]
+
+
 -- Pushing an item on the end of the list
 -- Returns the index
-animals.insert! "Oh My!" --> 3 
+insert animals[] "Oh My!" --> 3 
+--
+[@insert :animals nil "Oh My!"]
+
 -- Popping an item from the end of the list
-animals.remove!          --> "Oh My!"
-animals.last             --> 2
+remove animals[]          --> "Oh My!"
+#animals                  --> 3
+--
+[@remove :animals nil]
+[@len :animals]
 
 
--- Maps:
-math := <<
-  root   = Math.sqrt
-  square = square
-  cube   = {|x| x * (square! x)}
-  "name with quotes" = works.too!
->>
+-- List Aliases:
+let math = [
+  root:   Math.sqrt
+  square: square
+  cube:   {|x| x * square!(x) }
+  "name with quotes": works.too!
+]
+--
+[@let :math [
+  root: [@get :Math "sqrt"]
+  square: :square
+  cube: [@def [:x]
+    [@mul
+      :x
+      [@call :square :x]
+    ]
+  ]
+]]
 
 -- Map lookup
-math.cube! 3
+math.cube!(3)
+--
+[@call [@get :math "cube"] 3]
 
--- Non-string map keys
-set := <<
-  [<<name="tim">>] = 30
-  [false] = true
-  [42] = "Yes"
->>
-
--- Non-string lookup
+-- dynamic alias lookup
 set[dynamic] = value
+--
+[@set :set :dynamic :value]
 

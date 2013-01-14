@@ -87,15 +87,15 @@ List items, in addition to their list offset, may have offset keys for fast and 
 
 # Function and Variable Types
 
-## @def [args code*]
+## @def args code*
 
 Define a function with args and body.  For example, a square function definition looks like:
 
-    [@def [[:x]
+    [@def [:x]
       [@mul :x :x]
-    ]]
+    ]
 
-## @fn scope [args code*]
+## @fn scope args code*
 
 An instance of a function with reference to the scope it was defined in and the list that was in the definition.
 
@@ -110,9 +110,8 @@ will result in the following `@fn` object:
 
     [@fn
       [nil name: "tim" square: [@def ...]]
-      [ [:x]
-        [@add :x :x]
-      ]
+      [:x]
+      [@mul :x :x]
     ]
 
 ## @block code
@@ -145,6 +144,8 @@ These work with lists and somewhat with other types.
 
 In all operations that accept numerical indexes, a negative index means to count down from list length.  So, for example, a list of 5 items, -2 would be index 3 or the fourth item.
 
+If the index is a string, a corresponding alias is looked in the list.  If found, the real value is inserted.  If it's not found an error is thrown (except for the @set operation)
+
 ## @len list-or-string
 
 Return the number of items in the list or the number of unicode characters in the string.
@@ -158,11 +159,13 @@ Return a shallow copy of the list or string.  The indexes are start and end inde
 Lookup a value in a list or string by index.
 Negative indexes count from end.
 
-## @set list val index
+## @set list index val
 
 Put a new value in the list at the specified slot index.
 
-## @insert list val index
+If the index is a string that doesn't correspond to an alias, a new value is inserted and an alias created.
+
+## @insert list index val
 
 Insert an item into the list before the index value.  If nil is used, it means to insert on to the end.  Negative indexes still are added to length, but in the case of insert, this means insert before the last item.
 
@@ -187,18 +190,6 @@ Read the index where the alias is pointing to.  Insert and remove before the ali
 ## @unalias list key
 
 Remove a named alias.
-
-## @aget list key
-
-Convenience instruction to lookup a list item by alias.
-
-## @aset list val key
-
-Convenience instruction to set a list item by alias.  If the alias doesn't exist, it's inserted to the end.
-
-## @adel list key
-
-Convenience instruction to remove an item by alias and then remove the alias.
 
 # Control Flow Types
 
