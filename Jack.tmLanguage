@@ -24,39 +24,21 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(return|if|from|to|by|while|when)\b</string>
+			<string>(return|if|elif|else|while)\b</string>
 			<key>name</key>
 			<string>keyword.control</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>(insert|remove|let|keysof)\b</string>
+			<key>name</key>
+			<string>keyword.language</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>(self)\b</string>
 			<key>name</key>
 			<string>variable.language.self</string>
-		</dict>
-		<dict>
-			<key>captures</key>
-			<dict>
-				<key>1</key>
-				<dict>
-					<key>name</key>
-					<string>support.function</string>
-				</dict>
-			</dict>
-			<key>match</key>
-			<string>\.(insert|remove)\b</string>
-		</dict>
-		<dict>
-			<key>captures</key>
-			<dict>
-				<key>1</key>
-				<dict>
-					<key>name</key>
-					<string>support.property</string>
-				</dict>
-			</dict>
-			<key>match</key>
-			<string>\.(last)\b</string>
 		</dict>
 		<dict>
 			<key>match</key>
@@ -66,13 +48,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>-?[1-9][0-9]*</string>
-			<key>name</key>
-			<string>constant.numeric</string>
-		</dict>
-		<dict>
-			<key>match</key>
-			<string>0</string>
+			<string>(0|-?[1-9][0-9]*)</string>
 			<key>name</key>
 			<string>constant.numeric</string>
 		</dict>
@@ -101,6 +77,30 @@
 			</dict>
 			<key>match</key>
 			<string>{ *\| *((?:[a-zA-Z_][a-zA-Z0-9_]* *)+)\|</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>:[a-zA-Z_][a-zA-Z0-9_]*</string>
+			<key>name</key>
+			<string>support.constant</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>@[a-zA-Z_][a-zA-Z0-9_]*</string>
+			<key>name</key>
+			<string>support.type</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>[a-zA-Z_][a-zA-Z0-9_]*:</string>
+			<key>name</key>
+			<string>entity.name.tag</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>\$[a-zA-Z_][a-zA-Z0-9_]*</string>
+			<key>name</key>
+			<string>support.function</string>
 		</dict>
 		<dict>
 			<key>match</key>
@@ -176,15 +176,21 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>:=</string>
+			<string>=</string>
 			<key>name</key>
-			<string>keyword.declaration</string>
+			<string>keyword.assignment</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>:=</string>
+			<string>&amp;</string>
 			<key>name</key>
-			<string>keyword.assignment</string>
+			<string>keyword.address</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>#</string>
+			<key>name</key>
+			<string>keyword.length</string>
 		</dict>
 		<dict>
 			<key>match</key>
@@ -206,19 +212,13 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>&lt;\[|\]&gt;</string>
+			<string>\[|\]</string>
 			<key>name</key>
 			<string>support.constant.list</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>&lt;&lt;|&gt;&gt;</string>
-			<key>name</key>
-			<string>support.constant.map</string>
-		</dict>
-		<dict>
-			<key>match</key>
-			<string>\+|-|\*|\/|%|&lt;|&gt;|~=|==|&lt;=|&gt;=|~|&amp;&amp;|\|\||\^\^|\?|:</string>
+			<string>\+|-|\*|\/|%|^|&lt;|&gt;|~=|==|&lt;=|&gt;=|~|&amp;&amp;|\|\||\^\^|\?|:</string>
 			<key>name</key>
 			<string>keyword.operator</string>
 		</dict>
