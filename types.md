@@ -115,6 +115,10 @@ Bind a new local variable with optional value.
 
 Rebind an existing variable to a new value.
 
+## @type val
+
+return the string type representation of the value.  The possible values are: `string`, `buffer`, `nil`, `boolean`, `int`, `symbol`, `nativecode`, `nativevalue`, `symbol`, X where X is the specific builtin name. (like `fn`, `type`, etc..).
+
 # Data Operators
 
 These work with lists and somewhat with other types.
