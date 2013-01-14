@@ -2,6 +2,8 @@ Keep it Simple. Keep it Safe.
 
 # Primatives
 
+These are the values that make up the core data representation of the abstract language and runtime.  They are represented as themselves directly.
+
 ## String
 
 Unicode string.
@@ -67,6 +69,8 @@ A piece of code implemented outside the language.  A chunk is given the current 
 An opaque value that can be created by or used by native code chunks.
 
 # Data Structures
+
+There is one data structure in the language.  It's the list.
 
 ## List
 
@@ -139,15 +143,15 @@ This will shift all items after it and any alias index after it as well.
 
 Remove an item from the list by index.  This will shift all items after it and any alias index after it as well.  Any aliases pointing to this item are removed.
 
+## @keys list
+
+Return a list of all the alias keys. (note that if we make keys weak references, this will expose GC behavior, is that desired?)
+
 ## @setalias list key index
 
 Create a named alias using the val.  If the alias already exists, point it to the new index. Negative indexes are converted before storing with the alias.
 
 (TODO: Should the keys here be weak references?)
-
-## @keys
-
-Return a list of all the alias keys. (note that if we make keys weak references, this will expose GC behavior, is that desired?)
 
 ## @readalias list key
 
