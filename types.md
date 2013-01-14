@@ -137,7 +137,7 @@ This will shift all items after it and any alias index after it as well.
 
 ## @remove list index
 
-Remove an item from the list by index.  This will shift all items after it and any alias index after it as well.
+Remove an item from the list by index.  This will shift all items after it and any alias index after it as well.  Any aliases pointing to this item are removed.
 
 ## @setalias list key index
 
@@ -159,7 +159,7 @@ Remove a named alias.
 
 ## @aget list key
 
-Convenience instruction to ookup a list item by alias
+Convenience instruction to lookup a list item by alias.
 
 ## @aset list val key
 
