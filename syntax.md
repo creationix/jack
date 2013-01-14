@@ -44,6 +44,10 @@ Binary operators can be represented using infix notation and is parsed using ope
 
 TODO: document all operators specifically and their symbols.
 
+## Conditional operator
+
+The syntax for the conditional operator is (cond ? expr : expr).
+
 ## Not operator
 
 The negation operator is simply the `~` character before the expression.
@@ -123,14 +127,22 @@ It can also be used with numerical indexes.
 
 Insert can be used to insert new slots into the list.  All indexes and alias indexes after this are incremented by one.  Insert returns the new index of the inserted item.
 
-    insert list[0] "A"     --> the list now has "A" inserted into the front.
-    insert list[] "Z"      --> the list now has "Z" pushed onto the end.
-    insert list.middle "M" --> the "M" is inserted before where "middle" was pointing.  Note that "middle"'s alias index is moved up one.
+    insert list[0] "A"     -- the list now has "A" inserted into the front.
+    insert list[] "Z"      -- the list now has "Z" pushed onto the end.
+    insert list.middle "M" -- the "M" is inserted before where "middle" was pointing.  Note that "middle"'s alias index is moved up one.
 
+## Slice syntax
+
+String, Buffers, and lists can be sliced.  This returns a new shallow copy of all or part of the value.
+
+    newList = list[:]   -- Copy the entire list
+    another = list[1:]  -- Copy all but the first
+    more = list[:5]     -- Copy the first 5 items
+    middle = list[1:-1] -- Copy all but the first and last items.
 
 ## Built-ins
 
-Built-ins are represented by `@` followed by their string name. The possible values are `@add`, `@sub`, `@mul`, `@div`, `@pow`, `@and`, `@or`, `@xor`, `@not`, `@conditional`, `@lte`, `@lt`, `@gte`, `@gt`, `@neq`, `@eq`, `@if`, `@while`, `@def`, `@block`, `@call`, `@let`, `@assign`, `@fn`, `@len`, `@keys`, `@get`, `@set`, `@insert`, `@remove`, `@slice`, `@alias`, `@read`, `@unalias`, `@aget`, `@aset`, and `@adel`.
+Built-ins are represented by `@` followed by their string name. The possible values are `@add`, `@sub`, `@mul`, `@div`, `@mod`, `@pow`, `@and`, `@or`, `@xor`, `@not`, `@conditional`, `@lte`, `@lt`, `@gte`, `@gt`, `@neq`, `@eq`, `@if`, `@while`, `@def`, `@block`, `@call`, `@let`, `@assign`, `@fn`, `@len`, `@keys`, `@get`, `@set`, `@insert`, `@remove`, `@slice`, `@alias`, `@read`, `@unalias`, `@aget`, `@aset`, and `@adel`.
 
 ## Variables and Symbols
 

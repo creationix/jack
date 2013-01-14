@@ -29,7 +29,8 @@ The code sections is stored as unstructured data in nested lists.  Each value ca
   - `1000 0001` - @sub
   - `1000 0010` - @mul
   - `1000 0011` - @div
-  - `1000 0100` - @pow
+  - `1000 0100` - @mod
+  - `1000 0101` - @pow
   - `1000 1000` - @and
   - `1000 1001` - @or
   - `1000 1010` - @xor

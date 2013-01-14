@@ -232,7 +232,9 @@ Divide two values. Rounding down.
 
 Raise the first value to the power of the second.
 
-Rounds down when
+## @mod val val
+
+Divide the first by the second and return the remainder.
 
 # Logical Operators
 
