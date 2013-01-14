@@ -68,11 +68,9 @@ A piece of code implemented outside the language.  A chunk is given the current 
 
 An opaque value that can be created by or used by native code chunks.
 
-# Data Structures
+## List
 
 There is one data structure in the language.  It's the list.
-
-## List
 
 Contains 0 or more items in order.
 
