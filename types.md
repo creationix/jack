@@ -126,6 +126,10 @@ Call a function instance with args.
 
 Return early from the current function with an optional value.
 
+## @abort val
+
+Abort the program with an error message
+
 ## @let sym val
 
 Bind a new local variable with optional value.
@@ -134,7 +138,7 @@ Bind a new local variable with optional value.
 
 Rebind an existing variable to a new value.
 
-## @type val
+## @typeof val
 
 return the string type representation of the value.  The possible values are: `string`, `buffer`, `nil`, `boolean`, `int`, `symbol`, `nativecode`, `nativevalue`, `symbol`, X where X is the specific builtin name. (like `fn`, `type`, etc..).
 
@@ -144,7 +148,7 @@ These work with lists and somewhat with other types.
 
 In all operations that accept numerical indexes, a negative index means to count down from list length.  So, for example, a list of 5 items, -2 would be index 3 or the fourth item.
 
-If the index is a string, a corresponding alias is looked in the list.  If found, the real value is inserted.  If it's not found an error is thrown (except for the @set operation)
+Aliases keys can be any type and allow lists to be used as hash maps as well.
 
 ## @len list-or-string
 
@@ -161,9 +165,15 @@ Negative indexes count from end.
 
 ## @set list index val
 
-Put a new value in the list at the specified slot index.
+Replace a value in the list at the specified slot index.
 
-If the index is a string that doesn't correspond to an alias, a new value is inserted and an alias created.
+## @aget list key
+
+Lookup a value in a list or string by alias. Invalid keys return nil.
+
+## @aset list key val
+
+If the alias at key exists, replace the value.  If not, insert at the end of the list and create a new alias.
 
 ## @insert list index val
 
@@ -175,21 +185,18 @@ This will shift all items after it and any alias index after it as well.
 
 Remove an item from the list by index.  This will shift all items after it and any alias index after it as well.  Any aliases pointing to this item are removed.
 
-## @keys list
+## @keysof list
 
 Return a list of all the alias keys.
 
 ## @alias list key index
 
-Create a named alias using the string key.  If the alias already exists, point it to the new index. Negative indexes are converted before storing with the alias.
+Create a named alias using the string key.  If the alias already exists, point it to the new index. Negative indexes are converted before storing with the alias.  Set to nil to remove.
 
 ## @read list key
 
 Read the index where the alias is pointing to.  Insert and remove before the alias can change it's position.
 
-## @unalias list key
-
-Remove a named alias.
 
 # Control Flow Types
 

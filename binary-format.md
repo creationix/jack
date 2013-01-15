@@ -36,7 +36,7 @@ The code sections is stored as unstructured data in nested lists.  Each value ca
   - `1000 1010` - @xor
   - `1000 1011` - @not
   - `1000 1100` - @cond
-  - `1000 1101` - @type
+  - `1000 1101` - @typeof
   - `1001 0000` - @lte
   - `1001 0001` - @lt
   - `1001 0010` - @gte
@@ -48,16 +48,19 @@ The code sections is stored as unstructured data in nested lists.  Each value ca
   - `1010 0000` - @def
   - `1010 0001` - @block
   - `1010 0010` - @call
+  - `1010 0011` - @return
   - `1010 0100` - @let
   - `1010 0101` - @assign
+  - `1010 1111` - @abort
   - `1011 0000` - @fn
   - `1100 0000` - @len
-  - `1100 0001` - @keys
+  - `1100 0001` - @keysof
   - `1100 0010` - @get
   - `1100 0011` - @set
-  - `1100 0100` - @insert
-  - `1100 0101` - @remove
-  - `1100 0111` - @slice
-  - `1100 1000` - @alias
-  - `1100 1001` - @read
-  - `1100 1010` - @unalias
+  - `1100 0100` - @aget
+  - `1100 0101` - @aset
+  - `1100 0110` - @insert
+  - `1100 0111` - @remove
+  - `1100 1000` - @slice
+  - `1100 1010` - @alias
+  - `1100 1011` - @read

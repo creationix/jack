@@ -88,7 +88,11 @@ The `#` operator returns the length of a string, buffer, or list. For example `#
 
 ## Keysof keyword
 
-To get the alias keys of a list, use (`keysof` list).
+To get the alias keys of a list, use (`keysof` expression).
+
+## Typeof keyword
+
+To get the type of a value, use (`typeof` expression).
 
 ## Indexing
 
@@ -142,7 +146,7 @@ String, Buffers, and lists can be sliced.  This returns a new shallow copy of al
 
 ## Built-ins
 
-Built-ins are represented by `@` followed by their string name. The possible values are `@add`, `@sub`, `@mul`, `@div`, `@mod`, `@pow`, `@and`, `@or`, `@xor`, `@not`, `@cond`, `@lte`, `@lt`, `@gte`, `@gt`, `@neq`, `@eq`, `@if`, `@while`, `@def`, `@block`, `@call`, `@let`, `@assign`, `@fn`, `@len`, `@keys`, `@get`, `@set`, `@insert`, `@remove`, `@slice`, `@alias`, `@read`, `@unalias`.
+Built-ins are represented by `@` followed by their string name. The possible values are `@add`, `@sub`, `@mul`, `@div`, `@mod`, `@pow`, `@and`, `@or`, `@xor`, `@not`, `@cond`, `@lte`, `@lt`, `@gte`, `@gt`, `@neq`, `@eq`, `@if`, `@while`, `@def`, `@block`, `@call`, `@let`, `@assign`, `@fn`, `@len`, `@keys`, `@get`, `@set`, `@aget`, `@aset`, `@insert`, `@remove`, `@return`, `@abort`, `@slice`, `@alias`, `@read`.
 
 ## Variables and Symbols
 
