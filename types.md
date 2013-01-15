@@ -247,7 +247,7 @@ Boolean xor between expressions.
 
 Boolean not of expression.
 
-## @conditional cond val val
+## @cond cond val val
 
 Choose one of two expressions based on the condition.
 

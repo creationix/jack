@@ -35,7 +35,7 @@ The code sections is stored as unstructured data in nested lists.  Each value ca
   - `1000 1001` - @or
   - `1000 1010` - @xor
   - `1000 1011` - @not
-  - `1000 1100` - @conditional
+  - `1000 1100` - @cond
   - `1000 1101` - @type
   - `1001 0000` - @lte
   - `1001 0001` - @lt

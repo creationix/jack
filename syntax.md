@@ -142,7 +142,7 @@ String, Buffers, and lists can be sliced.  This returns a new shallow copy of al
 
 ## Built-ins
 
-Built-ins are represented by `@` followed by their string name. The possible values are `@add`, `@sub`, `@mul`, `@div`, `@mod`, `@pow`, `@and`, `@or`, `@xor`, `@not`, `@conditional`, `@lte`, `@lt`, `@gte`, `@gt`, `@neq`, `@eq`, `@if`, `@while`, `@def`, `@block`, `@call`, `@let`, `@assign`, `@fn`, `@len`, `@keys`, `@get`, `@set`, `@insert`, `@remove`, `@slice`, `@alias`, `@read`, `@unalias`, `@aget`, `@aset`, and `@adel`.
+Built-ins are represented by `@` followed by their string name. The possible values are `@add`, `@sub`, `@mul`, `@div`, `@mod`, `@pow`, `@and`, `@or`, `@xor`, `@not`, `@cond`, `@lte`, `@lt`, `@gte`, `@gt`, `@neq`, `@eq`, `@if`, `@while`, `@def`, `@block`, `@call`, `@let`, `@assign`, `@fn`, `@len`, `@keys`, `@get`, `@set`, `@insert`, `@remove`, `@slice`, `@alias`, `@read`, `@unalias`.
 
 ## Variables and Symbols
 
