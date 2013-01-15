@@ -14,15 +14,9 @@ if opposite { number = -42 }
 ]
 
 -- Chained if..elif..else
-if name == "tim" {
-  42
-}
-elif name = "bob" {
-  13
-}
-else {
-  7
-}
+if name == "tim" { 42 }
+elif name = "bob" { 13 }
+else { 7 }
 -- can also be written as
 [@if
   [@eq name "tim"]
