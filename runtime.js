@@ -61,6 +61,9 @@ List.prototype.insert = function (value, index) {
     return this.items.push(value);
   }
 };
+List.prototype.alias = function (key, index) {
+  this.aliases[key] = index;
+};
 List.prototype.get = function (index) {
   index = this.checkIndex(index);
   var value = this.items[index];

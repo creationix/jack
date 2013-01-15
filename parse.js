@@ -1,17 +1,42 @@
-var Parser = require("jison").Parser;
-var grammar = require('./grammar');
+var fs = require('fs');
+var pathJoin = require('path').join;
 var runtime = require('./runtime');
-var filename = process.argv[2] || "sample.jk";
 
-console.log("Parsing: " + filename);
-var code = require('fs').readFileSync(filename, "utf8");
+fs.stat(pathJoin(__dirname, "parser.js"), function (err, pstat) {
+  if (err) {
+    // If the parser doesn't exist, generate it.
+    if (err.code === "ENOENT") return generate();
+    throw err;
+  }
+  fs.stat(pathJoin(__dirname, "grammar.json"), function (err, gstat) {
+    if (err) throw err;
+    // See if the grammer has been changed since the generated file.
+    if (gstat.mtime > pstat.mtime) return generate();
+    // Otherwise we can use the cached version.
+    ready();
+  });
+});
 
-console.log("Creating parser...");
-var parser = new Parser(grammar, {type: "lalr"});
-parser.yy = runtime;
+function generate() {
+  console.log("Compiling fresh parser...");
+  var Parser = require("jison").Parser;
+  var parser = new Parser(require('./grammar'));
+  fs.writeFile(pathJoin(__dirname, "parser.js"), parser.generate(), function (err) {
+    if (err) throw err;
+    ready();
+  });
+}
 
-console.log("Parsing file...");
-var tree = parser.parse(code);
+function ready() {
+  var filename = process.argv[2] || "sample.jk";
+  console.log("Parsing: " + filename);
 
-console.log("Running program...")
-runtime.call(tree);
+  var parser = require('./parser').parser;
+  parser.yy = runtime;
+  fs.readFile(filename, "utf8", function (err, code) {
+    if (err) throw err;
+    var tree = parser.parse(code);
+    console.log("Running program...")
+    runtime.call(tree);
+  });
+}

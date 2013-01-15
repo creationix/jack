@@ -99,7 +99,7 @@
       ["SKEY", "$$ = eval($1.substr(0, $1.length - 1))"]
     ],
     "item": [
-      ["key expr", "$$ = yy.P($1, $2)"],
+      ["key expr", "$$ = yy.Pair($1, $2)"],
       ["expr", "$$ = $1"]
     ],
     "list1": [
