@@ -27,6 +27,8 @@ var grammar = {
       ["\\.(?:0|-?[1-9][0-9]*)","return 'IGET';"],
       ["\\$[a-zA-Z_][a-zA-Z0-9_]*","return 'NATIVE_CODE';"],
       ["[a-zA-Z_][a-zA-Z0-9_]*:","return 'KEY';"],
+      ["\"((?:\\.|[^\"])*)\":",   "return 'SKEY';"],
+      ["'((?:\\.|[^'])*)':",      "return 'SKEY';"],
       [":+[a-zA-Z_][a-zA-Z0-9_]*","return'SYMBOL';"],
       ["@[a-zA-Z_][a-zA-Z0-9_]*","return 'FORM';"],
       ["[a-zA-Z_][a-zA-Z0-9_]*", "return 'IDENT';"],
@@ -70,7 +72,6 @@ var grammar = {
   },
 
   operators: [
-    ["left", "!("],
     ["right", '=', "ISET", "ASET", "ALIAS"],
     ["right", "?", ":"],
     ["left", '||', '^^'],
@@ -79,7 +80,7 @@ var grammar = {
     ["left", '+', '-', '%'],
     ["left", '*', '/', '^'],
     ["left", '~', "#", "KEYSOF", "TYPEOF"],
-    ["left", '!'],
+    ["left", '!', "!("],
     ["left", '.', "[", "]", "IGET", "AGET", "READ"],
   ],
 
@@ -95,8 +96,12 @@ var grammar = {
     block: [
       ["{ code }", "$$ = yy.L([yy.F.block].concat($2))"],
     ],
+    key: [
+      ["KEY", "$$ = $1.substr(0, $1.length - 1)"],
+      ["SKEY", "$$ = eval($1.substr(0, $1.length - 1))"],
+    ],
     item: [
-      ["KEY expr", "$$ = new yy.P($1.substr(0, $1.length - 1), $2)"],
+      ["key expr", "$$ = new yy.P($1, $2)"],
       ["expr", "$$ = $1"],
     ],
     list1: [
@@ -125,8 +130,8 @@ var grammar = {
       ["FORM", "$$ = yy.F[$1.substr(1)];"],
       ["SYMBOL", "$$ = yy.S($1);"],
       ["NATIVE_CODE", "$$ = yy.N($1.substr(1));"],
-      ["expr !( list )", "$$ = yy.L([yy.F.call, $1, yy.L($3)])"],
-      ["expr !", "$$ = yy.L([yy.F.call, $1, yy.L([])])"],
+      ["expr !( list )", "$$ = yy.L([yy.F.call, $1].concat($3))"],
+      ["expr !", "$$ = yy.L([yy.F.call, $1])"],
       ["{ || code }", "$$ = yy.L([yy.F.def, yy.L([])].concat($3))"],
       ["{ | params | code }", "$$ = yy.L([yy.F.def, yy.L($3)].concat($5))"],
       ["block", "$$ = $1"],
@@ -241,6 +246,7 @@ List.prototype.inspect = function () {
     inverse[index] += "\033[30;1m" + key + ":\033[0m ";
   });
   var inner = this.items.map(function (item, i) {
+    if (item === null) return (inverse[i] || "") + "nil";
     return (inverse[i] || "") + inspect(item, false, 10, true);
   });
   var line = "[ " + inner.join(" ") + " ]";
