@@ -1,27 +1,22 @@
--- Create an empty map
-map := <<>>
--- set key-value pairs using [] syntax
-map["name"] = "Tim Caswell"
+-- Create an empty list we'll use as a map
+let map = []
+-- set key-value pairs using @aset form
+[@aset map "name" "Tim Caswell"]
 -- string keys that are also valid identifiers can use the shorthand
 map.title = "Creator"
--- Maps have zero default methods, they are dumb data buckets
--- But they can hold any key type
-map[false] = "Why not?"
-map[map] = map -- recursion anyone?
+-- Lists have no default aliases or methods.
+-- But they can hold any key type in their aliases.
+[@aset map false "Why not?"]
+[@aset map map map] -- recursion anyone?
 -- asking for keys that don't exist return nil
-map[<<>>] --> nil
--- setting a value to nil deletes the key
-map[false] = nil
+[@aget map []] --> nil
+-- setting an alias itself to nil deletes the alias
+[@alias map false nil]
 
 -- Multiline map literal syntax
-map = <<
-  name = "Tim"
-  age  = 30
->>
+map = [
+  name: "Tim"
+  age: 30
+]
 -- Singleline map literal 
-<< name="Compressed" big=false >>
--- non-ident keys in literals
-crazy := <<
-  [map] = true
-  [<<>>]  = false
->>
+[ name: "Compressed" big: false ]
