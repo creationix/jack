@@ -84,7 +84,7 @@
 
   "bnf": {
     "root": [
-      ["code EOF", "return yy.L($1)"]
+      ["code EOF", "return yy.List([yy.forms.fn, null, yy.List([])].concat($1))"]
     ],
     "code": [
       ["", "$$ = []"],
@@ -92,7 +92,7 @@
       ["code statement", "$$ = $1.concat([$2])"]
     ],
     "block": [
-      ["{ code }", "$$ = yy.L([yy.F.block].concat($2))"]
+      ["{ code }", "$$ = yy.List([yy.forms.block].concat($2))"]
     ],
     "key": [
       ["KEY", "$$ = $1.substr(0, $1.length - 1)"],
@@ -120,61 +120,55 @@
     ],
     "expr": [
       ["STRING", "$$ = eval($1);"],
-      ["IDENT", "$$ = yy.S($1)"],
+      ["IDENT", "$$ = yy.Symbol($1)"],
       ["INTEGER", "$$ = parseInt($1, 10);"],
       ["CONSTANT", "$$ = $1 === 'true' ? true : $1 === 'false' ? false : null;"],
-      ["BUFFER", "$$ = yy.B($1)"],
-      ["[ list ]", "$$ = yy.L($2)"],
-      ["FORM", "$$ = yy.F[$1.substr(1)];"],
-      ["SYMBOL", "$$ = yy.S($1);"],
-      ["NATIVE_CODE", "$$ = yy.N($1.substr(1));"],
-      ["expr !( list )", "$$ = yy.L([yy.F.call, $1].concat($3))"],
-      ["expr !", "$$ = yy.L([yy.F.call, $1])"],
-      ["{ || code }", "$$ = yy.L([yy.F.def, yy.L([])].concat($3))"],
-      ["{ | params | code }", "$$ = yy.L([yy.F.def, yy.L($3)].concat($5))"],
+      ["BUFFER", "$$ = yy.Buffer($1.substr(1, $1.length - 2).split(/\\s+/).map(function (b) { return parseInt(b, 16);}))"],
+      ["[ list ]", "$$ = yy.List($2)"],
+      ["FORM", "$$ = yy.forms[$1.substr(1)];"],
+      ["SYMBOL", "$$ = yy.Symbol($1);"],
+      ["NATIVE_CODE", "$$ = yy.NativeCode($1.substr(1));"],
+      ["expr !( list )", "$$ = yy.List([yy.forms.call, $1].concat($3))"],
+      ["expr !", "$$ = yy.List([yy.forms.call, $1])"],
+      ["{ || code }", "$$ = yy.List([yy.forms.def, yy.List([])].concat($3))"],
+      ["{ | params | code }", "$$ = yy.List([yy.forms.def, yy.List($3)].concat($5))"],
       ["block", "$$ = $1"],
       ["( expr )", "$$ = $2"],
-      ["KEYSOF expr", "$$ = yy.L([yy.F.keysof, $2])"],
-      ["TYPEOF expr", "$$ = yy.L([yy.F.typeof, $2])"],
-      ["expr = expr", "$$ = yy.L([yy.F.assign, $1, $3])"],
-      ["expr + expr", "$$ = yy.L([yy.F.add, $1, $3])"],
-      ["expr - expr", "$$ = yy.L([yy.F.sub, $1, $3])"],
-      ["expr * expr", "$$ = yy.L([yy.F.mul, $1, $3])"],
-      ["expr / expr", "$$ = yy.L([yy.F.div, $1, $3])"],
-      ["expr ^ expr", "$$ = yy.L([yy.F.pow, $1, $3])"],
-      ["expr % expr", "$$ = yy.L([yy.F.mod, $1, $3])"],
-      ["expr < expr", "$$ = yy.L([yy.F.lt, $1, $3])"],
-      ["expr <= expr", "$$ = yy.L([yy.F.lte, $1, $3])"],
-      ["expr > expr", "$$ = yy.L([yy.F.gt, $1, $3])"],
-      ["expr >= expr", "$$ = yy.L([yy.F.gte, $1, $3])"],
-      ["expr == expr", "$$ = yy.L([yy.F.eq,  $1, $3])"],
-      ["expr ~= expr", "$$ = yy.L([yy.F.neq, $1, $3])"],
-      ["expr READ", "$$ = yy.L([yy.F.read, $1, $2.substr(1)])"],
-      ["expr ALIAS expr", "$$ = yy.L([yy.F.alias, $1, $2.substr(1, $2.match(/[\\s=]/).index - 1), $3])"],
-      ["expr AGET", "$$ = yy.L([yy.F.aget, $1, $2.substr(1)])"],
-      ["expr ASET expr", "$$ = yy.L([yy.F.aset, $1, $2.substr(1, $2.match(/[\\s=]/).index - 1), $3])"],
-      ["expr IGET", "$$ = yy.L([yy.F.get, $1, parseInt($2.substr(1), 10)])"],
-      ["expr ISET expr", "$$ = yy.L([yy.F.set, $1, parseInt($2.substr(1, $2.match(/[\\s=]/).index - 1), 10), $3])"],
-      ["~ expr", "$$ = yy.L([yy.F.not, $2])"],
-      ["expr ? expr : expr", "$$ = yy.L([yy.F.cond, $1, $3, $5])"],
-      ["# expr", "$$ = yy.L([yy.F.len, $2])"],
-      ["expr && expr", "$$ = yy.L([yy.F.and, $1, $3])"],
-      ["expr || expr", "$$ = yy.L([yy.F.or, $1, $3])"],
-      ["expr ^^ expr", "$$ = yy.L([yy.F.xor, $1, $3])"],
-      ["LET IDENT = expr", "$$ = yy.L([yy.F.let, $2, $4]);"],
-      ["WHILE expr block", "$$ = yy.L([yy.F.while, $2, $3])"],
-      ["IF expr block elifs", "$$ = yy.L([yy.F.if, $2, $3].concat($4))"],
-      ["IF expr block elifs ELSE block", "$$ = yy.L([yy.F.if, $2, $3].concat($4).concat([$6]))"]
+      ["KEYSOF expr", "$$ = yy.List([yy.forms.keysof, $2])"],
+      ["TYPEOF expr", "$$ = yy.List([yy.forms.typeof, $2])"],
+      ["expr = expr", "$$ = yy.List([yy.forms.assign, $1, $3])"],
+      ["expr + expr", "$$ = yy.List([yy.forms.add, $1, $3])"],
+      ["expr - expr", "$$ = yy.List([yy.forms.sub, $1, $3])"],
+      ["expr * expr", "$$ = yy.List([yy.forms.mul, $1, $3])"],
+      ["expr / expr", "$$ = yy.List([yy.forms.div, $1, $3])"],
+      ["expr ^ expr", "$$ = yy.List([yy.forms.pow, $1, $3])"],
+      ["expr % expr", "$$ = yy.List([yy.forms.mod, $1, $3])"],
+      ["expr < expr", "$$ = yy.List([yy.forms.lt, $1, $3])"],
+      ["expr <= expr", "$$ = yy.List([yy.forms.lte, $1, $3])"],
+      ["expr > expr", "$$ = yy.List([yy.forms.gt, $1, $3])"],
+      ["expr >= expr", "$$ = yy.List([yy.forms.gte, $1, $3])"],
+      ["expr == expr", "$$ = yy.List([yy.forms.eq,  $1, $3])"],
+      ["expr ~= expr", "$$ = yy.List([yy.forms.neq, $1, $3])"],
+      ["expr READ", "$$ = yy.List([yy.forms.read, $1, $2.substr(1)])"],
+      ["expr ALIAS expr", "$$ = yy.List([yy.forms.alias, $1, $2.substr(1, $2.match(/[\\s=]/).index - 1), $3])"],
+      ["expr AGET", "$$ = yy.List([yy.forms.aget, $1, $2.substr(1)])"],
+      ["expr ASET expr", "$$ = yy.List([yy.forms.aset, $1, $2.substr(1, $2.match(/[\\s=]/).index - 1), $3])"],
+      ["expr IGET", "$$ = yy.List([yy.forms.get, $1, parseInt($2.substr(1), 10)])"],
+      ["expr ISET expr", "$$ = yy.List([yy.forms.set, $1, parseInt($2.substr(1, $2.match(/[\\s=]/).index - 1), 10), $3])"],
+      ["~ expr", "$$ = yy.List([yy.forms.not, $2])"],
+      ["expr ? expr : expr", "$$ = yy.List([yy.forms.cond, $1, $3, $5])"],
+      ["# expr", "$$ = yy.List([yy.forms.len, $2])"],
+      ["expr && expr", "$$ = yy.List([yy.forms.and, $1, $3])"],
+      ["expr || expr", "$$ = yy.List([yy.forms.or, $1, $3])"],
+      ["expr ^^ expr", "$$ = yy.List([yy.forms.xor, $1, $3])"],
+      ["LET IDENT = expr", "$$ = yy.List([yy.forms.let, $2, $4]);"],
+      ["WHILE expr block", "$$ = yy.List([yy.forms.while, $2, $3])"],
+      ["IF expr block elifs", "$$ = yy.List([yy.forms.if, $2, $3].concat($4))"],
+      ["IF expr block elifs ELSE block", "$$ = yy.List([yy.forms.if, $2, $3].concat($4).concat([$6]))"]
     ],
     "statement": [
-      ["RETURN expr", "$$ = yy.L([yy.F.return, $2])"],
-      ["ABORT expr", "$$ = yy.L([yy.F.abort, $2])"]
+      ["RETURN expr", "$$ = yy.List([yy.forms.return, $2])"],
+      ["ABORT expr", "$$ = yy.List([yy.forms.abort, $2])"]
     ]
-  },
-  "forms": ["add", "sub", "mul", "div", "mod", "pow", "and", "or", "xor",
-    "not", "cond", "lte", "lt", "gte", "gt", "neq", "eq", "if", "while",
-    "def", "block", "call", "let", "assign", "fn", "len", "keysof", "typeof",
-    "get", "set", "aget", "aset", "insert", "remove", "slice", "alias", "read",
-    "return", "abort"
-  ]
+  }
 }
