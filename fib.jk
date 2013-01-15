@@ -1,17 +1,19 @@
--- Create an empty map to cache values we're seen already
-cache := <<>>
+-- Create an empty list to cache values we're seen already
+let cache = []
 
 -- Define a function to calculate fib that uses the closure cache
-fib := {|i|
+let fib = {|i|
   -- Special cases, these always return 1
-  return 1 if i == 1 || i == 2
+  if i == 1 || i == 2 { return 1 }
 
   -- Then look in the cache and return if it's already there
-  return cache[i] if cache[i]
+  let value = [@aget cache i]
+  if value { return value }
 
   -- If not, calculate the new value, store in the cache and return
-  cache[i] = (self! i - 2) + (self! i - 1)
+  value = self!(i - 2) + self!(i - 1)
+  [@aset cache i value]
 }
 
 -- Call the function and return the fib of 10
-fib! 10
+fib!(10)
