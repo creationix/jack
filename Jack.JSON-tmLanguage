@@ -9,10 +9,10 @@
       "match": ";"
     },
     { "name": "keyword.control",
-      "match": "(return|if|elif|else|while)\\b"
+      "match": "(return|abort|if|elif|else|while)\\b"
     },
     { "name": "keyword.language",
-      "match": "(insert|remove|let|keysof)\\b"
+      "match": "(let|keysof|typeof)\\b"
     },
     { "name": "variable.language.self",
       "match": "(self)\\b"
@@ -70,6 +70,10 @@
         }
       ]
     },
+    { "name": "string.binary",
+      "match": "<[0-9A-Fa-f][0-9A-Fa-f](\\s+[0-9A-Fa-f][0-9A-Fa-f])*>"
+    },
+    
     { "name": "string.quoted.double",
       "begin": "\"",
       "beginCaptures": {
@@ -96,7 +100,7 @@
     },
     {
       "name": "keyword.address",
-      "match": "&"
+      "match": "\\.&"
     },
     {
       "name": "keyword.length",

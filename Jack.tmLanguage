@@ -24,13 +24,13 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(return|if|elif|else|while)\b</string>
+			<string>(return|abort|if|elif|else|while)\b</string>
 			<key>name</key>
 			<string>keyword.control</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(insert|remove|let|keysof)\b</string>
+			<string>(let|keysof|typeof)\b</string>
 			<key>name</key>
 			<string>keyword.language</string>
 		</dict>
@@ -142,6 +142,12 @@
 			</array>
 		</dict>
 		<dict>
+			<key>match</key>
+			<string>&lt;[0-9A-Fa-f][0-9A-Fa-f](\s+[0-9A-Fa-f][0-9A-Fa-f])*&gt;</string>
+			<key>name</key>
+			<string>string.binary</string>
+		</dict>
+		<dict>
 			<key>begin</key>
 			<string>"</string>
 			<key>beginCaptures</key>
@@ -182,7 +188,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>&amp;</string>
+			<string>\.&amp;</string>
 			<key>name</key>
 			<string>keyword.address</string>
 		</dict>
