@@ -70,6 +70,7 @@
   },
 
   "operators": [
+    ["nonassoc", "RETURN", "ABORT"],
     ["right", "=", "ISET", "ASET", "ALIAS"],
     ["right", "?", ":"],
     ["left", "||", "^^"],
@@ -88,8 +89,7 @@
     ],
     "code": [
       ["", "$$ = []"],
-      ["code expr", "$$ = $1.concat([$2])"],
-      ["code statement", "$$ = $1.concat([$2])"]
+      ["code expr", "$$ = $1.concat([$2])"]
     ],
     "block": [
       ["{ code }", "$$ = yy.List([yy.forms.block].concat($2))"]
@@ -163,9 +163,7 @@
       ["expr ^^ expr", "$$ = yy.List([yy.forms.xor, $1, $3])"],
       ["WHILE expr block", "$$ = yy.List([yy.forms.while, $2, $3])"],
       ["IF expr block elifs", "$$ = yy.List([yy.forms.if, $2, $3].concat($4))"],
-      ["IF expr block elifs ELSE block", "$$ = yy.List([yy.forms.if, $2, $3].concat($4).concat([$6]))"]
-    ],
-    "statement": [
+      ["IF expr block elifs ELSE block", "$$ = yy.List([yy.forms.if, $2, $3].concat($4).concat([$6]))"],
       ["LET IDENT = expr", "$$ = yy.List([yy.forms.let, $2, $4]);"],
       ["RETURN expr", "$$ = yy.List([yy.forms.return, $2])"],
       ["ABORT expr", "$$ = yy.List([yy.forms.abort, $2])"]
