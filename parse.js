@@ -33,10 +33,10 @@ function ready() {
 
   var parser = require('./parser').parser;
   runtime.attachParser(parser);
-  var vm = new runtime.VM();
+  var vm = new runtime.VM(null);
   fs.readFile(filename, "utf8", function (err, code) {
     if (err) throw err;
     // console.log("Running program...")
-    vm.eval(code);
+    console.log(vm.eval(code));
   });
 }
