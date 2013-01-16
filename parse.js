@@ -29,14 +29,14 @@ function generate() {
 
 function ready() {
   var filename = process.argv[2] || "sample.jk";
-  console.log("Parsing: " + filename);
+  // console.log("Parsing: " + filename);
 
   var parser = require('./parser').parser;
-  parser.yy = runtime;
+  runtime.attachParser(parser);
+  var vm = new runtime.VM();
   fs.readFile(filename, "utf8", function (err, code) {
     if (err) throw err;
-    var tree = parser.parse(code);
-    console.log("Running program...")
-    runtime.call(tree);
+    // console.log("Running program...")
+    vm.eval(code);
   });
 }

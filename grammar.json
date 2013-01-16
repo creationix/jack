@@ -85,7 +85,7 @@
 
   "bnf": {
     "root": [
-      ["code EOF", "return yy.List([yy.forms.fn, null, yy.List([])].concat($1))"]
+      ["code EOF", "return yy.List($1)"]
     ],
     "code": [
       ["", "$$ = []"],
