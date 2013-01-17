@@ -2,19 +2,11 @@
 var parse;
 var assert = require('assert');
 
-exports.Pair = Pair
-function Pair(key, value) {
-  if (!(this instanceof Pair)) { return new Pair(key, value); }
-  this.key = key;
-  this.value = value
-}
-
 var forms = exports.forms = {};
-["add", "sub", "mul", "div", "mod", "pow", "and", "or", "xor",
-  "not", "cond", "lte", "lt", "gte", "gt", "neq", "eq", "if", "while",
-  "def", "block", "call", "let", "assign", "fn", "len", "keysof", "typeof",
-  "get", "set", "aget", "aset", "insert", "remove", "slice", "alias", "read",
-  "return", "abort"
+[ "def", "fn", "call", "return", "abort",
+  "var", "assign",
+  "if", "while", "for", "map",
+  "buf", "array", "object"
 ].forEach(function (name) {
   forms[name] = new Form(name);
 });
@@ -26,6 +18,24 @@ Form.prototype.inspect = function () {
   return "\033[36m@" + this.name + "\033[0m";
 };
 
+exports.Range = Range;
+function Range(str) {
+  if (!(this instanceof Range)) { return new Range(str); }
+  var match = str.match(/([^:]*):([^:]*)/);
+  this.start = match[1] ? parseInt(match[1], 10) : null;
+  this.end = match[2] ? parseInt(match[2], 10) : null;
+};
+Range.prototype.inspect = function () {
+  var string = ":";
+  if (this.start !== null) {
+    string = this.start + string;
+  }
+  if (this.end !== null) {
+    string = string + this.end;
+  }
+  return "\033[32;1m" + string + "\033[0m";
+}
+
 exports.Symbol = Symbol;
 var symbols = {};
 function Symbol(name) {
@@ -36,141 +46,6 @@ function Symbol(name) {
 }
 Symbol.prototype.inspect = function () {
   return "\033[35m:" + this.name + "\033[0m";
-};
-
-exports.List = List;
-function List(pairs) {
-  if (!(this instanceof List)) { return new List(pairs); }
-  this.items = [];
-  this.aliases = {};
-  if (pairs) {
-    pairs.forEach(function (pair, i) {
-      if (pair instanceof Pair) {
-        this.insert(i, pair.value);
-        this.alias(pair.key, i);
-      }
-      else {
-        this.insert(i, pair);
-      }
-    }, this);
-  }
-}
-
-List.prototype.checkIndex = function (index) {
-  if (index >> 0 !== index) return null;
-  if (index < 0) { index += this.items.length; }
-  return index;
-};
-
-List.prototype.set = function (index, value) {
-  index = this.checkIndex(index);
-  if (this.items[index] === undefined) return null
-  this.items[index] = value;
-  return index;
-};
-
-List.prototype.get = function (index) {
-  index = this.checkIndex(index);
-  var value = this.items[index];
-  if (value === undefined) value = null;
-  return value;
-};
-
-List.prototype.aset = function (key, value) {
-  var index = this.aliases[key];
-  if (index === undefined) {
-    index = this.items.length;
-    this.aliases[key] = index;
-  }
-  this.items[index] = value;
-  return index;
-};
-
-List.prototype.aget = function (key) {
-  var index = this.aliases[key];
-  if (index === undefined) return null;
-  var value = this.items[index];
-  if (value === undefined) return null;
-  return value;
-};
-
-List.prototype.insert = function (index, value) {
-  if (index === null) index = this.items.length;
-  else index = this.checkIndex(index);
-  if (index === this.items.length) {
-    this.items[index] = value;
-    return index;
-  }
-  throw new Error("TODO: Implement hard insert");
-};
-
-List.prototype.remove = function (index) {
-  if (index === null) index = this.items.length - 1;
-  else index = this.checkIndex(index);
-  if (index === this.items.length - 1) {
-    return this.items.pop();
-  }
-  throw new Error("TODO: Implement hard remove");
-};
-
-List.prototype.alias = function (key, index) {
-  if (index === null) {
-    delete this.aliases[key];
-    return index;
-  }
-  if (index >> 0 !== index) return null;
-  this.aliases[key] = index;
-  return index;
-};
-
-List.prototype.read = function (key) {
-  var index = this.aliases[key];
-  if (index === undefined) return null;
-  return index;
-};
-
-List.prototype.slice = function (start, end) {
-  if (start === null) start = 0;
-  if (end === null) end = this.items.length;
-  start = this.checkIndex(start);
-  end = this.checkIndex(end);
-  // TODO: Should this copy aliases?
-  return new List(this.items.slice(start, end));
-};
-
-var inspect = require('util').inspect;
-var seen;
-List.prototype.inspect = function (level) {
-  var outer = seen === undefined;
-  if (outer) {
-    seen = [this];
-  }
-  else {
-    if (seen.indexOf(this) >= 0) {
-      return "[\033[30;1mcycle\033[0m]]";
-    }
-    seen.push(this);
-  }
-  if (level <= 0) return "[...]";
-  var inverse = {};
-  var aliases = this.aliases
-  Object.keys(aliases).forEach(function (key) {
-    var index = aliases[key];
-    if (!inverse[index]) { inverse[index] = ""; }
-    inverse[index] += "\033[30;1m" + key + ":\033[0m ";
-  });
-  var inner = this.items.map(function (item, i) {
-    if (item === null) return (inverse[i] || "") + "nil";
-    return (inverse[i] || "") + inspect(item, false, level - 1, true);
-  });
-  var line = "[ " + inner.join(" ") + " ]";
-  if (outer) seen = undefined;
-  if (line.length < 80) return line;
-  return "[ " + inner.join("\n").split("\n").join("\n  ") + " ]";
-};
-
-List.prototype.length = function () {
-  return this.items.length;
 };
 
 exports.NativeCode = NativeCode;
@@ -199,21 +74,13 @@ exports.Buffer = Buffer;
 
 exports.VM = VM;
 function VM(parent) {
-  this.scope = new List([parent]);
+  this.scope = Object.create(parent);
 }
 VM.prototype.getLocal = function (name) {
-  function find(scope) {
-    var index = scope.read(name);
-    if (index === null) {
-      var parent = scope.get(0);
-      if (parent === null) {
-        return this.abort("Attempt to access undefined variable '" + name + "'.");
-      }
-      return find.call(this, parent);
-    }
-    return scope.get(index);
+  if (name in this.scope) {
+    return this.scope[name];
   }
-  return find.call(this, this.scope);
+  return this.abort("Attempt to access undefined variable '" + name + "'.");
 };
 // Assign a local variable
 VM.prototype.setLocal = function (name, value) {
@@ -243,12 +110,12 @@ VM.prototype.run = function (code) {
   if (code instanceof Symbol) {
     return this.getLocal(code.name);
   }
-  if (code instanceof List) {
-    var first = code.get(0);
+  if (Array.isArray(code)) {
+    var first = code[0];
     if (first instanceof Form) {
       var fn = this[first.name];
       if (fn === undefined) throw new Error("TODO: Implement " + first.name + " form");
-      return fn.apply(this, code.items.slice(1));
+      return fn.apply(this, code.slice(1));
     }
   }
   return code;
@@ -343,12 +210,11 @@ VM.prototype.call = function (fn) {
 }
 
 VM.prototype.runCodes = function (codes, earlyExit) {
-  assert(codes instanceof List);
   var result;
-  for (var i = 0, l = codes.length(); i < l; i++) {
-    var code = codes.get(i);
-    if (code instanceof List) {
-      var first = code.get(0);
+  for (var i = 0, l = codes.length; i < l; i++) {
+    var code = codes[i];
+    if (Array.isArray(code)) {
+      var first = code[0];
       if (first instanceof Form && first.name === "return") {
         this.earlyExit = this.run(code.get(1));
         throw "return";
@@ -359,7 +225,9 @@ VM.prototype.runCodes = function (codes, earlyExit) {
   return result;
 };
 VM.prototype.eval = function (code) {
-  return this.runCodes(parse(code));
+  var tree = parse(code);
+  console.log(require('util').inspect(tree, false, 10, true));
+  // return this.runCodes();
 };
 VM.prototype.abort = function (message) {
   // TODO: show a jack stack trace, not the JS one.
