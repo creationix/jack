@@ -1,109 +1,196 @@
--- Assignment:
-let number = 42
--- also represented as
-[@let "number" 42]
+-- integer literals
+0
+-1
+23
+10
 
--- Conditional execution
-let opposite = true
-if opposite { number = -42 }
--- is really shorthand for..
-[@let "opposite" true]
-[@if
-  opposite
-  [@block [@assign number -42] ]
-]
+-- boolean literals
+true false
 
--- Chained if..elif..else
-if name == "tim" { 42 }
-elif name = "bob" { 13 }
-else { 7 }
--- can also be written as
-[@if
-  [@eq name "tim"]
-  [@block 42]
-  [@eq name "bob"]
-  [@block 13]
-  [@block 7]
-]
+-- null literal
+null
 
--- Conditional expressions
-let age = 30
-let adult = age >= 18 ? "yes" : "no"
--- looks like
-[@let "age" 30]
-[@let "adult"
-  [@cond [@gte age 18] "yes" "no"]
-]
+-- String literal
+"Hello World"
+'With single quotes'
+"and \" escapes"
 
--- Functions:
-let square = {|x| x * x }
--- becomes
-[@let "square"
-  [@def ["x"]
-    [@mul x x]
-  ]
-]
+-- Buffer literal
+<4A 61 63 6B 2A 00>
 
--- Lists:
-let array = [
-  [1 0 0 2]
-  [0 1 0 0]
-  [1 0 2 9]
-  [0 0 0 1]
-]
--- is simply
-[@let "array" [
-  [1 0 0 2]
-  [0 1 0 0]
-  [1 0 2 9]
-  [0 0 0 1]
-]]
- 
--- List lookup
-array.2.3               --> 9
--- is described as
-[@get [@get array 2] 3]
+-- Empty Buffer literal
+<<1024*1024>> -- allocates 1Mb
 
--- List Manupulation
-let animals = ["Lions" "Tigers" "Bears"]
+-- range literals
+: -- whole range
+1: -- all but first item
+:1 -- first item
+2:4 -- 3rd and 4th items
+-3: -- last 3 items
+:-3 -- all but last last 3 items
+
+-- Form literal
+@def
+@fn
+
+-- Symbol Literal
+:these :are :symbols
+
+-- Native Code Literal
+$print
+
+-- array literal
+[[0 1 0 1]
+ [1 0 0 1]
+ [0 1 1 0]
+ [0 0 0 1]]
+
+-- object literal
+{ name: "Tim" age: 30 }
+
+-- integer lookup shorthand
+matrix.0.2
+-- Aliases to:
+matrix(0)(2)
+-- Which is really
+[@call [@call matrix 0] 2]
+
+-- string lookup shorthand
+person.name
+-- Aliases to:
+person("name")
+-- which is
+[@call person "name"]
+
+-- range lookup
+list(1:3)
+-- is also
+[@call list 1:3]
+
+
+-- dynamic array and object lookup
+matrix(row)(column)
+person(key)
 --
-[@let "animals" ["Lions" "Tigers" "Bears"]]
+[@call [@call matrix row] column]
+[@call person key]
 
-
--- Length of list
-#animals                  --> 3
+-- list expressions
+var list = [1 2 3 4 5]
+map x in list if x % 2 {
+  x * x
+} --> (1 9 25)
 --
-[@len animals]
+[@var list [1 2 3 4 5]]
+[@for x list [@call x "%" 2] [@call x "*" x]]
 
--- Some forms don't have special syntax and so you must use list form directly.
--- Pushing a new item on the list and returning the index
-[@insert animals "Oh My!" nil] --> 3
--- Popping an item from the end of the list
-[@remove animals nil]
-
--- List Aliases:
-let math = [
-  root:   Math.sqrt
-  square: square
-  cube:   {|x| x * square!(x) }
-]
+-- A generator list that counts from 1 to n
+var count = {n|
+  {i|
+    if i < n { i + 1 }
+  }
+}
 --
-[@let "math" [
-  root: [@get Math "sqrt"]
-  square: square
-  cube: [@def ["x"]
-    [@mul
-      x
-      [@call square x]
+[@var count
+  [@def [n]
+    [@def [i]
+      [@if [@call i "<" n] [@call i "+" 1]]
     ]
   ]
+]
+
+-- Use the custom list in a list expression
+map x in count(9) if x % 2 { x * 2 } --> (2 6 10 14 18)
+--
+[@map x [@call count 9] [@call x "%" 2] [@call x "*" 2]]
+
+-- if..elif..else expression
+if a < 4 {
+  "small"
+} elif a > 10 {
+  "large"
+} else {
+  "medium"
+}
+--
+[@if [@call a "<" 4] [@block
+  "small"
+] [@call a ">" 10] [@block
+  "large"
+] [@block
+  "medium"
 ]]
 
--- Map lookup
-math.cube!(3)
 --
-[@call [@get math "cube"] 3]
+[@if [@call a "<" 4] [@block "small"]]
 
--- dynamic alias lookup
-[@set set dynamic value]
+-- while loop
+var i = 0
+while i < 10 {
+  print(i)
+  i = i + 1
+}
+--
+[@var i 0]
+[@while [@call i "<" 10] [@block
+  [@call print i]
+  [@assign i [@call i "+" 1]]
+]]
 
+-- each loop expression
+for x in list if x % 2 {
+  print(x * x)
+}
+
+-- map expression with block
+map x in list if x % 2 {
+  print(x * x)
+}
+
+-- Lambda expressions
+{x| x * x}
+{a b| a + b}
+{| "Hello"}
+--
+[@def [x] [@mul x x]]
+[@def [a b] [@add a b]]
+[@def [] "Hello"]
+
+-- Bits of the coffeescript example ported
+var number = 42
+var opposite = true
+--
+[@var number 42]
+[@var opposite true]
+
+if opposite { number = -42 }
+--
+[@if opposite [@assign number -42]]
+
+var square = {x| x * x}
+--
+[@var square [@def [x] [@mul x x]]]
+
+var math = {
+  root: Math.sqrt
+  square: square
+  cube: {x| x * square(x)}
+}
+--
+[@var :math [@map
+  "root" [@call :Math "sqrt"]
+  "square" :square
+  "cube" [@def [:x] [@mul :x [@call :square :x]]]
+]]
+
+-- Early function return
+var fib = {i|
+  if i <= 2 {
+    return 1
+  }
+  -- This fib doesn't like 42
+  if i == 42 {
+    abort "I don't like 42!"
+  }
+  fib(i - 2) + fib(i - 1)
+}
