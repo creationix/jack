@@ -3,7 +3,6 @@
     "rules": [
       ["$",                               "return 'EOF'"],
       ["--.*",                            "/* ignore comments */"],
-      ["\\s+",                            "/* skip whitespace */"],
       ["<[0-9A-Fa-f][0-9A-Fa-f](\\s+[0-9A-Fa-f][0-9A-Fa-f])*>", "return 'BUFFER'"],
       ["(null|true|false)\\b",            "return 'CONSTANT'"],
       ["return\\b",                       "return 'RETURN'"],
@@ -38,15 +37,18 @@
       ["(?:~=|==)",                       "return 'BINOP4'"],
       ["(?:&&)",                          "return 'BINOP5'"],
       ["(?:\\|\\||\\^\\^)",               "return 'BINOP6'"],
+      [",\\s*",                           "return ','"],
       ["~",                               "return '~'"],
       ["=",                               "return '='"],
-      ["\\[",                             "return '['"],
-      ["\\]",                             "return ']'"],
-      ["\\{",                             "return '{'"],
-      ["\\|",                             "return '|'"],
-      ["\\}",                             "return '}'"],
-      ["\\(",                             "return '('"],
-      ["\\)",                             "return ')'"]
+      ["\\[\\s*",                         "return '['"],
+      ["\\s*\\]",                         "return ']'"],
+      ["\\{\\s*",                         "return '{'"],
+      ["\\|\\s*",                         "return '|'"],
+      ["\\s*\\}",                         "return '}'"],
+      ["\\(\\s*",                         "return '('"],
+      ["\\s*\\)",                         "return ')'"],
+      ["\\s*(?:\\r\\n|\\r|\\n|;)\\s*",    "return 'TERM'"],
+      ["\\s+",                            "/* skip whitespace */"]
     ]
   },
 
@@ -66,26 +68,47 @@
     "root": [
       ["code EOF", "return $1"]
     ],
+    "term0": ["", "term1"],
+    "term1": ["TERM", "term1 TERM"],
+    "code1": [
+      ["expr", "$$ = [$1]"],
+      ["statement", "$$ = [$1]"],
+      ["code1 term1 expr", "$$ = $1.concat([$3])"],
+      ["code1 term1 statement", "$$ = $1.concat([$3])"]
+    ],
     "code": [
+      ["term0", "$$ = []"],
+      ["term0 code1 term0", "$$ = $2"]
+    ],
+    "list1": [
+      ["expr", "$$ = [$1]"],
+      ["list1 , expr", "$$ = $1.concat([$3])"]
+    ],
+    "list": [
       ["", "$$ = []"],
-      ["code expr", "$$ = $1.concat([$2])"],
-      ["code statement", "$$ = $1.concat([$2])"]
+      ["list1", "$$ = $1"],
+      ["list1 ,", "$$ = $1"]
     ],
     "params": [
       ["IDENT", "$$ = [$1]"],
-      ["params IDENT", "$$ = $1.concat([$2])"]
-    ],
-    "elifs": [
-      ["expr { code }", "$$ = [$1, $3]"],
-      ["elifs ELIF expr { code }", "$$ = $1.concat([$3, $5])"]
+      ["params , IDENT", "$$ = $1.concat([$2])"]
     ],
     "key": [
       ["KEY", "$$ = $1.substr(0, $1.length - 1)"],
       ["SKEY", "$$ = eval($1.substr(0, $1.length - 1))"]
     ],
+    "pairs1": [
+      ["key expr", "$$ = [$1, $2]"],
+      ["pairs1 , key expr", "$$ = $1.concat([$3, $4])"]
+    ],
     "pairs": [
       ["", "$$ = []"],
-      ["pairs key expr", "$$ = $1.concat([$2, $3])"]
+      ["pairs1", "$$ = $1"],
+      ["pairs1 ,", "$$ = $1"]
+    ],
+    "elifs": [
+      ["expr { code }", "$$ = [$1, $3]"],
+      ["elifs ELIF expr { code }", "$$ = $1.concat([$3, $5])"]
     ],
     "expr": [
       ["STRING", "$$ = eval($1);"],
@@ -111,9 +134,10 @@
       ["<< expr >>", "$$ = [yy.forms.buf, $2]"],
       ["{ params | code }", "$$ = [yy.forms.def, $2, $4]"],
       ["{ | code }", "$$ = [yy.forms.def, []].concat($3)"],
-      ["[ code ]", "$$ = [yy.forms.array, $2]"],
+      ["[ list ]", "$$ = [yy.forms.array, $2]"],
       ["{ pairs }", "$$ = [yy.forms.object, $2]"],
-      ["expr ( code )", "$$ = [yy.forms.call, $1, $3]"],
+      ["expr ( list )", "$$ = [yy.forms.call, $1, $3]"],
+      ["( code )", "$$ = $2"],
 
       ["VAR IDENT = expr", "$$ = [yy.forms.var, $2, $4]"],
       ["IDENT = expr", "$$ = [yy.forms.assign, $1, $3]"],

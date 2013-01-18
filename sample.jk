@@ -5,7 +5,7 @@
 10
 
 -- boolean literals
-true false
+true; false
 
 -- null literal
 null
@@ -34,55 +34,55 @@ null
 @fn
 
 -- Symbol Literal
-:these :are :symbols
+:these; :are; :symbols
 
 -- Native Code Literal
 $print
 
 -- array literal
-[[0 1 0 1]
- [1 0 0 1]
- [0 1 1 0]
- [0 0 0 1]]
+[[0, 1, 0, 1],
+ [1, 0, 0, 1],
+ [0, 1, 1, 0],
+ [0, 0, 0, 1]]
 
 -- object literal
-{ name: "Tim" age: 30 }
+{ name: "Tim", age: 30 }
 
 -- integer lookup shorthand
 matrix.0.2
 -- Aliases to:
 matrix(0)(2)
 -- Which is really
-[@call [@call matrix 0] 2]
+[@call, [@call, matrix, 0], 2]
 
 -- string lookup shorthand
 person.name
 -- Aliases to:
 person("name")
 -- which is
-[@call person "name"]
+[@call, person, "name"]
 
 -- range lookup
 list(1:3)
 -- is also
-[@call list 1:3]
+[@call, list, 1:3]
 
 
 -- dynamic array and object lookup
 matrix(row)(column)
 person(key)
 --
-[@call [@call matrix row] column]
-[@call person key]
+[@call, [@call, matrix, row], column]
+[@call, person, key]
 
 -- list expressions
-var list = [1 2 3 4 5]
+var list = [1, 2, 3, 4, 5]
 map x in list if x % 2 {
   x * x
 } --> (1 9 25)
 --
-[@var list [1 2 3 4 5]]
-[@for x list [@call x "%" 2] [@call x "*" x]]
+[@var, list, [1, 2, 3, 4, 5]]
+[@for, x, list, [@call, x, "%", 2], [@call, x, "*", x]]
 
 -- A generator list that counts from 1 to n
 var count = {n|
@@ -91,18 +91,18 @@ var count = {n|
   }
 }
 --
-[@var count
-  [@def [n]
-    [@def [i]
-      [@if [@call i "<" n] [@call i "+" 1]]
+[@var, count,
+  [@def, [n],
+    [@def, [i],
+      [@if, [@call, i, "<", n], [@call, i, "+", 1]]
     ]
   ]
 ]
 
 -- Use the custom list in a list expression
-map x in count(9) if x % 2 { x * 2 } --> (2 6 10 14 18)
+map x in count(9) if x % 2 { x * 2 } --> [2, 6, 10, 14, 18]
 --
-[@map x [@call count 9] [@call x "%" 2] [@call x "*" 2]]
+[@map, x, [@call, count, 9], [@call, x, "%", 2], [@call, x, "*", 2]]
 
 -- if..elif..else expression
 if a < 4 {
@@ -113,16 +113,13 @@ if a < 4 {
   "medium"
 }
 --
-[@if [@call a "<" 4] [@block
+[@if, [@call, a, "<", 4], [@block,
   "small"
-] [@call a ">" 10] [@block
+], [@call, a, ">", 10], [@block,
   "large"
-] [@block
+], [@block,
   "medium"
 ]]
-
---
-[@if [@call a "<" 4] [@block "small"]]
 
 -- while loop
 var i = 0
@@ -131,10 +128,10 @@ while i < 10 {
   i = i + 1
 }
 --
-[@var i 0]
-[@while [@call i "<" 10] [@block
-  [@call print i]
-  [@assign i [@call i "+" 1]]
+[@var, i, 0]
+[@while, [@call, i, "<", 10], [@block,
+  [@call, print, i],
+  [@assign, i, [@call, i, "+", 1]]
 ]]
 
 -- each loop expression
@@ -149,38 +146,38 @@ map x in list if x % 2 {
 
 -- Lambda expressions
 {x| x * x}
-{a b| a + b}
+{a, b| a + b}
 {| "Hello"}
 --
-[@def [x] [@mul x x]]
-[@def [a b] [@add a b]]
-[@def [] "Hello"]
+[@def, [x], [@mul, x, x]]
+[@def, [a, b], [@add, a, b]]
+[@def, [], "Hello"]
 
 -- Bits of the coffeescript example ported
 var number = 42
 var opposite = true
 --
-[@var number 42]
-[@var opposite true]
+[@var, number, 42]
+[@var, opposite, true]
 
 if opposite { number = -42 }
 --
-[@if opposite [@assign number -42]]
+[@if, opposite, [@assign, number, -42]]
 
 var square = {x| x * x}
 --
-[@var square [@def [x] [@mul x x]]]
+[@var, square, [@def, [x], [@mul, x, x]]]
 
 var math = {
-  root: Math.sqrt
-  square: square
+  root: Math.sqrt,
+  square: square,
   cube: {x| x * square(x)}
 }
 --
-[@var :math [@map
-  "root" [@call :Math "sqrt"]
-  "square" :square
-  "cube" [@def [:x] [@mul :x [@call :square :x]]]
+[@var, :math, [@map,
+  "root", [@call, :Math, "sqrt"],
+  "square", :square,
+  "cube", [@def, [:x], [@mul, :x, [@call, :square, :x]]]
 ]]
 
 -- Early function return
