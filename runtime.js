@@ -3,8 +3,10 @@ var parse;
 var assert = require('assert');
 
 var forms = exports.forms = {};
-[ "def", "fn", "call", "return", "abort",
-  "var", "get", "set", "assign",
+[ "class", "on", "def", "fn",
+  "var", "assign",
+  "call", "send", "get", "set",
+  "return", "abort",
   "if", "while", "for", "map",
   "buf", "array", "object"
 ].forEach(function (name) {
@@ -79,10 +81,17 @@ var objectMethods = {
   get: function (obj, key) {
     return hasOwn.call(obj, key) ? obj[key] : null;
   },
-  set: function (obj, key, value) {
+  set: function (obj, value, key) {
     return obj[key] = value;
   },
 };
+var arrayMethods = {
+  length: function (obj) {
+    return obj.length;
+  }
+};
+arrayMethods.get = objectMethods.get;
+arrayMethods.set = objectMethods.set;
 var genericMethods = {
   "<": function (val, other) {
     return val < other;
@@ -213,11 +222,11 @@ Scope.prototype.return = function (val) {
 };
 
 Scope.prototype.abort = function (message) {
-  throw message;
+  throw new Error(message);
 };
 
 Scope.prototype.var = function (name, value) {
-  // console.log("VAR", name, value);
+  console.log("VAR", name, value);
   if (hasOwn.call(this.scope, name)) {
     return this.abort("Attempt to redeclare local variable '" + name + "'");
   }
@@ -234,14 +243,14 @@ Scope.prototype.assign = function (name, value) {
   return this.abort("Attempt to access undefined variable '" + name + "'");
 };
 
-Scope.prototype.get = function (obj, key) {
+Scope.prototype.get = function (obj, keys) {
   // console.log("GET", obj, key);
-  return this.call(obj, ["get", key]);
+  return this.call(obj, ["get"].concat(keys));
 };
 
-Scope.prototype.set = function (obj, key, value) {
+Scope.prototype.set = function (obj, keys, value) {
   // console.log("SET", obj, key, value);
-  return this.call(obj, ["set", key, value]);
+  return this.call(obj, ["set", value].concat(keys));
 };
 
 Scope.prototype.if = function (pairs, last) {
@@ -290,7 +299,7 @@ var inspect = require('util').inspect;
 Scope.prototype.eval = function (string) {
   var codes = parse(string);
   console.log(inspect(codes, false, 10, true));
-  return this.runCodes(codes);
+  // return this.runCodes(codes);
 };
 
 exports.eval = function (string) {

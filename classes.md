@@ -2,25 +2,29 @@
 
 All types have these
 
+## "class"
+
+Returns a string representation of the class of the object.
+
 ## "!="
 
-`self != tobool(other)`
+`self != other`
 
 ## "=="
 
-`self == tobool(other)`
+`self == other`
 
-## "&&"
+## "&&" - AND
 
-`self && tobool(other)`
+`tobool(self) && tobool(other)`
 
-## "||"
+## "||" - OR
 
-`self || tobool(other)`
+`tobool(self) || tobool(other)`
 
-## "^^"
+## "^^" - XOR
 
-`self ^^ tobool(other)`
+`tobool(self) ^^ tobool(other)`
 
 
 # Integer
@@ -310,6 +314,12 @@ Returns the AST of the function as nested lists.  Modifications to this list wil
 ## "clone"
 
 This makes a deep clone of the function keeping the same closure reference.
+
+# NativeFunction
+
+## "call" (...)
+
+Native functions can be called.  Everything else about them is opaque.
 
 # Class
 
