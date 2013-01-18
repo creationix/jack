@@ -76,7 +76,7 @@
       ["params IDENT", "$$ = $1.concat([$2])"]
     ],
     "elifs": [
-      ["", "$$ = []"],
+      ["expr { code }", "$$ = [$1, $3]"],
       ["elifs ELIF expr { code }", "$$ = $1.concat([$3, $5])"]
     ],
     "key": [
@@ -98,22 +98,22 @@
       ["SSYMBOL", "$$ = yy.Symbol(':' + eval($1.substr(1)));"],
       ["SYMBOL", "$$ = yy.Symbol($1);"],
       ["NATIVE_CODE", "$$ = yy.NativeCode($1.substr(1));"],
-      ["expr BINOP1 expr", "$$ = [yy.forms.call, $1, $2, $3]"],
-      ["expr BINOP2 expr", "$$ = [yy.forms.call, $1, $2, $3]"],
-      ["expr BINOP3 expr", "$$ = [yy.forms.call, $1, $2, $3]"],
-      ["expr BINOP4 expr", "$$ = [yy.forms.call, $1, $2, $3]"],
-      ["expr BINOP5 expr", "$$ = [yy.forms.call, $1, $2, $3]"],
-      ["expr BINOP6 expr", "$$ = [yy.forms.call, $1, $2, $3]"],
-      ["~ expr", "$$ = [yy.forms.call, $1, $1]"],
-      ["expr IGET", "$$ = [yy.forms.call, $1, parseInt($2.substr(1), 10)]"],
-      ["expr GET", "$$ = [yy.forms.call, $1, $2.substr(1)]"],
+      ["expr BINOP1 expr", "$$ = [yy.forms.call, $1, [$2, $3]]"],
+      ["expr BINOP2 expr", "$$ = [yy.forms.call, $1, [$2, $3]]"],
+      ["expr BINOP3 expr", "$$ = [yy.forms.call, $1, [$2, $3]]"],
+      ["expr BINOP4 expr", "$$ = [yy.forms.call, $1, [$2, $3]]"],
+      ["expr BINOP5 expr", "$$ = [yy.forms.call, $1, [$2, $3]]"],
+      ["expr BINOP6 expr", "$$ = [yy.forms.call, $1, [$2, $3]]"],
+      ["~ expr", "$$ = [yy.forms.call, $1, [$1]]"],
+      ["expr IGET", "$$ = [yy.forms.call, $1, [parseInt($2.substr(1), 10)]]"],
+      ["expr GET", "$$ = [yy.forms.call, $1, [$2.substr(1)]]"],
 
       ["<< expr >>", "$$ = [yy.forms.buf, $2]"],
       ["{ params | code }", "$$ = [yy.forms.def, $2, $4]"],
       ["{ | code }", "$$ = [yy.forms.def, []].concat($3)"],
-      ["[ code ]", "$$ = [yy.forms.array].concat($2)"],
-      ["{ pairs }", "$$ = [yy.forms.object].concat($2)"],
-      ["expr ( code )", "$$ = [yy.forms.call, $1].concat($3)"],
+      ["[ code ]", "$$ = [yy.forms.array, $2]"],
+      ["{ pairs }", "$$ = [yy.forms.object, $2]"],
+      ["expr ( code )", "$$ = [yy.forms.call, $1, $3]"],
 
       ["VAR IDENT = expr", "$$ = [yy.forms.var, $2, $4]"],
       ["IDENT = expr", "$$ = [yy.forms.assign, $1, $3]"],
@@ -121,8 +121,8 @@
       ["MAP IDENT IN expr { code }", "$$ = [yy.forms.map, $2, $4, true, $6]"],
       ["FOR IDENT IN expr IF expr { code }", "$$ = [yy.forms.for, $2, $4, $6, $8]"],
       ["FOR IDENT IN expr { code }", "$$ = [yy.forms.for, $2, $4, true, $6]"],
-      ["IF expr { code } elifs", "$$ = [yy.forms.if, $2, $4].concat($6)"],
-      ["IF expr { code } elifs ELSE { code }", "$$ = [yy.forms.if, $2, $4].concat($6).concat([$8])"],
+      ["IF elifs", "$$ = [yy.forms.if, $2]"],
+      ["IF elifs ELSE { code }", "$$ = [yy.forms.if, $2, $5]"],
       ["WHILE expr { code }", "$$ = [yy.forms.while, $2, $4]"]
     ],
     "statement": [

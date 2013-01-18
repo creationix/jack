@@ -72,168 +72,205 @@ NativeCode("print", function (vm) {
 
 exports.Buffer = Buffer;
 
-exports.VM = VM;
-function VM(parent) {
-  this.scope = Object.create(parent);
+function getForm(list) {
+  if (!(Array.isArray(list) && list[0] instanceof Form)) return null;
+  return list[0].name;
 }
-VM.prototype.getLocal = function (name) {
-  if (name in this.scope) {
-    return this.scope[name];
-  }
-  return this.abort("Attempt to access undefined variable '" + name + "'.");
-};
-// Assign a local variable
-VM.prototype.setLocal = function (name, value) {
-  function find(scope) {
-    console.log("SET", name, scope);
-    var index = scope.read(name);
-    if (index === null) {
-      var parent = scope.get(0);
-      if (parent === null) {
-        return this.abort("Attempt to access undefined variable '" + name + "'.");
-      }
-      return find.call(this, parent);
-    }
-    return scope.set(index, value);
-  }
-  return find.call(this, this.scope);
-};
-VM.prototype.defineLocal = function (name, value) {
-  var index = this.scope.read(name);
-  if (index !== null) return this.abort("Attempt to redefine '" + name + "'' local variable.");
-  return this.scope.aset(name, value);
-};
-VM.prototype.run = function (code) {
-  if (code instanceof NativeCode) {
-    return code.fn(this);
+
+function Scope(parent) {
+  this.scope = Object.create(parent || null);
+  this.stack = [];
+}
+
+Scope.prototype.run = function (code) {
+  if (Array.isArray(code) && code[0] instanceof Form) {
+    return this[code[0].name].apply(this, code.slice(1));
   }
   if (code instanceof Symbol) {
-    return this.getLocal(code.name);
-  }
-  if (Array.isArray(code)) {
-    var first = code[0];
-    if (first instanceof Form) {
-      var fn = this[first.name];
-      if (fn === undefined) throw new Error("TODO: Implement " + first.name + " form");
-      return fn.apply(this, code.slice(1));
+    if (code.name in this.scope) {
+      return this.scope[code.name];
     }
+    return this.abort("Attempt to access undefined variable '" + code.name + "'");
   }
   return code;
 };
 
-var slice = Array.prototype.slice;
-
-VM.prototype.let = function (name, value) {
-  value = this.run(value);
-  this.defineLocal(name, value);
-  return value;
-};
-VM.prototype.def = function () {
-  return new List([forms.fn, this.scope].concat(slice.call(arguments)));
-};
-VM.prototype.add = function (a, b) {
-  return this.run(a) + this.run(b);
-};
-VM.prototype.sub = function (a, b) {
-  return this.run(a) - this.run(b);
-};
-VM.prototype.and = function (a, b) {
-  return this.run(a) && this.run(b);
-};
-VM.prototype.or = function (a, b) {
-  return this.run(a) || this.run(b);
-};
-VM.prototype.xor = function (a, b) {
-  return !this.run(a) !== !this.run(b);
-};
-VM.prototype.eq = function (a, b) {
-  return this.run(a) === this.run(b);
-};
-VM.prototype.lte = function (a, b) {
-  return this.run(a) <= this.run(b);
-};
-VM.prototype.aget = function (list, key) {
-  list = this.run(list);
-  key = this.run(key);
-  return list.aget(key);
-};
-VM.prototype.aset = function (list, key, value) {
-  return this.run(list).aset(this.run(key), this.run(value));
-}
-VM.prototype.assign = function (variable, value) {
-  variable = this.run(variable);
-  value = this.run(value);
-  return this.setLocal(variable, value);
-};
-VM.prototype.block = function () {
-  var codes = new List(slice.call(arguments));
-  return this.runCodes(codes);
-};
-VM.prototype.if = function () {
-  for (var i = 0, l = arguments.length; i + 1 < l; i += 2) {
-    var cond = this.run(arguments[i]);
-    if (this.run(arguments[i])) {
-      return this.run(arguments[i + 1]);
-    }
-  }
-  if (i < l) {
-    return this.run(arguments[i]);
-  }
-  return null;
-}
-VM.prototype.call = function (fn) {
-  var args = new List(slice.call(arguments, 1).map(function (arg) {
-    return this.run(arg);
-  }, this));
-  fn = this.run(fn);
-  var form = fn.get(0);
-  assert(form instanceof Form);
-  assert(form.name === "fn");
-  var scope = fn.get(1);
-  assert(scope instanceof List);
-  var child = new VM(scope);
-  var names = fn.get(2);
-  assert(names instanceof List);
-  child.defineLocal("self", fn);
-  for (var i = 0, l = names.length(); i < l; i++) {
-    child.defineLocal(names.get(i), args.get(i));
-  }
-  var codes = fn.slice(3, null);
-  try {
-    return child.runCodes(codes);
-  } catch (err) {
-    if (err === "return") {
-      return this.earlyExit;
-    }
-    throw err;
-  }
-}
-
-VM.prototype.runCodes = function (codes, earlyExit) {
+Scope.prototype.runCodes = function (codes) {
   var result;
   for (var i = 0, l = codes.length; i < l; i++) {
     var code = codes[i];
-    if (Array.isArray(code)) {
-      var first = code[0];
-      if (first instanceof Form && first.name === "return") {
-        this.earlyExit = this.run(code.get(1));
-        throw "return";
-      }
-    }
+    console.log("XXX",code);
     result = this.run(code);
   }
   return result;
-};
-VM.prototype.eval = function (code) {
-  var tree = parse(code);
-  console.log(require('util').inspect(tree, false, 10, true));
-  // return this.runCodes();
-};
-VM.prototype.abort = function (message) {
-  // TODO: show a jack stack trace, not the JS one.
-  throw new Error(message);
+}
+
+var hasOwn = Object.prototype.hasOwnProperty;
+
+Scope.prototype.def = function (args, code) {
+  return [forms.fn, this.scope, args, code];
 };
 
+Scope.prototype.fn = function () {
+  throw new Error("TODO: Implement fn");
+};
+
+Scope.prototype.call = function (fn, args) {
+  fn = this.run(fn);
+  args = args.map(this.run, this);
+  console.log("CALL", fn, args);
+  if (Array.isArray(fn) && fn[0] instanceof Form && fn[0].name === "fn") {
+    var child = new Scope(this.scope);
+    var scope = fn[1];
+    var names = fn[2];
+    var codes = fn[3];
+    child.scope.self = fn;
+    for (var i = 0, l = names.length; i < l; i++) {
+      child.var(names[i], args[i]);
+    }
+    var result;
+    try {
+      result = child.runCodes(codes);
+    } catch (err) {
+      if (err.code === "RETURN") {
+        result = this.returnValue;
+        delete this.returnValue;
+        return;
+      }
+      throw err;
+    }
+    return result;
+  }
+  if (fn === null) {
+    if (args.length !== 2) {
+      return this.abort("Null must be called with 2 arguments");
+    }
+    var op = args[0];
+    var value = args[1];
+    switch (op) {
+      case "==": return fn === value;
+      case "~=": return fn !== value;
+      default: throw new Error("TODO: Implement null " + op);
+    }
+  }
+  if (Array.isArray(fn)) {
+    throw new Error("TODO: call arrays");
+  }
+  if (typeof fn === "object") {
+    if (args.length === 0) {
+      return Object.keys(fn);
+    }
+    if (args.length === 1) {
+      var key = args[0];
+      if (hasOwn.call(fn, key)) return fn[key];
+      return null;
+    }
+    if (args.length === 2) {
+      return fn[args[0]] = args[1];
+    }
+    return this.abort("Objects must be called with 0, 1, or 2 arguments");
+  }
+  if (typeof fn === "number") {
+    if (args.length !== 2) {
+      return this.abort("Integers must be called with 2 arguments");
+    }
+    var op = args[0];
+    var value = args[1];
+    switch (op) {
+      case "<=": return fn <= value;
+      case "<": return fn < value;
+      case ">=": return fn >= value;
+      case ">": return fn > value;
+      case "==": return fn === value;
+      case "~=": return fn !== value;
+
+      case "+": return fn + value;
+      case "-": return fn - value;
+      case "*": return fn * value;
+      case "/": return fn / value;
+      case "^": return Math.pow(fn, value);
+      case "%": return fn % value;
+
+      default: throw new Error("TODO: Implement number " + op);
+    }
+    console.log(args);
+  }
+  console.log(fn);
+  throw new Error("TODO: implement call");
+};
+
+Scope.prototype.return = function (val) {
+  this.returnValue = this.run(val);
+  throw {code:"RETURN"};
+};
+
+Scope.prototype.abort = function (message) {
+  throw message;
+};
+
+Scope.prototype.var = function (name, value) {
+  if (hasOwn.call(this.scope, name)) {
+    this.abort("Attempt to redeclare local variable '" + name + "'");
+  }
+  return this.scope[name] = this.run(value);
+};
+
+Scope.prototype.assign = function () {
+  throw new Error("TODO: Implement assign");
+};
+
+Scope.prototype.if = function (pairs, last) {
+  for (var i = 0, l = pairs.length; i < l; i += 2) {
+    var cond = this.run(pairs[i]);
+    if (cond) {
+      return this.runCodes(pairs[i + 1]);
+    }
+  }
+  if (last !== undefined) {
+    return this.runCodes(last);
+  }
+  return null;
+};
+
+Scope.prototype.while = function () {
+  throw new Error("TODO: Implement while");
+};
+
+Scope.prototype.for = function () {
+  throw new Error("TODO: Implement for");
+};
+
+Scope.prototype.map = function () {
+  throw new Error("TODO: Implement map");
+};
+
+Scope.prototype.buf = function () {
+  throw new Error("TODO: Implement buf");
+};
+
+Scope.prototype.array = function (arr) {
+  return arr.slice();
+};
+
+Scope.prototype.object = function (pairs) {
+  var value = Object.create(null);
+  for (var i = 0, l = pairs.length; i < l; i += 2) {
+    value[this.run(pairs[i])] = this.run(pairs[i + 1]);
+  }
+  return value;
+};
+
+
+
+Scope.prototype.eval = function (string) {
+  var codes = parse(string);
+  return this.runCodes(codes);
+};
+
+exports.eval = function (string) {
+  var scope = new Scope();
+  return scope.eval(string);
+};
 
 exports.attachParser = function (parser) {
   parser.yy = exports;
