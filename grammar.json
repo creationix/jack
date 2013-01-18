@@ -32,12 +32,12 @@
       ["(?:\\*|\\/|\\^|%)",               "return 'BINOP1'"],
       ["(?:\\+|-)",                       "return 'BINOP2'"],
       ["(?:<=|<|>=|>)",                   "return 'BINOP3'"],
-      ["(?:~=|==)",                       "return 'BINOP4'"],
+      ["(?:!=|==)",                       "return 'BINOP4'"],
       ["(?:&&)",                          "return 'BINOP5'"],
       ["(?:\\|\\||\\^\\^)",               "return 'BINOP6'"],
       [",\\s*",                           "return ','"],
       ["\\s*\\.",                         "return '.'"],
-      ["~",                               "return '~'"],
+      ["!",                               "return '!'"],
       ["=",                               "return '='"],
       ["\\[\\s*",                         "return '['"],
       ["\\s*\\]",                         "return ']'"],
@@ -60,7 +60,7 @@
     ["left", "BINOP3"],
     ["left", "BINOP2"],
     ["left", "BINOP1"],
-    ["right", "~"],
+    ["right", "!"],
     ["left", ".", "[", "("]
   ],
 
@@ -94,7 +94,7 @@
       ["params , IDENT", "$$ = $1.concat([$2])"]
     ],
     "key": [
-      ["IDENT :", "$$ = $1.substr(0, $1)"],
+      ["IDENT :", "$$ = $1"],
       ["STRING :", "$$ = eval($1)"],
       ["[ expr ] :", "$$ = $2"]
     ],
@@ -110,6 +110,12 @@
     "elifs": [
       ["expr { code }", "$$ = [$1, $3]"],
       ["elifs ELIF expr { code }", "$$ = $1.concat([$3, $5])"]
+    ],
+    "chain": [
+      ["IDENT . IDENT", "$$ = [$1, $2]"],
+      ["IDENT [ expr ]", "$$ = [$1, $2]"],
+      ["chain . IDENT", "$$ = $1.concat([$3])"],
+      ["chain [ expr ]", "$$ = $1.concat([$3])"]
     ],
     "expr": [
       ["STRING", "$$ = eval($1);"],
@@ -129,7 +135,7 @@
       ["expr BINOP4 expr", "$$ = [yy.forms.call, $1, [$2, $3]]"],
       ["expr BINOP5 expr", "$$ = [yy.forms.call, $1, [$2, $3]]"],
       ["expr BINOP6 expr", "$$ = [yy.forms.call, $1, [$2, $3]]"],
-      ["~ expr", "$$ = [yy.forms.call, $1, [$1]]"],
+      ["! expr", "$$ = [yy.forms.call, $2, [$1]]"],
       ["expr . IDENT", "$$ = [yy.forms.call, $1, ['get', $3]]"],
       ["expr [ expr ]", "$$ = [yy.forms.call, $1, ['get', $3]]"],
       ["expr . IDENT = expr", "$$ = [yy.forms.call, $1, ['set', $3, $5]]"],
@@ -141,7 +147,7 @@
       ["[ list ]", "$$ = [yy.forms.array, $2]"],
       ["{ pairs }", "$$ = [yy.forms.object, $2]"],
       ["expr ( list )", "$$ = [yy.forms.call, $1, $3]"],
-      ["( code )", "$$ = $2"],
+      ["( expr )", "$$ = $2"],
 
       ["VAR IDENT = expr", "$$ = [yy.forms.var, $2, $4]"],
       ["IDENT = expr", "$$ = [yy.forms.assign, $1, $3]"],

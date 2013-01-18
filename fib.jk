@@ -9,11 +9,11 @@ var fib = {i|
 
   -- Then look in the cache and return if it's already there
   var value = cache[i]
-  if value ~= null { return value }
+  if value != null { return value }
 
   -- If not, calculate the new value, store in the cache and return
-  cache[i] = self(i - 1) + self(i - 2)
+  cache[i] = (self(i - 1) + self(i - 2))
 }
 
 -- Call the function and return the fib of 10
-fib(10)
+fib(42)

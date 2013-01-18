@@ -72,6 +72,58 @@ NativeCode("print", function (vm) {
 
 exports.Buffer = Buffer;
 
+var objectMethods = {
+  keys: function (obj) {
+    return Object.keys(obj);
+  },
+  get: function (obj, key) {
+    return hasOwn.call(obj, key) ? obj[key] : null;
+  },
+  set: function (obj, key, value) {
+    return obj[key] = value;
+  },
+};
+var genericMethods = {
+  "<": function (val, other) {
+    return val < other;
+  },
+  "<=": function (val, other) {
+    return val <= other;
+  },
+  ">": function (val, other) {
+    return val < other;
+  },
+  ">=": function (val, other) {
+    return val >= other;
+  },
+  "==": function (val, other) {
+    return val === other;
+  },
+  "!=": function (val, other) {
+    return val !== other;
+  },
+};
+var integerMethods = {
+  "+": function (num, other) {
+    return num + other;
+  },
+  "-": function (num, other) {
+    return num - other;
+  },
+  "*": function (num, other) {
+    return num * other;
+  },
+  "/": function (num, other) {
+    return num / other;
+  },
+  "^": function (num, other) {
+    return Math.pow(num, other);
+  },
+  "%": function (num, other) {
+    return num % other;
+  },
+};
+
 function getForm(list) {
   if (!(Array.isArray(list) && list[0] instanceof Form)) return null;
   return list[0].name;
@@ -99,7 +151,6 @@ Scope.prototype.runCodes = function (codes) {
   var result;
   for (var i = 0, l = codes.length; i < l; i++) {
     var code = codes[i];
-    console.log("XXX",code);
     result = this.run(code);
   }
   return result;
@@ -115,16 +166,15 @@ Scope.prototype.fn = function () {
   throw new Error("TODO: Implement fn");
 };
 
-Scope.prototype.call = function (fn, args) {
-  fn = this.run(fn);
+Scope.prototype.call = function (val, args) {
   args = args.map(this.run, this);
-  console.log("CALL", fn, args);
-  if (Array.isArray(fn) && fn[0] instanceof Form && fn[0].name === "fn") {
+  val = this.run(val);
+  if (Array.isArray(val) && val[0] instanceof Form && val[0].name === "fn") {
     var child = new Scope(this.scope);
-    var scope = fn[1];
-    var names = fn[2];
-    var codes = fn[3];
-    child.scope.self = fn;
+    var scope = val[1];
+    var names = val[2];
+    var codes = val[3];
+    child.scope.self = val;
     for (var i = 0, l = names.length; i < l; i++) {
       child.var(names[i], args[i]);
     }
@@ -133,75 +183,31 @@ Scope.prototype.call = function (fn, args) {
       result = child.runCodes(codes);
     } catch (err) {
       if (err.code === "RETURN") {
-        result = this.returnValue;
-        delete this.returnValue;
-        return;
+        return err.value;
       }
       throw err;
     }
     return result;
   }
-  if (fn === null) {
-    if (args.length !== 2) {
-      return this.abort("Null must be called with 2 arguments");
-    }
-    var op = args[0];
-    var value = args[1];
-    switch (op) {
-      case "==": return fn === value;
-      case "~=": return fn !== value;
-      default: throw new Error("TODO: Implement null " + op);
-    }
+  var action = args[0];
+  var method;
+  if (typeof val === "number") {
+    method = integerMethods[action];
+  } else if (Array.isArray(val)) {
+    method = arrayMethods[action];
+  } else if (val && typeof val === "object") {
+    method = objectMethods[action];
   }
-  if (Array.isArray(fn)) {
-    throw new Error("TODO: call arrays");
+  if (!method) method = genericMethods[action];
+  if (!method) {
+    return this.abort("Unknown method '" + action + "' for " + val);
   }
-  if (typeof fn === "object") {
-    if (args.length === 0) {
-      return Object.keys(fn);
-    }
-    if (args.length === 1) {
-      var key = args[0];
-      if (hasOwn.call(fn, key)) return fn[key];
-      return null;
-    }
-    if (args.length === 2) {
-      return fn[args[0]] = args[1];
-    }
-    return this.abort("Objects must be called with 0, 1, or 2 arguments");
-  }
-  if (typeof fn === "number") {
-    if (args.length !== 2) {
-      return this.abort("Integers must be called with 2 arguments");
-    }
-    var op = args[0];
-    var value = args[1];
-    switch (op) {
-      case "<=": return fn <= value;
-      case "<": return fn < value;
-      case ">=": return fn >= value;
-      case ">": return fn > value;
-      case "==": return fn === value;
-      case "~=": return fn !== value;
-
-      case "+": return fn + value;
-      case "-": return fn - value;
-      case "*": return fn * value;
-      case "/": return fn / value;
-      case "^": return Math.pow(fn, value);
-      case "%": return fn % value;
-
-      default: throw new Error("TODO: Implement number " + op);
-    }
-    console.log(args);
-  }
-  console.log(fn);
-  throw new Error("TODO: implement call");
+  var res = method.apply(this, [val].concat(args.slice(1)));
+  return res;
 };
 
 Scope.prototype.return = function (val) {
-  this.returnValue = this.run(val);
-  throw {code:"RETURN"};
+  throw {code:"RETURN", value: this.run(val)};
 };
 
 Scope.prototype.abort = function (message) {
@@ -260,10 +266,11 @@ Scope.prototype.object = function (pairs) {
   return value;
 };
 
-
+var inspect = require('util').inspect;
 
 Scope.prototype.eval = function (string) {
   var codes = parse(string);
+  console.log(inspect(codes, false, 10, true));
   return this.runCodes(codes);
 };
 
