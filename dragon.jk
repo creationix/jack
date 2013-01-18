@@ -1,0 +1,111 @@
+
+class Dragon {name|
+
+  var asleep = false
+  var stuff_in_belly     = 10 -- He's full.
+  var stuff_in_intestine =  0 -- He doesn't need to go.
+
+  print(name + ' is born.')
+
+  on feed {|
+    print('You feed ' + name + '.')
+    stuff_in_belly = 10
+    passage_of_time()
+  }
+
+  on walk {|
+    print('You walk ' + name + ".")
+    stuff_in_intestine = 0
+    passage_of_time
+  }
+
+  on put_to_bed {|
+    print('You put ' + name + ' to bed.')
+    asleep = true
+    3.times({|
+      if asleep {
+        passage_of_time()
+      }
+      if asleep {
+        print(name + ' snores, filling the room with smoke.')
+      }
+    })
+    if asleep {
+      asleep = false
+      print(name + ' wakes up slowly.')
+    }
+  }
+
+  on toss {|
+    print('You toss ' + name + ' up into the air.')
+    print('He giggles, which singes your eyebrows.')
+    passage_of_time()
+  }
+
+  on rock {|
+    print('You rock ' + name + ' gently.')
+    asleep = true
+    print('He briefly dozes off...')
+    passage_of_time()
+    if asleep {
+      asleep = false
+      print('...but wakes when you stop.')
+    }
+  }
+
+  def hungry? {|
+    stuff_in_belly <= 2
+  }
+
+  def poopy? {|
+    stuff_in_intestine >= 8
+  }
+
+  def passage_of_time {|
+    if stuff_in_belly > 0 {
+      -- Move food from belly to intestine
+      stuff_in_belly     = stuff_in_belly     - 1
+      stuff_in_intestine = stuff_in_intestine + 1
+    } else { -- Our dragon is starving!
+      if asleep {
+        asleep = false
+        print('He wakes up suddenly!')
+      }
+      print(name + ' is starving! In desperation, he ate YOU!')
+      abort "died"
+    }
+
+    if stuff_in_intestine >= 10 {
+      stuff_in_intestine = 0
+      print('Whoops! ' + name + ' had an accident...')
+    }
+
+    if hungry?() {
+      if asleep {
+        asleep = false
+        print('He wakes up suddenly!')
+      }
+      print(name + "'s stomach grumbles...")
+    }
+
+    if poopy?() {
+      if asleep {
+        asleep = false
+        print('He wakes up suddenly!')
+      }
+      print(name + ' does the potty dance...')
+    }
+  }
+
+}
+
+var pet = Dragon('Norbert')
+pet.feed()
+pet.toss()
+pet.walk()
+pet.put_to_bed()
+pet.rock()
+pet.put_to_bed()
+pet.put_to_bed()
+pet.put_to_bed()
+pet.put_to_bed()
