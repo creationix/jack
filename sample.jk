@@ -21,14 +21,6 @@ null
 -- Empty Buffer literal
 <<1024*1024>> -- allocates 1Mb
 
--- range literals
-: -- whole range
-1: -- all but first item
-:1 -- first item
-2:4 -- 3rd and 4th items
--3: -- last 3 items
-:-3 -- all but last last 3 items
-
 -- Form literal
 @def
 @fn
@@ -50,15 +42,11 @@ $print
 
 -- integer lookup
 matrix[0][2]
--- Aliases to:
-matrix(0)(2)
 -- Which is really
 [@call, [@call, matrix, 0], 2]
 
--- string lookup shorthand
-person.name
--- Aliases to:
-person("name")
+-- string lookup
+person["name"]
 -- which is
 [@call, person, "name"]
 

@@ -20,24 +20,6 @@ Form.prototype.inspect = function () {
   return "\033[36m@" + this.name + "\033[0m";
 };
 
-exports.Range = Range;
-function Range(str) {
-  if (!(this instanceof Range)) { return new Range(str); }
-  var match = str.match(/([^:]*):([^:]*)/);
-  this.start = match[1] ? parseInt(match[1], 10) : null;
-  this.end = match[2] ? parseInt(match[2], 10) : null;
-};
-Range.prototype.inspect = function () {
-  var string = ":";
-  if (this.start !== null) {
-    string = this.start + string;
-  }
-  if (this.end !== null) {
-    string = string + this.end;
-  }
-  return "\033[32;1m" + string + "\033[0m";
-}
-
 exports.Symbol = Symbol;
 var symbols = {};
 function Symbol(name) {
@@ -299,7 +281,7 @@ var inspect = require('util').inspect;
 Scope.prototype.eval = function (string) {
   var codes = parse(string);
   console.log(inspect(codes, false, 10, true));
-  // return this.runCodes(codes);
+  return this.runCodes(codes);
 };
 
 exports.eval = function (string) {
