@@ -4,7 +4,7 @@ var assert = require('assert');
 
 var forms = exports.forms = {};
 [ "def", "fn", "call", "return", "abort",
-  "var", "assign",
+  "var", "get", "set", "assign",
   "if", "while", "for", "map",
   "buf", "array", "object"
 ].forEach(function (name) {
@@ -167,6 +167,7 @@ Scope.prototype.fn = function () {
 };
 
 Scope.prototype.call = function (val, args) {
+  // console.log("CALL", val, args);
   args = args.map(this.run, this);
   val = this.run(val);
   if (Array.isArray(val) && val[0] instanceof Form && val[0].name === "fn") {
@@ -207,6 +208,7 @@ Scope.prototype.call = function (val, args) {
 };
 
 Scope.prototype.return = function (val) {
+  // console.log("RETURN", val);
   throw {code:"RETURN", value: this.run(val)};
 };
 
@@ -215,14 +217,31 @@ Scope.prototype.abort = function (message) {
 };
 
 Scope.prototype.var = function (name, value) {
+  // console.log("VAR", name, value);
   if (hasOwn.call(this.scope, name)) {
-    this.abort("Attempt to redeclare local variable '" + name + "'");
+    return this.abort("Attempt to redeclare local variable '" + name + "'");
   }
   return this.scope[name] = this.run(value);
 };
 
-Scope.prototype.assign = function () {
-  throw new Error("TODO: Implement assign");
+Scope.prototype.assign = function (name, value) {
+  // console.log("ASSIGN", name, value);
+  var scope = this.scope;
+  while (scope) {
+    if (hasOwn.call(scope, name)) return scope[name] = this.run(value);
+    scope = Object.getPrototypeOf(scope);
+  } 
+  return this.abort("Attempt to access undefined variable '" + name + "'");
+};
+
+Scope.prototype.get = function (obj, key) {
+  // console.log("GET", obj, key);
+  return this.call(obj, ["get", key]);
+};
+
+Scope.prototype.set = function (obj, key, value) {
+  // console.log("SET", obj, key, value);
+  return this.call(obj, ["set", key, value]);
 };
 
 Scope.prototype.if = function (pairs, last) {
