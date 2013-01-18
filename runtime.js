@@ -4,8 +4,7 @@ var assert = require('assert');
 
 var forms = exports.forms = {};
 [ "class", "on", "def", "fn",
-  "var", "assign",
-  "call", "send", "get", "set",
+  "var", "assign", "send",
   "return", "abort",
   "if", "while", "for", "map",
   "buf", "array", "object"
