@@ -16,19 +16,17 @@
       ["else\\b",                         "return 'ELSE'"],
       ["while\\b",                        "return 'WHILE'"],
       ["\\$[a-zA-Z_][a-zA-Z0-9_]*",       "return 'NATIVE_CODE'"],
-      ["[a-zA-Z_][a-zA-Z0-9_]*:",         "return 'KEY';"],
       [":\"(?:[^\"\\\\]|\\\\.)*\"",       "return 'SSYMBOL'"],
       [":+[a-zA-Z_][a-zA-Z0-9_]*",        "return 'SYMBOL'"],
       ["@[a-zA-Z_][a-zA-Z0-9_]*",         "return 'FORM'"],
-      ["\"(?:[^\"\\\\]|\\\\.)*\":",       "return 'SKEY'"],
-      ["'(?:[^'\\\\]|\\\\.)*':",          "return 'SKEY'"],
       ["\"(?:[^\"\\\\]|\\\\.)*\"",        "return 'STRING'"],
       ["'(?:[^'\\\\]|\\\\.)*'",           "return 'STRING'"],
-      ["(?:0|-?[1-9][0-9]*)?:(?:0|-?[1-9][0-9]*)?", "return 'RANGE'"],
-      ["\\.(?:0|-?[1-9][0-9]*)",          "return 'IGET'"],
-      ["\\.[a-zA-Z_][a-zA-Z0-9_]*",       "return 'GET'"],
+      ["(?:0|-?[1-9][0-9]*):(?:0|-?[1-9][0-9]*)", "return 'RANGE'"],
+      ["(?:0|-?[1-9][0-9]*):",            "return 'RANGE'"],
+      [":(?:0|-?[1-9][0-9]*)",            "return 'RANGE'"],
       ["[a-zA-Z_][a-zA-Z0-9_]*",          "return 'IDENT'"],
       ["(?:0|-?[1-9][0-9]*)",             "return 'INTEGER'"],
+      [":",                               "return ':'"],
       ["<<",                              "return '<<'"],
       [">>",                              "return '>>'"],
       ["(?:\\*|\\/|\\^|%)",               "return 'BINOP1'"],
@@ -38,6 +36,7 @@
       ["(?:&&)",                          "return 'BINOP5'"],
       ["(?:\\|\\||\\^\\^)",               "return 'BINOP6'"],
       [",\\s*",                           "return ','"],
+      ["\\s*\\.",                         "return '.'"],
       ["~",                               "return '~'"],
       ["=",                               "return '='"],
       ["\\[\\s*",                         "return '['"],
@@ -53,6 +52,7 @@
   },
 
   "operators": [
+    ["left", ","],
     ["right", "="],
     ["left", "BINOP6"],
     ["left", "BINOP5"],
@@ -61,7 +61,7 @@
     ["left", "BINOP2"],
     ["left", "BINOP1"],
     ["right", "~"],
-    ["left", "IGET", "GET", "("]
+    ["left", ".", "[", "("]
   ],
 
   "bnf": {
@@ -94,8 +94,9 @@
       ["params , IDENT", "$$ = $1.concat([$2])"]
     ],
     "key": [
-      ["KEY", "$$ = $1.substr(0, $1.length - 1)"],
-      ["SKEY", "$$ = eval($1.substr(0, $1.length - 1))"]
+      ["IDENT :", "$$ = $1.substr(0, $1)"],
+      ["STRING :", "$$ = eval($1)"],
+      ["[ expr ] :", "$$ = $2"]
     ],
     "pairs1": [
       ["key expr", "$$ = [$1, $2]"],
@@ -117,6 +118,7 @@
       ["CONSTANT", "$$ = $1 === 'true' ? true : $1 === 'false' ? false : null;"],
       ["BUFFER", "$$ = yy.Buffer($1.substr(1, $1.length - 2).split(/\\s+/).map(function (b) { return parseInt(b, 16);}))"],
       ["RANGE", "$$ = yy.Range($1);"],
+      [":", "$$ = yy.Range($1);"],
       ["FORM", "$$ = yy.forms[$1.substr(1)];"],
       ["SSYMBOL", "$$ = yy.Symbol(':' + eval($1.substr(1)));"],
       ["SYMBOL", "$$ = yy.Symbol($1);"],
@@ -128,8 +130,10 @@
       ["expr BINOP5 expr", "$$ = [yy.forms.call, $1, [$2, $3]]"],
       ["expr BINOP6 expr", "$$ = [yy.forms.call, $1, [$2, $3]]"],
       ["~ expr", "$$ = [yy.forms.call, $1, [$1]]"],
-      ["expr IGET", "$$ = [yy.forms.call, $1, [parseInt($2.substr(1), 10)]]"],
-      ["expr GET", "$$ = [yy.forms.call, $1, [$2.substr(1)]]"],
+      ["expr . IDENT", "$$ = [yy.forms.call, $1, ['get', $3]]"],
+      ["expr [ expr ]", "$$ = [yy.forms.call, $1, ['get', $3]]"],
+      ["expr . IDENT = expr", "$$ = [yy.forms.call, $1, ['set', $3, $5]]"],
+      ["expr [ expr ] = expr", "$$ = [yy.forms.call, $1, ['set', $3, $6]]"],
 
       ["<< expr >>", "$$ = [yy.forms.buf, $2]"],
       ["{ params | code }", "$$ = [yy.forms.def, $2, $4]"],

@@ -48,8 +48,8 @@ $print
 -- object literal
 { name: "Tim", age: 30 }
 
--- integer lookup shorthand
-matrix.0.2
+-- integer lookup
+matrix[0][2]
 -- Aliases to:
 matrix(0)(2)
 -- Which is really
@@ -120,6 +120,10 @@ if a < 4 {
 ], [@block,
   "medium"
 ]]
+
+-- get and set syntax with identifier strings
+a.b
+a.b = c
 
 -- while loop
 var i = 0
