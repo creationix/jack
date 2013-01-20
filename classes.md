@@ -31,71 +31,51 @@ Returns a string representation of the class of the object.
 
 ## "+"
 
-`self + tonumber(other)`
+`self + tointeger(other)`
 
 ## "-"
 
-`self - tonumber(other)`
+`self - tointeger(other)`
 
 ## "/"
 
-`self / tonumber(other)`
+`self / tointeger(other)`
 
 ## "*"
 
-`self * tonumber(other)`
+`self * tointeger(other)`
 
 ## "^"
 
-`self ^ tonumber(other)`
+`self ^ tointeger(other)`
 
 ## "%"
 
-`self % tonumber(other)`
+`self % tointeger(other)`
 
 ## "<"
 
-`self < tonumber(other)`
+`self < tointeger(other)`
 
 ## "<="
 
-`self <= tonumber(other)`
+`self <= tointeger(other)`
 
 ## ">"
 
-`self > tonumber(other)`
+`self > tointeger(other)`
 
 ## ">="
 
-`self >= tonumber(other)`
+`self >= tointeger(other)`
 
-## "!="
-
-`self != tonumber(other)`
-
-## "=="
-
-`self == tonumber(other)`
-
-## "&&"
-
-`tobool(self) && tobool(other)`
-
-## "||"
-
-`tobool(self) || tobool(other)`
-
-## "^^"
-
-`tobool(self) ^^ tobool(other)`
-
-## "tonumber"
+## "tointeger"
 
 `self`
 
 ## "tostring" (base)
 
-Convert to string with optional tonumber(base) (defaulting to 10)
+Convert to string with optional tointeger(base) (defaulting to 10)
 error if base < 2 or base > 36
 
 ## "tobool"
@@ -108,7 +88,7 @@ Convert to `true` unless the value is `0`.
 
 Return self
 
-## "tonumber"
+## "tointeger"
 
 Convert to `1` if `true` and `0` if `false`.
 
@@ -124,7 +104,7 @@ Convert to `"true"` if `true` and `"false"` if `false`.
 
 ## "*"
 
-`repeat self tonumber(other) times`
+`repeat self tointeger(other) times`
 
 ## "<"
 
@@ -166,9 +146,9 @@ Convert to `"true"` if `true` and `"false"` if `false`.
 
 return self
 
-## "tonumber" (base)
+## "tointeger" (base)
 
-Attempt to parse as a number (defaulting to base 10, but accept tonumber(base)).
+Attempt to parse as a number (defaulting to base 10, but accept tointeger(base)).
 May fail depending on the input.
 error if base < 2 or base > 36
 
@@ -182,13 +162,13 @@ return number of characters in string
 
 ## "get" (index)
 
-return character at 0-based tonumber(index).
+return character at 0-based tointeger(index).
 Negative indexes count back from end.
 error if out of range
 
 ## "slice" (start, end)
 
-return substr from tonumber(start) to tonumber(end)
+return substr from tointeger(start) to tointeger(end)
 Negative indexes count back from end.
 error if out of range
 
@@ -198,7 +178,7 @@ error if out of range
 
 `"null"`
 
-## "tonumber"
+## "tointeger"
 
 `0`
 
@@ -214,7 +194,7 @@ concat self with tolist(other)
 
 ## "*" (num)
 
-repeat self tonumber(other) times
+repeat self tointeger(other) times
 
 ## "tobool"
 
@@ -226,16 +206,16 @@ Return the number of items
 
 ## "slice" (start, end)
 
-return copy of array from tonumber(start) to tonumber(end)
+return copy of array from tointeger(start) to tointeger(end)
 
 ## "get" (index)
 
-Get item at tonumber(index)
+Get item at tointeger(index)
 error if out of range
 
 ## "set" (value, index)
 
-Set item at tonumber(index) to value
+Set item at tointeger(index) to value
 error if out of range
 
 ## "keys"
@@ -244,13 +224,13 @@ return an array of integers from 0 to length - 1.
 
 ## "insert" (value, index)
 
-otherwise insert value at tonumber(index)
+otherwise insert value at tointeger(index)
 error if out of range
 return value
 
 ## "remove" (index)
 
-remove item at tonumber(index)
+remove item at tointeger(index)
 error if out of range
 
 ## "push" (value)
