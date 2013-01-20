@@ -31,27 +31,6 @@ Symbol.prototype.inspect = function () {
   return "\033[35m:" + this.name + "\033[0m";
 };
 
-exports.NativeCode = NativeCode;
-var nativeCodes = {};
-function NativeCode(name, fn) {
-  if (!fn) {
-    if (nativeCodes[name]) return nativeCodes[name];
-    throw new Error("Unknown native code " + name);
-  }
-  if (!(this instanceof NativeCode)) { return new NativeCode(name, fn); }
-  nativeCodes[name] = this;
-  this.fn = fn;
-  this.name = name;
-}
-NativeCode.prototype.inspect = function () {
-  return "\033[31;1m$" + this.name + "\033[0m";
-};
-
-// Logs a local variable by the name of "val";
-NativeCode("print", function (vm) {
-  console.log(vm.getLocal("val"));
-  return null;
-});
 
 exports.Buffer = Buffer;
 
