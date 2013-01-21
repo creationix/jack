@@ -10,57 +10,35 @@ This is followed by a ULEB128 <http://en.wikipedia.org/wiki/LEB128> byte-length 
 
 # Code Section
 
-The code sections is stored as unstructured data in nested lists.  Each value can be distinguished by the first byte in the value.
+The code sections is stored as unstructured data in nested lists.  Each value can be distinguished by the first byte in the value. Strings are stored using utf8 encoding.
 
- - `00000000` - Nil
- - `0000001X` - Boolean where `X==1` is true and `X==0` is false
- - `0000010X` - Integer `X` is sign bit (1 is negative). The value is stored in the following byte(s) as ULEB128 format.
- - `00001000` - String, Next is the string length as ULEB128 followed by actual data encoded as UTF8 (without surrogate pairs).
- - `00001001` - Buffer, Next is the string length as ULEB128 followed by actual raw data.
- - `00001010` - Symbol, stored the same as string.
- - `00001011` - Name of native code block stored as ASCII string.
- - `00010000` - List. Followed by two ULEB128 numbers, one for number of aliases and one for number of items in list.
-  - Next is the aliases block.  Each alias is a string followed by a ULELB128 number for the index.
-  - Next is the actual raw values. 
- - `01XXXXXX
+00xxxxxx 0x00-0x3f
+  00000000 0x00 - long negative integer, following bytes are ULEB128
+  00000001 0x01 - long positive integer, following bytes are ULEB128
+  00000010 0x02 - long string, first ULEB128 length, then raw data
+  00000011 0x03 - long list, first ULEB128 length, then raw items
+  00000100 0x04 - buffer, ULEB128 length, then raw data
+  00000101 0x05 - Null
+  00000110 0x06 - False
+  00000111 0x07 - True
+  00010000 0x10 - @class
+  00010001 0x11 - @on
+  00010010 0x12 - @def
+  00010011 0x13 - @return
+  00010100 0x14 - @abort
+  00010101 0x15 - @fn
+  00010110 0x16 - @send
+  00010111 0x17 - @var
+  00011000 0x18 - @assign
+  00011001 0x19 - @lookup
+  00011010 0x1a - @if
+  00011011 0x1b - @while
+  00011100 0x1c - @forin
+  00011101 0x1d - @mapin
+  00011110 0x1e - @list
+  00011111 0x1f - @map
+01xxxxxx 0x40-0x7f - small positive int (0-63)
+10xxxxxx 0x80-0xbf - short string (0-63 bytes long) then raw data
+11xxxxxx 0xc0-0xff - short list (0-63 items long) then raw data
 
- - `1XXXXXXX` - Built-in where `X` is a 7-bit instruction code as follows.
-  - `1000 0000` - @add
-  - `1000 0001` - @sub
-  - `1000 0010` - @mul
-  - `1000 0011` - @div
-  - `1000 0100` - @mod
-  - `1000 0101` - @pow
-  - `1000 1000` - @and
-  - `1000 1001` - @or
-  - `1000 1010` - @xor
-  - `1000 1011` - @not
-  - `1000 1100` - @cond
-  - `1000 1101` - @typeof
-  - `1001 0000` - @lte
-  - `1001 0001` - @lt
-  - `1001 0010` - @gte
-  - `1001 0011` - @gt
-  - `1001 0100` - @neq
-  - `1001 0101` - @eq
-  - `1001 1000` - @if
-  - `1001 1001` - @while
-  - `1010 0000` - @def
-  - `1010 0001` - @block
-  - `1010 0010` - @call
-  - `1010 0011` - @return
-  - `1010 0100` - @let
-  - `1010 0101` - @assign
-  - `1010 1111` - @abort
-  - `1011 0000` - @fn
-  - `1100 0000` - @len
-  - `1100 0001` - @keysof
-  - `1100 0010` - @get
-  - `1100 0011` - @set
-  - `1100 0100` - @aget
-  - `1100 0101` - @aset
-  - `1100 0110` - @insert
-  - `1100 0111` - @remove
-  - `1100 1000` - @slice
-  - `1100 1010` - @alias
-  - `1100 1011` - @read
+
