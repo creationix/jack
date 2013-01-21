@@ -5,14 +5,20 @@ var classes = require('./classes');
 
 function Scope(parent) {
   this.scope = Object.create(parent || null);
-  this.stack = [];
 }
 
 Scope.prototype.run = function (code) {
+  // Evaluate form codes
   if (Array.isArray(code)) {
     return this[code[0]].apply(this, code.slice(1));
   }
-  return code;
+  if (typeof code === "number") {
+    return new classes.Integer(code);
+  }
+  if (typeof code === "string") {
+    return new classes.String(code);
+  }
+  throw new Error("Unknown type " + code);
 };
 
 Scope.prototype.runCodes = function (codes) {
@@ -27,12 +33,16 @@ Scope.prototype.runCodes = function (codes) {
 var hasOwn = Object.prototype.hasOwnProperty;
 var slice = Array.prototype.slice;
 
+Scope.prototype.spawn = function () {
+  return new Scope(this.scope);
+};
+
 Scope.prototype.def = function (args, code) {
   return [forms.fn, this.scope, args, code];
 };
 
-Scope.prototype.fn = function () {
-  throw new Error("TODO: Implement fn");
+Scope.prototype.fn = function (names, code) {
+  return new classes.Function(this, names, code);
 };
 
 Scope.prototype.class = function () {
@@ -43,23 +53,24 @@ Scope.prototype.on = function () {
 };
 
 Scope.prototype.send = function (val, message, args) {
-  console.log("SEND", {val:val,message:message,args:args});
+  args = args.map(this.run, this);
+  // console.log("SEND", {val:val,message:message,args:args});
   val = this.run(val);
   return val[message].apply(val, args);
 };
 
 Scope.prototype.return = function (val) {
-  console.log("RETURN", {val:val});
+  // console.log("RETURN", {val:val});
   throw {code:"RETURN", value: this.run(val)};
 };
 
 Scope.prototype.abort = function (message) {
-  console.log("ABORT", {message:message});
+  // console.log("ABORT", {message:message});
   throw new Error(message);
 };
 
 Scope.prototype.var = function (name, value) {
-  console.log("VAR", {name:name,value:value});
+  // console.log("VAR", {name:name,value:value});
   if (hasOwn.call(this.scope, name)) {
     return this.abort("Attempt to redeclare local variable '" + name + "'");
   }
@@ -67,7 +78,7 @@ Scope.prototype.var = function (name, value) {
 };
 
 Scope.prototype.assign = function (name, value) {
-  console.log("ASSIGN", {name:name,value:value});
+  // console.log("ASSIGN", {name:name,value:value});
   var scope = this.scope;
   while (scope) {
     if (hasOwn.call(scope, name)) return scope[name] = this.run(value);
@@ -77,7 +88,7 @@ Scope.prototype.assign = function (name, value) {
 };
 
 Scope.prototype.lookup = function (name) {
-  console.log("LOOKUP", {name:name});
+  // console.log("LOOKUP", {name:name});
   if (name in this.scope) {
     return this.scope[name];
   }
@@ -330,6 +341,5 @@ exports.save = function (tree) {
   var offset = 6;
   uleb128(codeSize);
   encode(tree);
-  console.log(buffer);
   return buffer;
 }

@@ -337,3 +337,33 @@ var Map = exports.Map = (function () {
   };
   return Map;
 }());
+
+var Function = exports.Function = (function () {
+  function Function(parent, names, codes) {
+    this.parent = parent;
+    this.names = names;
+    this.codes = codes;
+  }
+  Function.prototype.call = function () {
+    // console.log("CALL", arguments);
+    var child = this.parent.spawn();
+    for (var i = 0, l = this.names.length; i < l; i++) {
+      var name = this.names[i];
+      if (i < arguments.length) {
+        child.scope[name] = arguments[i];
+      }
+      else {
+        child.scope[name] = new Null();
+      }
+    }
+    try {
+      return child.runCodes(this.codes);
+    } catch (err) {
+      if (err.code === "RETURN") {
+        return err.value;
+      }
+      throw err;
+    }
+  };
+  return Function;
+}());
