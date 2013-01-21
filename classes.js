@@ -1,3 +1,41 @@
+if (typeof WeakMap === "undefined") {
+  // Polyfill that's not actually weak, but does work in a pinch.
+  WeakMap = function WeakMap() {
+    this.keys = [];
+    this.values = [];
+  }
+  WeakMap.prototype.has = function (key) {
+    return this.keys.indexOf(key) >= 0;
+  };
+  WeakMap.prototype.get = function (key, fallback) {
+    var index = this.keys.indexOf(key);
+    if (index >= 0) {
+      return this.values[index];
+    }
+    return fallback;
+  };
+  WeakMap.prototype.set = function (key, value) {
+    var index = this.keys.indexOf(key);
+    if (index >= 0) {
+      this.values[index] = value;
+      return;
+    }
+    this.keys.push(key);
+    this.values.push(value);
+  };
+  WeakMap.prototype.delete = function (key) {
+    var index = this.keys.indexOf(key);
+    if (index >= 0) {
+      this.keys.splice(index, 1);
+      this.values.splice(index, 1);
+    }
+  };
+  WeakMap.prototype.clear = function () {
+    this.keys.length = 0;
+    this.values.length = 0;
+  };
+}
+
 var Integer = exports.Integer = (function () {
   var cache = {};
   function Integer(val) {
