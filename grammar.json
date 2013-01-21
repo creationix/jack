@@ -85,7 +85,7 @@
     ],
     "params": [
       ["IDENT", "$$ = [$1]"],
-      ["params , IDENT", "$$ = $1.concat([$2])"]
+      ["params , IDENT", "$$ = $1.concat([$3])"]
     ],
     "key": [
       ["IDENT :", "$$ = $1"],
@@ -107,7 +107,7 @@
     ],
     "func": [
       ["{ params | code }", "$$ = [$2, $4]"],
-      ["{ | code }", "$$ = [[]].concat($3)"]
+      ["{ | code }", "$$ = [[], $3]"]
     ],
     "block": [
       ["{ code }", "$$ = $2"]
@@ -137,15 +137,15 @@
       ["( expr )", "$$ = $2"],
 
       ["VAR IDENT = expr", "$$ = ['var', $2, $4]"],
-      ["DEF IDENT func", "$$ = ['def', $2].concat($3)"],
-      ["ON IDENT func", "$$ = ['on', $2].concat($3)"],
-      ["CLASS IDENT func", "$$ = ['class', $2].concat($3)"],
+      ["DEF IDENT func", "$$ = ['def', $2, $3]"],
+      ["ON IDENT func", "$$ = ['on', $2, $3]"],
+      ["CLASS IDENT func", "$$ = ['class', $2, $3]"],
       ["MAP IDENT IN expr IF expr block", "$$ = ['mapin', $2, $4, $6, $7]"],
       ["MAP IDENT IN expr block", "$$ = ['mapin', $2, $4, true, $5]"],
       ["FOR IDENT IN expr IF expr block", "$$ = ['forin', $2, $4, $6, $7]"],
       ["FOR IDENT IN expr block", "$$ = ['forin', $2, $4, true, $5]"],
-      ["IF elifs", "$$ = ['if', $2]"],
-      ["IF elifs ELSE block", "$$ = ['if', $2, $4]"],
+      ["IF elifs", "$$ = ['if'].concat($2)"],
+      ["IF elifs ELSE block", "$$ = ['if'].concat($2).concat([$4])"],
       ["WHILE expr block", "$$ = ['while', $2, $3]"]
     ],
     "statement": [
