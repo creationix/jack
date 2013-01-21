@@ -1,6 +1,10 @@
 # Generic methods
 
-All types have these
+All types have these unless overridden locally.
+
+## "send" (name, args)
+
+Sends a custom message with a variable number of args.
 
 ## "class"
 
@@ -16,15 +20,15 @@ Returns a string representation of the class of the object.
 
 ## "&&" - AND
 
-`tobool(self) && tobool(other)`
+`toboolean(self) && toboolean(other)`
 
 ## "||" - OR
 
-`tobool(self) || tobool(other)`
+`toboolean(self) || toboolean(other)`
 
 ## "^^" - XOR
 
-`tobool(self) ^^ tobool(other)`
+`toboolean(self) ^^ toboolean(other)`
 
 
 # Integer
@@ -78,13 +82,13 @@ Returns a string representation of the class of the object.
 Convert to string with optional tointeger(base) (defaulting to 10)
 error if base < 2 or base > 36
 
-## "tobool"
+## "toboolean"
 
 Convert to `true` unless the value is `0`.
 
 # Boolean
 
-## "tobool"
+## "toboolean"
 
 Return self
 
@@ -122,26 +126,6 @@ Convert to `"true"` if `true` and `"false"` if `false`.
 
 `self >= tostring(other)`
 
-## "!="
-
-`self != tostring(other)`
-
-## "=="
-
-`self == tostring(other)`
-
-## "&&"
-
-`tobool(self) && tobool(other)`
-
-## "||
-"
-`tobool(self) || tobool(other)`
-
-## "^^"
-
-`tobool(self) ^^ tobool(other)`
-
 ## "tostring"
 
 return self
@@ -152,7 +136,7 @@ Attempt to parse as a number (defaulting to base 10, but accept tointeger(base))
 May fail depending on the input.
 error if base < 2 or base > 36
 
-## "tobool"
+## "toboolean"
 
 true for everything except empty strings.
 
@@ -182,7 +166,7 @@ error if out of range
 
 `0`
 
-## "tobool"
+## "toboolean"
 
 `false`
 
@@ -196,7 +180,7 @@ concat self with tolist(other)
 
 repeat self tointeger(other) times
 
-## "tobool"
+## "toboolean"
 
 `true`
 
@@ -236,7 +220,7 @@ error if out of range
 ## "push" (value)
 
 push a new item on the end
-return index
+return value.
 
 ## "pop"
 
@@ -247,8 +231,9 @@ error if empty
 
 ## "+" (other)
 
-merge keys and values in self with tomap(other)
-conflicts in other replace keys in self.
+merge keys and values in self with tomap(other).
+Conflicts in other replace keys in self.
+Returns self.
 
 ## "get" (key)
 
@@ -271,7 +256,7 @@ error if it doesn't exist
 
 ## "clear"
 
-Remove all keys and values from map
+Remove all keys and values from map.  Return self.
 
 ## "keys"
 
