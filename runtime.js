@@ -278,15 +278,12 @@ exports.save = function (tree) {
     }
     return size;
   }
-  var buffer = new Buffer(sizeof(tree) + 6);
-  buffer.write("Jack*\0", 0);
-  var offset = 6;
 
   // Helper to write uleb128 values to the stream
   function uleb128(num) {
     while (num >= 0x80) {
       buffer[offset++] = 0x80 | (num & 0x7f);
-      num  = num << 7;
+      num  = num >> 7;
     }
     buffer[offset++] = num;
   }
@@ -361,6 +358,12 @@ exports.save = function (tree) {
       throw new Error("UNKNOWN TYPE " + child);
     }
   }
+  var codeSize = sizeof(tree);
+  var size = 6 + codeSize + Math.ceil(Math.log(Math.abs(codeSize) + 1) / Math.log(128));
+  var buffer = new Buffer(size);
+  buffer.write("Jack*\0", 0);
+  var offset = 6;
+  uleb128(codeSize);
   encode(tree);
   console.log(buffer);
   return buffer;
