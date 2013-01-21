@@ -12,6 +12,7 @@ This is followed by a ULEB128 <http://en.wikipedia.org/wiki/LEB128> byte-length 
 
 The code sections is stored as unstructured data in nested lists.  Each value can be distinguished by the first byte in the value. Strings are stored using utf8 encoding.
 
+```
 00xxxxxx 0x00-0x3f
   00000000 0x00 - long negative integer, following bytes are ULEB128
   00000001 0x01 - long positive integer, following bytes are ULEB128
@@ -40,5 +41,4 @@ The code sections is stored as unstructured data in nested lists.  Each value ca
 01xxxxxx 0x40-0x7f - small positive int (0-63)
 10xxxxxx 0x80-0xbf - short string (0-63 bytes long) then raw data
 11xxxxxx 0xc0-0xff - short list (0-63 items long) then raw data
-
-
+```
