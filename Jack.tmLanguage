@@ -24,13 +24,13 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(return|abort|if|elif|else|while)\b</string>
+			<string>(return|abort|if|elif|else|while|for|in|map)\b</string>
 			<key>name</key>
 			<string>keyword.control</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(let|keysof|typeof)\b</string>
+			<string>(class|def|on|var)\b</string>
 			<key>name</key>
 			<string>keyword.language</string>
 		</dict>
@@ -42,7 +42,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(true|false|nil)\b</string>
+			<string>(true|false|null)\b</string>
 			<key>name</key>
 			<string>constant.language</string>
 		</dict>
@@ -58,25 +58,11 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>storage.type.execute</string>
-				</dict>
-			</dict>
-			<key>match</key>
-			<string>[a-zA-Z_][a-zA-Z0-9_]*[ \t]*(!)</string>
-			<key>name</key>
-			<string>entity.name.function</string>
-		</dict>
-		<dict>
-			<key>captures</key>
-			<dict>
-				<key>1</key>
-				<dict>
-					<key>name</key>
 					<string>variable.parameter</string>
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>{ *\| *((?:[a-zA-Z_][a-zA-Z0-9_]* *)+)\|</string>
+			<string>{([a-zA-Z0-9_ ]*)\|</string>
 		</dict>
 		<dict>
 			<key>match</key>
@@ -104,7 +90,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>[a-zA-Z_][a-zA-Z0-9_]*</string>
+			<string>[a-zA-Z_][a-zA-Z0-9_]*[?!]?</string>
 			<key>name</key>
 			<string>variable.other</string>
 		</dict>
@@ -224,7 +210,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\+|-|\*|\/|%|^|&lt;|&gt;|~=|==|&lt;=|&gt;=|~|&amp;&amp;|\|\||\^\^|\?|:</string>
+			<string>&lt;&lt;|&gt;&gt;|\+|-|\*|\/|%|^|&lt;|&gt;|~=|==|&lt;=|&gt;=|~|&amp;&amp;|\|\||\^\^|\?|:</string>
 			<key>name</key>
 			<string>keyword.operator</string>
 		</dict>

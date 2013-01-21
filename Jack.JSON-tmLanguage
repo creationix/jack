@@ -9,28 +9,22 @@
       "match": ";"
     },
     { "name": "keyword.control",
-      "match": "(return|abort|if|elif|else|while)\\b"
+      "match": "(return|abort|if|elif|else|while|for|in|map)\\b"
     },
     { "name": "keyword.language",
-      "match": "(let|keysof|typeof)\\b"
+      "match": "(class|def|on|var)\\b"
     },
     { "name": "variable.language.self",
       "match": "(self)\\b"
     },
     { "name": "constant.language",
-      "match": "(true|false|nil)\\b"
+      "match": "(true|false|null)\\b"
     },
     { "name": "constant.numeric",
       "match": "(0|-?[1-9][0-9]*)"
     },
-    { "name": "entity.name.function",
-      "match": "[a-zA-Z_][a-zA-Z0-9_]*[ \\t]*(!)",
-      "captures": {
-        "1": { "name": "storage.type.execute" }
-      }
-    },
     { 
-      "match": "{ *\\| *((?:[a-zA-Z_][a-zA-Z0-9_]* *)+)\\|",
+      "match": "{([a-zA-Z0-9_ ]*)\\|",
       "captures": {
         "1": {"name": "variable.parameter"}
       }
@@ -48,7 +42,7 @@
       "match": "\\$[a-zA-Z_][a-zA-Z0-9_]*"
     },
     { "name": "variable.other",
-      "match": "[a-zA-Z_][a-zA-Z0-9_]*"
+      "match": "[a-zA-Z_][a-zA-Z0-9_]*[?!]?"
     },
     { "name": "string.quoted.single",
       "begin": "'",
@@ -124,7 +118,7 @@
     },
     {
       "name": "keyword.operator",
-      "match": "\\+|-|\\*|\\/|%|^|<|>|~=|==|<=|>=|~|&&|\\|\\||\\^\\^|\\?|:"
+      "match": "<<|>>|\\+|-|\\*|\\/|%|^|<|>|~=|==|<=|>=|~|&&|\\|\\||\\^\\^|\\?|:"
     }
  ],
   "uuid": "79497c46-d13d-4b50-8389-c4c8cac6f3a5"
