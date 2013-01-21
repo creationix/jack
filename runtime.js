@@ -9,14 +9,8 @@ function Scope(parent) {
 }
 
 Scope.prototype.run = function (code) {
-  if (Array.isArray(code) && code[0] instanceof Form) {
-    return this[code[0].name].apply(this, code.slice(1));
-  }
-  if (code instanceof Symbol) {
-    if (code.name in this.scope) {
-      return this.scope[code.name];
-    }
-    return this.abort("Attempt to access undefined variable '" + code.name + "'");
+  if (Array.isArray(code)) {
+    return this[code[0]].apply(this, code.slice(1));
   }
   return code;
 };
@@ -31,6 +25,7 @@ Scope.prototype.runCodes = function (codes) {
 }
 
 var hasOwn = Object.prototype.hasOwnProperty;
+var slice = Array.prototype.slice;
 
 Scope.prototype.def = function (args, code) {
   return [forms.fn, this.scope, args, code];
@@ -40,58 +35,31 @@ Scope.prototype.fn = function () {
   throw new Error("TODO: Implement fn");
 };
 
-Scope.prototype.call = function (val, args) {
-  // console.log("CALL", val, args);
-  args = args.map(this.run, this);
+Scope.prototype.class = function () {
+  throw new Error("TODO: Implement class");
+};
+Scope.prototype.on = function () {
+  throw new Error("TODO: Implement on");
+};
+
+Scope.prototype.send = function (val, message, args) {
+  console.log("SEND", {val:val,message:message,args:args});
   val = this.run(val);
-  if (Array.isArray(val) && val[0] instanceof Form && val[0].name === "fn") {
-    var child = new Scope(this.scope);
-    var scope = val[1];
-    var names = val[2];
-    var codes = val[3];
-    child.scope.self = val;
-    for (var i = 0, l = names.length; i < l; i++) {
-      child.var(names[i], args[i]);
-    }
-    var result;
-    try {
-      result = child.runCodes(codes);
-    } catch (err) {
-      if (err.code === "RETURN") {
-        return err.value;
-      }
-      throw err;
-    }
-    return result;
-  }
-  var action = args[0];
-  var method;
-  if (typeof val === "number") {
-    method = integerMethods[action];
-  } else if (Array.isArray(val)) {
-    method = arrayMethods[action];
-  } else if (val && typeof val === "object") {
-    method = objectMethods[action];
-  }
-  if (!method) method = genericMethods[action];
-  if (!method) {
-    return this.abort("Unknown method '" + action + "' for " + val);
-  }
-  var res = method.apply(this, [val].concat(args.slice(1)));
-  return res;
+  return val[message].apply(val, args);
 };
 
 Scope.prototype.return = function (val) {
-  // console.log("RETURN", val);
+  console.log("RETURN", {val:val});
   throw {code:"RETURN", value: this.run(val)};
 };
 
 Scope.prototype.abort = function (message) {
+  console.log("ABORT", {message:message});
   throw new Error(message);
 };
 
 Scope.prototype.var = function (name, value) {
-  console.log("VAR", name, value);
+  console.log("VAR", {name:name,value:value});
   if (hasOwn.call(this.scope, name)) {
     return this.abort("Attempt to redeclare local variable '" + name + "'");
   }
@@ -99,7 +67,7 @@ Scope.prototype.var = function (name, value) {
 };
 
 Scope.prototype.assign = function (name, value) {
-  // console.log("ASSIGN", name, value);
+  console.log("ASSIGN", {name:name,value:value});
   var scope = this.scope;
   while (scope) {
     if (hasOwn.call(scope, name)) return scope[name] = this.run(value);
@@ -108,55 +76,48 @@ Scope.prototype.assign = function (name, value) {
   return this.abort("Attempt to access undefined variable '" + name + "'");
 };
 
-Scope.prototype.get = function (obj, keys) {
-  // console.log("GET", obj, key);
-  return this.call(obj, ["get"].concat(keys));
+Scope.prototype.lookup = function (name) {
+  console.log("LOOKUP", {name:name});
+  if (name in this.scope) {
+    return this.scope[name];
+  }
+  return this.abort("Attempt to access undefined variable '" + name + "'");
 };
 
-Scope.prototype.set = function (obj, keys, value) {
-  // console.log("SET", obj, key, value);
-  return this.call(obj, ["set", value].concat(keys));
-};
-
-Scope.prototype.if = function (pairs, last) {
-  for (var i = 0, l = pairs.length; i < l; i += 2) {
+Scope.prototype.if = function () {
+  var pairs = slice.call(arguments);
+  for (var i = 0, l = pairs.length; i + 1 < l; i += 2) {
     var cond = this.run(pairs[i]);
     if (cond) {
       return this.runCodes(pairs[i + 1]);
     }
   }
-  if (last !== undefined) {
-    return this.runCodes(last);
+  if (i < l) {
+    return this.runCodes(pairs[i]);
   }
-  return null;
+  return new classes.Null();
 };
 
 Scope.prototype.while = function () {
   throw new Error("TODO: Implement while");
 };
 
-Scope.prototype.for = function () {
-  throw new Error("TODO: Implement for");
+Scope.prototype.forin = function () {
+  throw new Error("TODO: Implement forin");
 };
 
-Scope.prototype.map = function () {
-  throw new Error("TODO: Implement map");
+Scope.prototype.mapin = function () {
+  throw new Error("TODO: Implement mapin");
 };
 
-Scope.prototype.buf = function () {
-  throw new Error("TODO: Implement buf");
+Scope.prototype.array = function (items) {
+  items = items.map(this.run, this);
+  return new classes.List(items);
 };
 
-Scope.prototype.array = function (arr) {
-  return arr.slice();
-};
-
-Scope.prototype.object = function (pairs) {
-  var value = Object.create(null);
-  for (var i = 0, l = pairs.length; i < l; i += 2) {
-    value[this.run(pairs[i])] = this.run(pairs[i + 1]);
-  }
-  return value;
+Scope.prototype.map = function (pairs) {
+  pairs = pairs.map(this.run, this);
+  return new classes.Map(pairs);
 };
 
 var inspect = require('util').inspect;
@@ -171,7 +132,7 @@ Scope.prototype.eval = function (string) {
     binaryLength: exports.save(codes).length
   });
 
-  // return this.runCodes(codes);
+  return this.runCodes(codes);
 };
 
 exports.eval = function (string) {
@@ -190,6 +151,10 @@ formByIndex.forEach(function (name, index) {
   indexByForm[name] = index;
 });
 
+// Since the array ["call", ...] could be an array starting with the string
+// "call" or a special call-form depending on the context, this is a helper that
+// tells the binary writer when an argument is a form and when it's just an
+// array of forms.
 function isChildForm(form, index, length) {
   if (!form) return true;
   switch (form) {
@@ -283,7 +248,7 @@ exports.save = function (tree) {
   function uleb128(num) {
     while (num >= 0x80) {
       buffer[offset++] = 0x80 | (num & 0x7f);
-      num  = num >> 7;
+      num = num >>> 7;
     }
     buffer[offset++] = num;
   }

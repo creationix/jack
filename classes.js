@@ -161,7 +161,7 @@ var Null = exports.Null = (function () {
 
 var List = exports.List = (function () {
   function List(items) {
-    this.val = items || [];
+    this.val = items.slice() || [];
   }
   List.prototype["+"] = function (other) {
     return new List(this.val.concat(other.tolist().val));
