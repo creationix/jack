@@ -109,36 +109,3 @@ pet.put_to_bed()
 pet.put_to_bed()
 pet.put_to_bed()
 pet.put_to_bed()
-
--- [@class, "Dragon", ["name"], [
---   [@var, "asleep", false],
---   [@var, "stuff_in_belly", 10],
---   [@var, "stuff_in_intestine", 0],
--- 
---   [@call, :print, [[@call, :name, ["+", " is born."]]]],
--- 
---   [@on, "feed", [], [
---     [@call, :print, [[@call, [@call, "You feed ", ["+", :name]], ["+", "."]]]],
---     [@assign, :stuff_in_belly, 10],
---     [@call, :passage_of_time, []]
---   ]],
--- 
---   [@on, "walk", [], [
---     [@call, :print, [[@call, [@call, "You walk ", ["+", :name]], ["+", "."]]]],
---     [@assign, :stuff_in_intestine, 0],
---     [@call, :passage_of_time, []]
---   ]],
--- 
---   [@on, "put_to_bed", [], [
---     [@call, :print, [[@call, [@call, "You put ", ["+", :name]], ["+", " to bed."]]]],
---     [@assign, :asleep, true],
---     [@send, 3, "times", [@fn, [], [
---       [@if, [:asleep, [@call, :passage_of_time, []]]],
---       [@if, [:asleep, [
---         [@call, :print, [[@call, :name, ["+", " snores, filling the room with smoke."]]]]
---       ]]]
---     ]]
---   ]],
---   ...
--- ]]
--- 

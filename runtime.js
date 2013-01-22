@@ -73,8 +73,10 @@ Scope.prototype.return = function (val) {
 };
 
 Scope.prototype.abort = function (message) {
+  console.error(message);
+  process.exit();
   // console.log("ABORT", {message:message});
-  throw new Error(message);
+  // throw new Error(message);
 };
 
 Scope.prototype.var = function (name, value) {
@@ -170,7 +172,7 @@ var inspect = require('util').inspect;
 
 Scope.prototype.eval = function (string) {
   var codes = parse(string);
-  console.log(inspect(codes, false, 15, true));
+  // console.log(inspect(codes, false, 15, true));
   // console.log({
   //   originalLength: Buffer.byteLength(string),
   //   msgpackLength: require('msgpack-js').encode(codes).length,
