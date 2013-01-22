@@ -105,6 +105,11 @@ var Integer = exports.Integer = (function () {
   Integer.prototype.toboolean = function () {
     return new Boolean(this.val !== 0);
   };
+  Integer.prototype.times = function (callback) {
+    for (var i = 0, l = this.val; i < l; i++) {
+      callback.call(i);
+    }
+  }
   return Integer;
 }());
 
@@ -359,10 +364,11 @@ var Map = exports.Map = (function () {
 }());
 
 var Function = exports.Function = (function () {
-  function Function(parent, names, codes) {
+  function Function(parent, names, codes, isClass) {
     this.parent = parent;
     this.names = names;
     this.codes = codes;
+    this.isClass = isClass;
   }
   Function.prototype.call = function () {
     var child = this.parent.spawn();
@@ -376,14 +382,23 @@ var Function = exports.Function = (function () {
         child.scope[name] = new Null();
       }
     }
+    var instance, ret;
+    if (this.isClass) {
+      instance = child.instance = {};
+    }
     try {
-      return child.runCodes(this.codes);
+      ret = child.runCodes(this.codes);
     } catch (err) {
       if (err.code === "RETURN") {
         return err.value;
       }
       throw err;
     }
+    if (this.isClass) {
+      delete child.instance;
+      return instance;
+    }
+    return ret;
   };
   return Function;
 }());

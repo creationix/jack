@@ -18,6 +18,12 @@ Scope.prototype.run = function (code) {
   if (typeof code === "string") {
     return new classes.String(code);
   }
+  if (code === null) {
+    return new classes.Null();
+  }
+  if (typeof code === "boolean") {
+    return new classes.Boolean(code);
+  }
   throw new Error("Unknown type " + code);
 };
 
@@ -37,25 +43,26 @@ Scope.prototype.spawn = function () {
   return new Scope(this.scope);
 };
 
-Scope.prototype.def = function (args, code) {
-  return [forms.fn, this.scope, args, code];
-};
-
 Scope.prototype.fn = function (names, code) {
   return new classes.Function(this, names, code);
 };
 
-Scope.prototype.class = function () {
-  throw new Error("TODO: Implement class");
+Scope.prototype.def = function (name, names, code) {
+  return this.scope[name] = new classes.Function(this, names, code);
 };
-Scope.prototype.on = function () {
-  throw new Error("TODO: Implement on");
+
+Scope.prototype.class = function (name, names, code) {
+  return this.scope[name] = new classes.Function(this, names, code, true);
+};
+Scope.prototype.on = function (name, names, code) {
+  var method = new classes.Function(this, names, code);
+  return this.instance[name] = method.call.bind(method);
 };
 
 Scope.prototype.send = function (val, message, args) {
   val = this.run(val);
   args = args.map(this.run, this);
-  // console.log("SEND", {val:val,message:message,args:args});
+  var fn = val[message] || classes.All[message];
   return (val[message] || classes.All[message]).apply(val, args);
 };
 
@@ -147,7 +154,13 @@ Scope.prototype.eval = function (string) {
 };
 
 exports.eval = function (string) {
-  var scope = new Scope();
+  var scope = new Scope({
+    print: {
+      call: function (val) {
+        console.log(val.tostring().val)
+      }
+    }
+  });
   return scope.eval(string);
 };
 
