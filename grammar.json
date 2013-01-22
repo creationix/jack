@@ -126,7 +126,7 @@
       ["expr BINOP6 expr", "$$ = ['send', $1, $2, [$3]]"],
       ["! expr", "$$ = ['send', $2, $1, []]"],
       ["IDENT = expr", "$$ = ['assign', $1, $3]"],
-      ["expr [ list ] = expr", "$$ = ['send', $1, 'set', [$5].concat($3)]"],
+      ["expr [ list ] = expr", "$$ = ['send', $1, 'set', [$6].concat($3)]"],
       ["expr [ list ]", "$$ = ['send', $1, 'get', $3]"],
       ["func", "$$ = ['fn'].concat($1)"],
 

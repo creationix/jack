@@ -8,11 +8,10 @@ var fib = {i|
   if i <= 2 { return 1 }
 
   -- Then look in the cache and return if it's already there
-  var value = cache[i]
-  if value != null { return value }
+  if cache.has(i) { return cache[i] }
 
   -- If not, calculate the new value, store in the cache and return
-  cache[i] = self(i - 1) + self(i - 2)
+  cache[i] = (self(i - 1)) + self(i - 2)
 }
 
 -- Call the function and return the fib of 10

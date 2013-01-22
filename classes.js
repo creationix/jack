@@ -36,6 +36,26 @@ if (typeof WeakMap === "undefined") {
   };
 }
 
+var All = exports.All = (function () {
+  return {
+    send: function (name, args) {
+      throw new Error("TODO: Implement generic send");
+    },
+    "!=": function (other) {
+      if (this.constructor !== other.constructor) {
+        return new Boolean(true);
+      }
+      return new Boolean(this.val !== other.val);
+    },
+    "==": function (other) {
+      if (this.constructor !== other.constructor) {
+        return new Boolean(false);
+      }
+      return new Boolean(this.val === other.val);
+    },
+  };
+}());
+
 var Integer = exports.Integer = (function () {
   var cache = {};
   function Integer(val) {
@@ -345,8 +365,8 @@ var Function = exports.Function = (function () {
     this.codes = codes;
   }
   Function.prototype.call = function () {
-    // console.log("CALL", arguments);
     var child = this.parent.spawn();
+    child.scope.self = this;
     for (var i = 0, l = this.names.length; i < l; i++) {
       var name = this.names[i];
       if (i < arguments.length) {

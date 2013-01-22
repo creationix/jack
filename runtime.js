@@ -53,10 +53,10 @@ Scope.prototype.on = function () {
 };
 
 Scope.prototype.send = function (val, message, args) {
+  val = this.run(val);
   args = args.map(this.run, this);
   // console.log("SEND", {val:val,message:message,args:args});
-  val = this.run(val);
-  return val[message].apply(val, args);
+  return (val[message] || classes.All[message]).apply(val, args);
 };
 
 Scope.prototype.return = function (val) {
@@ -99,7 +99,7 @@ Scope.prototype.if = function () {
   var pairs = slice.call(arguments);
   for (var i = 0, l = pairs.length; i + 1 < l; i += 2) {
     var cond = this.run(pairs[i]);
-    if (cond) {
+    if (cond.val) {
       return this.runCodes(pairs[i + 1]);
     }
   }
@@ -136,12 +136,12 @@ var inspect = require('util').inspect;
 Scope.prototype.eval = function (string) {
   var codes = parse(string);
   console.log(inspect(codes, false, 15, true));
-  console.log({
-    originalLength: Buffer.byteLength(string),
-    msgpackLength: require('msgpack-js').encode(codes).length,
-    jsonLength: Buffer.byteLength(JSON.stringify(codes)),
-    binaryLength: exports.save(codes).length
-  });
+  // console.log({
+  //   originalLength: Buffer.byteLength(string),
+  //   msgpackLength: require('msgpack-js').encode(codes).length,
+  //   jsonLength: Buffer.byteLength(JSON.stringify(codes)),
+  //   binaryLength: exports.save(codes).length
+  // });
 
   return this.runCodes(codes);
 };
