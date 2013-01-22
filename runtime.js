@@ -63,7 +63,8 @@ Scope.prototype.send = function (val, message, args) {
   val = this.run(val);
   args = args.map(this.run, this);
   var fn = val[message] || classes.All[message];
-  return (val[message] || classes.All[message]).apply(val, args);
+  if (!fn) return this.abort(val.tostring().val + " does not respond to '" + message + "'");
+  return (fn).apply(val, args);
 };
 
 Scope.prototype.return = function (val) {
@@ -116,19 +117,46 @@ Scope.prototype.if = function () {
   return new classes.Null();
 };
 
-Scope.prototype.while = function () {
-  throw new Error("TODO: Implement while");
+Scope.prototype.while = function (cond, code) {
+  var child = this.spawn();
+  var ret;
+  while (child.run(cond).toboolean().val) {
+    ret = child.runCodes(code);
+  }
+  return ret;
 };
 
-Scope.prototype.forin = function () {
-  throw new Error("TODO: Implement forin");
+Scope.prototype.forin = function (name, val, filter, code) {
+  val = this.run(val);
+  var child = this.spawn();
+  var ret;
+  for (var i = 0, l = val.length(); i < l; i++) {
+    var item = val.get(new classes.Integer(i));
+    child.scope[name] = item;
+    var cond = child.run(filter).toboolean();
+    if (cond.val) {
+      ret = child.runCodes(code);
+    }
+  }
+  return ret || new classes.Null();
 };
 
-Scope.prototype.mapin = function () {
-  throw new Error("TODO: Implement mapin");
+Scope.prototype.mapin = function (name, val, filter, code) {
+  val = this.run(val);
+  var child = this.spawn();
+  var result = [];
+  for (var i = 0, l = val.length(); i < l; i++) {
+    var item = val.get(new classes.Integer(i));
+    child.scope[name] = item;
+    var cond = child.run(filter).toboolean();
+    if (cond.val) {
+      result.push(child.runCodes(code));
+    }
+  }
+  return new classes.List(result);
 };
 
-Scope.prototype.array = function (items) {
+Scope.prototype.list = function (items) {
   items = items.map(this.run, this);
   return new classes.List(items);
 };
