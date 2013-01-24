@@ -96,17 +96,17 @@ Matrix = (w, h, fill) {
   }
   {
     @has: has,
-    @get: function (key) {
+    @get: (key) {
       if has(key) {
         return data[index]
       }
     },
-    @set: function (key, value) {
+    @set: (key, value) {
       if has(key) {
         return data[index] = value
       }
     },
-    @keys: function () {
+    @keys: () {
       [(x,y) for x in range(w) for y in range(h)]
     }
   }

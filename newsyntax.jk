@@ -1,0 +1,293 @@
+--------------------------------------------------------------------------------
+-- Primitives
+
+-- Null
+-- Null represents the nothing value.  It shouldn't be used as a real value, but
+-- rather the lack of value.
+null
+null is Null --> true
+
+-- Boolean
+-- Mostly used in boolean expressions results, but also can be a valid value in
+-- many APIs.
+true; false
+true is Boolean --> true
+
+-- Integer
+0; -1; 2
+0 is Integer --> true
+-- In boolean expressions 0 is falsy and everything else is truthy.
+-- responds to compare metamethods when other type is also an Integer
+--   @lt @le @eq @neq
+-- responds to arithmetic metametods when other type is also an Integer
+--   @add @sub @mul @div @pow @mod @unm
+
+-- String
+-- A String is a immutable string of unicode characters.  UTF-8 encoding is used
+-- internally and when serializing.
+"Hello World"; 'Hello World'
+"test" is String --> true
+-- in boolean expressions, empty string is falsy and everything else is truthy.
+-- responds to @add when other is a String and concats
+-- responds to compare metamethods when other is string and does string compare
+--   @lt @le @eq @neq
+-- responds to @mul(n) when n is an Integer and repeats the string n times.
+
+-- Buffer
+-- Buffer is like a string, except it's mutable and contains 8-bit numbers
+-- instead of unicode characters.  This makes it ideal for binary data formats.
+<0a 20 23 fe de ad> is Buffer --> true
+
+--------------------------------------------------------------------------------
+-- Functions and local variables
+-- Functions are small programs that you can embed in your program
+-- They have lexical closure meaning they can access variables in outer scopes.
+(arg1, arg2, arg3, ...){ ... } is Function --> true
+vars square, cube
+-- A Pure function
+square = (x){ x * x }
+-- Another pure function, but using the "square" value from the closure
+cube = (x){ x * square(x)}
+-- Functions have their own nested scope and you need to define local variables
+-- at the top.
+-- Here is a self calling function with it's own vars
+vars a
+a = 1
+(){
+  vars b
+  b = 2
+  a + b
+}() --> 3
+-- functions respond to @call making them callable.  More on metamthods below.
+
+--------------------------------------------------------------------------------
+-- Containers
+
+-- Tuples
+-- Tuples must have at least 2 items in them. They are fixed length structs
+-- essentially.
+(1, 2) is Tuple --> true
+
+-- Lists
+[1,2,3,4] is List --> true
+
+-- Object
+-- Objects store values by keys.  Keys can be any valid value as can values.
+m = {}
+m[42] = "But what was the question?"
+42 in m   --> true
+"42" in m --> false
+m[42]     --> "But what was the question?"
+delete m[42]
+42 in m   --> false
+m is Object  --> true
+
+-- Objects can be used for user objects by setting various metamethods
+person = {name: "Tim", age: 30}
+-- By default maps respond to @get, @set, @has, @keys, and @delete
+-- Disallows setting properties and echos key for any get
+echo = {
+  @has: (key) { true },
+  @get: (key) { key },
+  @set: null,
+  @delete: null,
+}
+"Monkey" in echo --> true
+echo.Monkey      --> "Monkey"
+echo["Monkey"]   --> "Monkey"
+echo[true]       --> true
+echo.Monkey = "Frod" --! throws unsupported metamethod error
+
+--------------------------------------------------------------------------------
+-- Supported metamethods are:
+-- @has (key) --> Boolean if key is in collection
+key in obj --> obj@has(key)
+-- @get (key) --> returns value at key, may return null or throw an error for bad keys if desired.
+obj[key] --> obj@get(key)
+obj.ident --> obj@get("ident")
+obj.3  --> obj@get(3)
+-- @set (key, value) --> Sets value at key, should return value
+obj[key] = value --> obj@set(key, value)
+obj.ident = value --> obj@set("ident", value)
+obj.3 = value --> obj@set(3, value)
+-- @delete (key) --> Removes a key and it's value
+delete obj[key] --> obj@delete(key)
+delete obj.ident --> obj@delete("ident")
+delete obj.3 --> obj@delete(3)
+-- @keys () --> Returns a list of possible known keys.
+-- @len () --> returns length of list-style containers
+#a --> a@len()
+for key, value in obj { ... } -- Loop over keys and values in an object with @keys
+for key, value in list { ... } -- Loop over keys and values in an object with @len
+-- keys will be integers from 0 to length - 1 for @len based items
+for value in list { ... } -- Loop over just values works for either type.
+-- @call (args...) -- Make this value callable as a function
+
+-- Arithmetic operations
+a + b  --> a@add(b)
+a - b  --> a@sub(b)
+a * b  --> a@mul(b)
+a / b  --> a@div(b)
+a ^ b  --> a@pow(b)
+a % b  --> a@mod(b)
+-a     --> a@unm()
+-- Comparison operations
+a < b  --> a@lt(b)
+a <= b --> a@le(b)
+a == b --> a@eq(b)
+a != b --> a@neq(b)
+-- Boolean operations
+a && b --> a@and(b)
+a || b --> a@or(b)
+a ^^ b --> a@xor(b)
+!a     --> a@not()
+
+-- Raw metamethods
+-- Some metamethods cannot be overridden, for example, maps have 4 that do the
+-- same as their default non-raw counterparts
+-- @rawget @rawset @rawkeys @rawdelete
+
+--------------------------------------------------------------------------------
+-- Destructuring
+-- This lets you mass-assign local variables from a data structure.
+-- A simple example is using tuples for multiple return values
+vars a,b
+(a,b) = getPair()
+-- Or a simple line swap without temporary variables
+(a,b) = (b,a)
+-- Use tuple syntax to match lists as well
+(first, second) = [1,2,3,4,5]
+first  --> 1
+second --> 2
+-- More complex structures can also be matched
+{name} = {name:"Tim"}
+name --> "Tim"
+{address:{state}} = {address:{state:"TX"}}
+state --> "TX"
+
+-- It can be used in for..in syntax as well
+for {name, age} in people {
+  print(name, age)
+}
+
+--------------------------------------------------------------------------------
+-- Conditionals and Loops
+-- These accept blocks of code, not functions.  This means they have their own
+-- local variable scope, but ignore `return`.  They do allow `continue` and
+-- `break`
+
+-- If has 1 or more expr/body pairs followed by an optional else clause for fallback.
+-- The entire structure is an expression and the return value is the last value
+-- in the body path taken.
+if expr { body }
+if expr { body } elif expr { body }
+if expr { body } else { body }
+if expr { body } elif expr { body } else { body }
+-- Can be used as a slightly verbose conditional operator
+print(if alive { "alive" } else { "dead" })
+
+-- While simply executes a block repeatedly till some expression is falsy
+i = 0
+while i < 10 {
+  print(i)
+  i = i + 1
+}
+
+-- For..in loops over values using either @keys or @len to know what keys to use.
+-- If one variable is given, it's the value, if two are given, they are key and value.
+for key, value in {name:"Tim",age:30} {
+  print("Key: " + key)
+  print("Value: " + value)
+}
+
+names = ["Thorin", "Dwalin", "Balin", "Bifur", "Bofur", "Bombur", "Oin",
+         "Gloin", "Ori", "Nori", "Dori", "Fili", "Kili", "Bilbo", "Gandalf"]
+
+for name in names {
+  print("Name: " + name)
+}
+
+-- Coroutine
+-- A coroutine is like a function that can be paused and resumed with it's own
+-- independent stack.  You create one using *(){...} Syntax
+range = (n) {
+  vars i
+  i = 0
+  *(){
+    while i < n {
+      yield i
+      i = i + 1
+    }
+  }
+}
+range is Function --> true
+
+co = range(10)
+co is Coroutine --> true
+co.status   --> "new"
+co()        --> 0
+co.status   --> "suspended"
+co()        --> 1
+co()        --> 2
+co()        --> 3
+...
+co()        --> 7
+co()        --> 8
+co()        --> 9
+co.status   --> "suspended"
+co()        --> null
+co.status   --> "dead"
+co()        --! Can't resume dead coroutine error
+
+-- for..in can also iterate over values that listen to the @call metamethod if
+-- @keys or @len isn't found.  This means they can iterate over coroutines
+-- treating them like generators
+
+-- Counting from 1 to 10
+for i in range(10) {
+  print(i + 1)
+}
+-- Counting from 10 to 1
+for i in range(10) {
+  print(10 - i)
+}
+
+
+-- Data can be passed both ways.  A coroutine can return data through yield,
+-- return, or body end. When the coroutine itself is called, the first call goes
+-- to the coroutine head, calls after that become the return values to yield.
+
+-- Assuming we have an async non-blocking library that always calls callbacks in
+-- the main stack, we can create faux-blocking in coroutines.
+
+sleep = (ms) {
+  -- Assume a JS style setTimeout function
+  -- this is a reference to the currently running coroutine
+  yield setTimeout(ms, this.resume)
+}
+
+-- Start a background interval that counts from 10 to 1
+*(){
+  for i in range(10) {
+    sleep(1000)
+    print(10 - i)
+  }
+}()
+
+
+
+-- loop expressions.  Loops can emit values and act as a function map by using yield.--
+-- Here is the implementation of a range helper.
+range = (n) {
+  vars i
+  i = 0
+  while i < n {
+    yield i
+    i = i + 1
+  }
+}
+range(5) --> [0,1,2,3,4]
+
+shortNames = for name in names {
+  if #name <
+}
