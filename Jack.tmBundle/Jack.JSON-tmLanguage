@@ -9,13 +9,10 @@
       "match": ";"
     },
     { "name": "keyword.control",
-      "match": "(return|abort|if|elif|else|while|for|in|map)\\b"
+      "match": "(return|abort|if|elif|else|while|for|in|coro|this|yield|emit)\\b"
     },
     { "name": "keyword.language",
-      "match": "(class|def|on|var)\\b"
-    },
-    { "name": "variable.language.self",
-      "match": "(self)\\b"
+      "match": "(vars|delete|is)\\b"
     },
     { "name": "constant.language",
       "match": "(true|false|null)\\b"
@@ -23,26 +20,23 @@
     { "name": "constant.numeric",
       "match": "(0|-?[1-9][0-9]*)"
     },
-    { 
+    { "name": "support.function.constructor",
+      "match": "(Integer|Boolean|Null|String|Buffer|Tuple|List|Object|Function|Coroutine)\\b"
+    },
+    {
       "match": "{([a-zA-Z0-9_ ]*)\\|",
       "captures": {
         "1": {"name": "variable.parameter"}
       }
     },
-    { "name": "support.constant",
-      "match": ":+[a-zA-Z_][a-zA-Z0-9_]*"
-    },
     { "name": "support.type",
-      "match": "@[a-zA-Z_][a-zA-Z0-9_]*"
+      "match": "@[a-zA-Z]+"
     },
     { "name": "entity.name.tag",
-      "match": "[a-zA-Z_][a-zA-Z0-9_]*:"
-    },
-    { "name": "support.function",
-      "match": "\\$[a-zA-Z_][a-zA-Z0-9_]*"
+      "match": "[a-zA-Z_]([-]?[a-zA-Z0-9_])*[?!]?:"
     },
     { "name": "variable.other",
-      "match": "[a-zA-Z_][a-zA-Z0-9_]*[?!]?"
+      "match": "[a-zA-Z_]([-]?[a-zA-Z0-9_])*[?!]?"
     },
     { "name": "string.quoted.single",
       "begin": "'",
@@ -67,7 +61,7 @@
     { "name": "string.binary",
       "match": "<[0-9A-Fa-f][0-9A-Fa-f](\\s+[0-9A-Fa-f][0-9A-Fa-f])*>"
     },
-    
+
     { "name": "string.quoted.double",
       "begin": "\"",
       "beginCaptures": {
@@ -118,7 +112,7 @@
     },
     {
       "name": "keyword.operator",
-      "match": "<<|>>|\\+|-|\\*|\\/|%|^|<|>|~=|==|<=|>=|~|&&|\\|\\||\\^\\^|\\?|:"
+      "match": "\\+|-|\\*|\\/|%|^|<|>|~=|==|<=|>=|~|&&|\\|\\||\\^\\^|\\?|:"
     }
  ],
   "uuid": "79497c46-d13d-4b50-8389-c4c8cac6f3a5"

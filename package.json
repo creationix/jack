@@ -1,0 +1,25 @@
+{
+  "name": "jack",
+  "version": "0.0.0",
+  "description": "Jack Language",
+  "main": "parse.js",
+  "dependencies": {
+    "jison": "~0.3.12"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/creationix/jack.git"
+  },
+  "keywords": [
+    "Jack",
+    "Language"
+  ],
+  "author": "Tim Caswell <tim@creationix.com>",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "gitHead": "e67533bcbf463162a0aae8d71e06b4bc7bfa3224"
+}

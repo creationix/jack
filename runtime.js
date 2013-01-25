@@ -3,6 +3,30 @@ var parse;
 var assert = require('assert');
 var classes = require('./classes');
 
+var forms = {}
+exports.Form = Form;
+function Form(name) {
+  if (forms[name]) return forms[name];
+  if (!(this instanceof Form)) return new Form(name);
+  this.name = name;
+  forms[name] = this;
+}
+Form.prototype.inspect = function () {
+  return "\033[34;1m@" + this.name + "\033[0m";
+};
+var symbols = {}
+exports.Symbol = Symbol;
+function Symbol(name) {
+  if (symbols[name]) return symbols[name];
+  if (!(this instanceof Symbol)) return new Symbol(name);
+  this.name = name;
+  symbols[name] = this;
+}
+Symbol.prototype.inspect = function () {
+  return "\033[35m:" + this.name + "\033[0m";
+};
+
+
 function Scope(parent) {
   this.scope = Object.create(parent || null);
 }
@@ -198,191 +222,3 @@ exports.attachParser = function (parser) {
   parse = parser.parse.bind(parser);
 };
 
-var formByIndex = ["class", "on", "def", "return", "abort", "fn", "send", "var",
-  "assign", "lookup", "if", "while", "forin", "mapin", "list", "map"];
-var indexByForm = {};
-formByIndex.forEach(function (name, index) {
-  indexByForm[name] = index;
-});
-
-// Since the array ["call", ...] could be an array starting with the string
-// "call" or a special call-form depending on the context, this is a helper that
-// tells the binary writer when an argument is a form and when it's just an
-// array of forms.
-function isChildForm(form, index, length) {
-  if (!form) return true;
-  switch (form) {
-    case "class":  // name, args, body
-    case "on":     // name, args, body
-    case "def":    // name, args, body
-    case "fn":     // args, body
-    case "lookup": // name
-    case "list":   // items
-    case "map":    // pairs
-      return false;
-    case "return": // expr
-    case "abort":  // expr
-      return true;
-    case "send":   // obj, name, args
-    case "while":  // cond, body
-      return index === 1;
-    case "var":    // name, value
-    case "assign": // name, value
-      return index === 2;
-    case "forin":  // ident, val, cond, block
-    case "mapin":  // ident, val, cond, block
-      return index === 2 || index === 3;
-    case "if":     // (cond, body)+, else-body
-      return index % 2 && index < length - 1;
-  }
-  throw new Error("Unknown form '" + form + "'");
-}
-
-// Convert an AST tree to a savable binary buffer
-exports.save = function (tree) {
-  function sizeof(array, isform) {
-    var i = 0
-    var l = array.length;
-    var size = 0;
-    var form;
-    if (isform) {
-      form = array[0];
-      size = 1;
-      i = 1;
-    }
-    for (;i < l; i++) {
-      var child = array[i];
-      if (child === null || child === false || child === true) {
-        size += 1;
-        continue;
-      }
-      if (typeof child === "number") {
-        if (child >= 0 && child < 64) {
-          size += 1;
-        }
-        else {
-          size += 1 + Math.ceil(Math.log(Math.abs(child) + 1) / Math.log(128));
-        }
-        continue;
-      }
-      if (Array.isArray(child)) {
-        var childLength = child.length;
-        if (childLength >= 0 && childLength < 64) {
-          size += 1;
-        }
-        else {
-          size += 1 + Math.ceil(Math.log(Math.abs(childLength) + 1) / Math.log(128));
-        }
-        size += sizeof(child, isChildForm(form, i, l));
-        continue;
-      }
-      if (typeof child === "string") {
-        var childLength = Buffer.byteLength(child);
-        if (childLength >= 0 && childLength < 64) {
-          size += 1;
-        }
-        else {
-          size += 1 + Math.ceil(Math.log(Math.abs(childLength) + 1) / Math.log(128));
-        }
-        size += childLength;
-        continue;
-      }
-      if (Buffer.isBuffer(child)) {
-        var childLength = child.length;
-        size += 1 + Math.ceil(Math.log(Math.abs(childLength) + 1) / Math.log(128));
-        size += childLength;
-        continue;
-      }
-      throw new Error("UNKNOWN TYPE " + child);
-    }
-    return size;
-  }
-
-  // Helper to write uleb128 values to the stream
-  function uleb128(num) {
-    while (num >= 0x80) {
-      buffer[offset++] = 0x80 | (num & 0x7f);
-      num = num >>> 7;
-    }
-    buffer[offset++] = num;
-  }
-  function encode(array, isform) {
-    var i = 0
-    var l = array.length;
-    var form;
-    if (isform) {
-      form = array[0];
-      buffer[offset++] = indexByForm[form] + 0x10;
-      i = 1;
-    }
-    for (;i < l; i++) {
-      var child = array[i];
-      if (child === null) { buffer[offset++] = 0x05; continue }
-      if (child === false) { buffer[offset++] = 0x06; continue }
-      if (child === true) { buffer[offset++] = 0x07; continue }
-      if (typeof child === "number") {
-        // Small Positive Int
-        if (child >= 0 && child < 64) {
-          buffer[offset++] = 0x40 | child;
-          continue;
-        }
-        // Negative Int
-        if (child < 0) {
-          buffer[offset++] = 0x00;
-          uleb128(-child);
-          continue;
-        }
-        // Large Negative Int
-        buffer[offset++] = 0x01;
-        uleb128(child);
-        continue;
-      }
-      if (typeof child === "string") {
-        var childLength = Buffer.byteLength(child);
-        // Short string
-        if (childLength >= 0 && childLength < 64) {
-          buffer[offset++] = 0x80 | childLength;
-        }
-        // Long string
-        else {
-          buffer[offset++] = 0x02;
-          uleb128(childLength);
-        }
-        buffer.write(child, offset);
-        offset += childLength;
-        continue;
-      }
-      if (Array.isArray(child)) {
-        var childLength = child.length;
-        // short list
-        if (childLength >= 0 && childLength < 64) {
-          buffer[offset++] = 0xc0 | childLength;
-        }
-        // long list
-        else {
-          buffer[offset++] = 0x03;
-          uleb128(childLength);
-        }
-        encode(child, isChildForm(form, i, l));
-        continue;
-      }
-      if (Buffer.isBuffer(child)) {
-        var childLength = child.length;
-        buffer[offset++] = 0x04;
-        uleb128(childLength);
-        child.copy(buffer, offset);
-        offset += childLength;
-        continue;
-      }
-      throw new Error("UNKNOWN TYPE " + child);
-    }
-  }
-  var codeSize = sizeof(tree);
-  var size = 6 + codeSize + Math.ceil(Math.log(Math.abs(codeSize) + 1) / Math.log(128));
-  var buffer = new Buffer(size);
-  buffer.write("Jack*\0", 0);
-  var offset = 6;
-  uleb128(codeSize);
-  encode(tree);
-  return buffer;
-}
