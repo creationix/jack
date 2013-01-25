@@ -5,30 +5,45 @@
       ["--.*",                            "/* ignore comments */"],
       ["<[0-9A-Fa-f][0-9A-Fa-f](\\s+[0-9A-Fa-f][0-9A-Fa-f])*>", "return 'BUFFER'"],
       ["(null|true|false)\\b",            "return 'CONSTANT'"],
+      ["(Integer|Boolean|Null|String|Buffer|Tuple|List|Object|Function|Coroutine)\\b", "return 'TYPE'"],
       ["return\\b",                       "return 'RETURN'"],
       ["abort\\b",                        "return 'ABORT'"],
-      ["var\\b",                          "return 'VAR'"],
-      ["class\\b",                        "return 'CLASS'"],
-      ["on\\b",                           "return 'ON'"],
-      ["def\\b",                          "return 'DEF'"],
+      ["vars\\b",                         "return 'VARS'"],
       ["for\\b",                          "return 'FOR'"],
-      ["map\\b",                          "return 'MAP'"],
+      ["delete\\b",                       "return 'DELETE'"],
       ["in\\b",                           "return 'IN'"],
+      ["is\\b",                           "return 'IS'"],
       ["if\\b",                           "return 'IF'"],
       ["\\s*elif\\b",                     "return 'ELIF'"],
       ["\\s*else\\b",                     "return 'ELSE'"],
       ["while\\b",                        "return 'WHILE'"],
       ["\"(?:[^\"\\\\]|\\\\.)*\"",        "return 'STRING'"],
       ["'(?:[^'\\\\]|\\\\.)*'",           "return 'STRING'"],
-      ["[a-zA-Z$_][a-zA-Z0-9$_]*[?!]?",   "return 'IDENT'"],
+      ["[a-zA-Z_]([-]?[a-zA-Z0-9_])*",    "return 'IDENT'"],
       ["(?:0|-?[1-9][0-9]*)",             "return 'INTEGER'"],
       [":",                               "return ':'"],
-      ["(?:\\*|\\/|\\^|%)",               "return 'BINOP1'"],
-      ["(?:\\+|-)",                       "return 'BINOP2'"],
-      ["(?:<=|<|>=|>)",                   "return 'BINOP3'"],
-      ["(?:!=|==)",                       "return 'BINOP4'"],
-      ["(?:&&)",                          "return 'BINOP5'"],
-      ["(?:\\|\\||\\^\\^)",               "return 'BINOP6'"],
+
+      ["\\*",                             "return '*'"],
+      ["\\/",                             "return '/'"],
+      ["\\^",                             "return '^'"],
+      ["\\%",                             "return '%'"],
+
+      ["\\+",                             "return '+'"],
+      ["-",                               "return '-'"],
+
+      ["<=",                              "return '<='"],
+      ["<",                               "return '<'"],
+      [">=",                              "return '>='"],
+      [">",                               "return '>'"],
+
+      ["!=",                              "return '!='"],
+      ["==",                              "return '=='"],
+
+      ["&&",                              "return '&&'"],
+
+      ["\\|\\|",                          "return '||'"],
+      ["\\^\\^",                          "return '^^'"],
+
       [",\\s*",                           "return ','"],
       ["\\s*\\.",                         "return '.'"],
       ["!",                               "return '!'"],
@@ -48,13 +63,14 @@
   "operators": [
     ["left", ","],
     ["right", "="],
-    ["left", "BINOP6"],
-    ["left", "BINOP5"],
-    ["left", "BINOP4"],
-    ["left", "BINOP3"],
-    ["left", "BINOP2"],
-    ["left", "BINOP1"],
-    ["right", "!"],
+    ["left", "IS", "IN"],
+    ["left", "||", "^^"],
+    ["left", "&&"],
+    ["left", "!=", "=="],
+    ["left", "<", "<=", ">", ">="],
+    ["left", "+", "-"],
+    ["left", "*", "/", "^", "%"],
+    ["right", "!", "-"],
     ["left", ".", "[", "("]
   ],
 
@@ -106,51 +122,90 @@
       ["elifs ELIF expr block", "$$ = $1.concat([$3, $4])"]
     ],
     "func": [
-      ["{ params | code }", "$$ = [$2, $4]"],
-      ["{ | code }", "$$ = [[], $3]"]
+      ["{ params | code }", "$$ = [[yy.F('params')].concat($2)].concat($4)"],
+      ["{ | code }", "$$ = $3"]
     ],
     "block": [
       ["{ code }", "$$ = $2"]
     ],
+    "expr2": [
+      ["expr , expr", "$$ = [$1, $3]"],
+      ["expr2 , expr", "$$ = $1.concat($3)"]
+    ],
+    "integer": [
+      ["INTEGER", "$$ = parseInt($1, 10)"]
+    ],
     "expr": [
       ["STRING", "$$ = eval($1);"],
-      ["IDENT", "$$ = ['lookup', $1]"],
-      ["INTEGER", "$$ = parseInt($1, 10)"],
+      ["IDENT", "$$ = yy.S($1)"],
+      ["integer", "$$ = $1"],
       ["CONSTANT", "$$ = $1 === 'true' ? true : $1 === 'false' ? false : null;"],
       ["BUFFER", "$$ = new Buffer($1.substr(1, $1.length - 2).split(/\\s+/).map(function (b) { return parseInt(b, 16);}))"],
-      ["expr BINOP1 expr", "$$ = ['send', $1, $2, [$3]]"],
-      ["expr BINOP2 expr", "$$ = ['send', $1, $2, [$3]]"],
-      ["expr BINOP3 expr", "$$ = ['send', $1, $2, [$3]]"],
-      ["expr BINOP4 expr", "$$ = ['send', $1, $2, [$3]]"],
-      ["expr BINOP5 expr", "$$ = ['send', $1, $2, [$3]]"],
-      ["expr BINOP6 expr", "$$ = ['send', $1, $2, [$3]]"],
-      ["! expr", "$$ = ['send', $2, $1, []]"],
-      ["IDENT = expr", "$$ = ['assign', $1, $3]"],
-      ["expr [ list ] = expr", "$$ = ['send', $1, 'set', [$6].concat($3)]"],
-      ["expr [ list ]", "$$ = ['send', $1, 'get', $3]"],
-      ["func", "$$ = ['fn'].concat($1)"],
 
-      ["[ list ]", "$$ = ['list', $2]"],
-      ["{ pairs }", "$$ = ['map', $2]"],
-      ["expr . IDENT ( list )", "$$ = ['send', $1, $3, $5]"],
-      ["expr ( list )", "$$ = ['send', $1, 'call', $3]"],
+      ["expr IS TYPE", "$$ = [yy.F('is'), $1, $3]"],
+      ["expr IN expr", "$$ = [yy.F('in'), $3, $1]"],
+
+      ["expr * expr", "$$ = [yy.F('mul'), $1, $3]"],
+      ["expr / expr", "$$ = [yy.F('div'), $1, $3]"],
+      ["expr ^ expr", "$$ = [yy.F('pow'), $1, $3]"],
+      ["expr % expr", "$$ = [yy.F('mod'), $1, $3]"],
+
+      ["expr + expr", "$$ = [yy.F('add'), $1, $3]"],
+      ["expr - expr", "$$ = [yy.F('sub'), $1, $3]"],
+
+      ["expr < expr", "$$ = [yy.F('lt'), $1, $3]"],
+      ["expr <= expr", "$$ = [yy.F('le'), $1, $3]"],
+      ["expr > expr", "$$ = [yy.F('lt'), $3, $1]"],
+      ["expr >= expr", "$$ = [yy.F('le'), $3, $1]"],
+
+      ["expr != expr", "$$ = [yy.F('neq'), $1, $3]"],
+      ["expr == expr", "$$ = [yy.F('eq'), $1, $3]"],
+
+      ["expr && expr", "$$ = [yy.F('and'), $1, $3]"],
+
+      ["expr || expr", "$$ = [yy.F('or'), $1, $3]"],
+      ["expr ^^ expr", "$$ = [yy.F('xor'), $1, $3]"],
+
+      ["! expr", "$$ = [yy.F('not'), $2]"],
+      ["- expr", "$$ = [yy.F('unm'), $2]"],
+
+      ["func", "$$ = [yy.F('fn')].concat($1)"],
+
+      ["IDENT = expr", "$$ = [yy.F('assign'), $1, $3]"],
+
+
       ["( expr )", "$$ = $2"],
+      ["( expr2 )", "$$ = [yy.F('tuple')].concat($2)"],
+      ["[ list ]", "$$ = [yy.F('list')].concat($2)"],
+      ["{ pairs }", "$$ = [yy.F('object')].concat($2)"],
 
-      ["VAR IDENT = expr", "$$ = ['var', $2, $4]"],
-      ["DEF IDENT func", "$$ = ['def', $2].concat($3)"],
-      ["ON IDENT func", "$$ = ['on', $2].concat($3)"],
-      ["CLASS IDENT func", "$$ = ['class', $2].concat($3)"],
-      ["MAP IDENT IN expr IF expr block", "$$ = ['mapin', $2, $4, $6, $7]"],
-      ["MAP IDENT IN expr block", "$$ = ['mapin', $2, $4, true, $5]"],
-      ["FOR IDENT IN expr IF expr block", "$$ = ['forin', $2, $4, $6, $7]"],
-      ["FOR IDENT IN expr block", "$$ = ['forin', $2, $4, true, $5]"],
-      ["IF elifs", "$$ = ['if'].concat($2)"],
-      ["IF elifs ELSE block", "$$ = ['if'].concat($2).concat([$4])"],
-      ["WHILE expr block", "$$ = ['while', $2, $3]"]
+      ["expr . integer", "$$ = [yy.F('get'), $1, $3]"],
+      ["expr . IDENT", "$$ = [yy.F('get'), $1, $3]"],
+      ["expr [ expr ]", "$$ = [yy.F('get'), $1, $3]"],
+
+      ["expr . integer = expr", "$$ = [yy.F('set'), $1, $3, $5]"],
+      ["expr . IDENT = expr", "$$ = [yy.F('set'), $1, $3, $5]"],
+      ["expr [ expr ] = expr", "$$ = [yy.F('set'), $1, $3, $6]"],
+
+      ["expr ( list )", "$$ = [yy.F('call'), $1].concat($3)"],
+
+      ["FOR IDENT IN expr block", "$$ = [yy.F('for'), $4, [$2]].concat($5)"],
+      ["FOR IDENT , IDENT IN expr block", "$$ = [yy.F('for'), $6, [$2, $4]].concat($7)"],
+      ["WHILE expr block", "$$ = [yy.F('while'), $2].concat($3)"],
+      ["if", "$$ = $1"],
+      ["if ELSE { code }", "$$ = $1.concat([$4])"]
+    ],
+    "if": [
+      ["IF expr { code }", "$$ = [yy.F('if'), $2, $4]"],
+      ["if ELIF expr { code }", "$$ = $1.concat([$3, $5])"]
     ],
     "statement": [
-      ["RETURN expr", "$$ = ['return', $2]"],
-      ["ABORT expr", "$$ = ['abort', $2]"]
+      ["DELETE expr . integer", "$$ = [yy.F('delete'), $2, $4]"],
+      ["DELETE expr . IDENT", "$$ = [yy.F('delete'), $2, $4]"],
+      ["DELETE expr [ expr ]", "$$ = [yy.F('delete'), $2, $4]"],
+      ["VARS params", "$$ = [yy.F('vars')].concat($2)"],
+      ["RETURN expr", "$$ = [yy.F('return'), $2]"],
+      ["ABORT expr", "$$ = [yy.F('abort'), $2]"]
     ]
   }
 }

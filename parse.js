@@ -27,15 +27,40 @@ function generate() {
   });
 }
 
+var forms = {}
+function Form(name) {
+  if (forms[name]) return forms[name];
+  if (!(this instanceof Form)) return new Form(name);
+  this.name = name;
+  forms[name] = this;
+}
+Form.prototype.inspect = function () {
+  return "\033[34;1m@" + this.name + "\033[0m";
+};
+var symbols = {}
+function Symbol(name) {
+  if (symbols[name]) return symbols[name];
+  if (!(this instanceof Symbol)) return new Symbol(name);
+  this.name = name;
+  symbols[name] = this;
+}
+Symbol.prototype.inspect = function () {
+  return "\033[35m:" + this.name + "\033[0m";
+};
+
 function ready() {
   var filename = process.argv[2] || "sample.jk";
   // console.log("Parsing: " + filename);
 
   var parser = require('./parser').parser;
+  parser.yy.F = Form;
+  parser.yy.S = Symbol;
   runtime.attachParser(parser);
   fs.readFile(filename, "utf8", function (err, code) {
     if (err) throw err;
+    var tree = parser.parse(code);
+    console.log(require('util').inspect(tree, false, 12, true));
     // console.log("Running program...")
-    console.log(runtime.eval(code));
+    // console.log(runtime.eval(code));
   });
 }
