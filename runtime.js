@@ -1,7 +1,6 @@
 // This will be a compiler when the runtime is attached to a jison parser.
 var parse;
 var assert = require('assert');
-var classes = require('./classes');
 
 var forms = {}
 exports.Form = Form;
@@ -26,29 +25,25 @@ Symbol.prototype.inspect = function () {
   return "\033[35m:" + this.name + "\033[0m";
 };
 
-
 function Scope(parent) {
   this.scope = Object.create(parent || null);
 }
 
+function getForm(array) {
+  return Array.isArray(array) && array[0] instanceof Form && array[0].name;
+}
+
 Scope.prototype.run = function (code) {
   // Evaluate form codes
-  if (Array.isArray(code)) {
-    return this[code[0]].apply(this, code.slice(1));
+  var form = getForm(code);
+  if (form) {
+    // console.log("running", code)
+    return this[form].apply(this, code.slice(1));
   }
-  if (typeof code === "number") {
-    return new classes.Integer(code);
+  if (code instanceof Symbol) {
+    return this.lookup(code.name);
   }
-  if (typeof code === "string") {
-    return new classes.String(code);
-  }
-  if (code === null) {
-    return new classes.Null();
-  }
-  if (typeof code === "boolean") {
-    return new classes.Boolean(code);
-  }
-  throw new Error("Unknown type " + code);
+  return code;
 };
 
 Scope.prototype.runCodes = function (codes) {
@@ -62,37 +57,119 @@ Scope.prototype.runCodes = function (codes) {
 
 var hasOwn = Object.prototype.hasOwnProperty;
 var slice = Array.prototype.slice;
+var map = Array.prototype.map;
+
 
 Scope.prototype.spawn = function () {
   return new Scope(this.scope);
 };
 
-Scope.prototype.fn = function (names, code) {
-  return new classes.Function(this, names, code);
+Scope.prototype.params = function () {
+  for (var i = 0, l = arguments.length; i < l; i++) {
+    this.scope[arguments[i]] = this.arguments[i];
+  }
 };
 
-Scope.prototype.def = function (name, names, code) {
-  return this.scope[name] = new classes.Function(this, names, code);
+Scope.prototype.vars = function () {
+  for (var i = 0, l = arguments.length; i < l; i++) {
+    this.scope[arguments[i]] = undefined;
+  }
 };
 
-Scope.prototype.class = function (name, names, code) {
-  return this.scope[name] = new classes.Function(this, names, code, true);
-};
-Scope.prototype.on = function (name, names, code) {
-  var method = new classes.Function(this, names, code);
-  return this.instance[name] = method.call.bind(method);
+Scope.prototype.object = function () {
+  var obj = {};
+  for (var i = 0, l = arguments.length; i < l; i += 2) {
+    obj[this.run(arguments[i])] = this.run(arguments[i + 1]);
+  }
+  return obj;
 };
 
-Scope.prototype.send = function (val, message, args) {
+Scope.prototype.fn = function () {
+  var closure = this.scope;
+  var codes = slice.call(arguments);
+  return function jackFunction() {
+    var child = new Scope(closure);
+    child.arguments = arguments;
+    return child.runCodes(codes);
+  };
+};
+
+Scope.prototype.call = function (val) {
   val = this.run(val);
-  args = args.map(this.run, this);
-  var fn = val[message] || classes.All[message];
-  if (!fn) return this.abort(val.tostring().val + " does not respond to '" + message + "'");
-  return (fn).apply(val, args);
+  if (!val instanceof Function) {
+    return this.abort("Attempt to call non-function");
+  }
+  try {
+    return val.apply(null, slice.call(arguments, 1).map(this.run, this));
+  }
+  catch (err) {
+    if (err.code === "RETURN") return err.value;
+    throw err;
+  }
+};
+
+Scope.prototype.le = function (a, b) {
+  return this.run(a) <= this.run(b);
+};
+
+Scope.prototype.lt = function (a, b) {
+  return this.run(a) < this.run(b);
+};
+
+Scope.prototype.eq = function (a, b) {
+  return this.run(a) === this.run(b);
+};
+
+Scope.prototype.neq = function (a, b) {
+  return this.run(a) !== this.run(b);
+};
+
+Scope.prototype.in = function (val, item) {
+  return this.run(item) in this.run(val);
+};
+
+Scope.prototype.add = function (a, b) {
+  return this.run(a) + this.run(b);
+};
+
+Scope.prototype.sub = function (a, b) {
+  return this.run(a) - this.run(b);
+};
+
+Scope.prototype.mul = function (a, b) {
+  return this.run(a) * this.run(b);
+};
+
+Scope.prototype.div = function (a, b) {
+  return this.run(a) / this.run(b);
+};
+
+Scope.prototype.pow = function (a, b) {
+  return Math.pow(this.run(a), this.run(b));
+};
+
+Scope.prototype.mod = function (a, b) {
+  return this.run(a) % this.run(b);
+};
+
+Scope.prototype.unm = function (a) {
+  return -this.run(a);
+};
+
+Scope.prototype.set = function (obj, key, value) {
+  obj = this.run(obj);
+  key = this.run(key);
+  value = this.run(value);
+  return obj[key] = value;
+};
+
+Scope.prototype.get = function (obj, key) {
+  obj = this.run(obj);
+  key = this.run(key);
+  return obj[key];
 };
 
 Scope.prototype.return = function (val) {
-  // console.log("RETURN", {val:val});
   throw {code:"RETURN", value: this.run(val)};
 };
 
@@ -117,7 +194,7 @@ Scope.prototype.assign = function (name, value) {
   while (scope) {
     if (hasOwn.call(scope, name)) return scope[name] = this.run(value);
     scope = Object.getPrototypeOf(scope);
-  } 
+  }
   return this.abort("Attempt to access undefined variable '" + name + "'");
 };
 
@@ -133,14 +210,13 @@ Scope.prototype.if = function () {
   var pairs = slice.call(arguments);
   for (var i = 0, l = pairs.length; i + 1 < l; i += 2) {
     var cond = this.run(pairs[i]);
-    if (cond.val) {
+    if (cond) {
       return this.runCodes(pairs[i + 1]);
     }
   }
   if (i < l) {
     return this.runCodes(pairs[i]);
   }
-  return new classes.Null();
 };
 
 Scope.prototype.while = function (cond, code) {
@@ -196,7 +272,7 @@ var inspect = require('util').inspect;
 
 Scope.prototype.eval = function (string) {
   var codes = parse(string);
-  // console.log(inspect(codes, false, 15, true));
+  console.log(inspect(codes, false, 15, true));
   // console.log({
   //   originalLength: Buffer.byteLength(string),
   //   msgpackLength: require('msgpack-js').encode(codes).length,
@@ -209,16 +285,21 @@ Scope.prototype.eval = function (string) {
 
 exports.eval = function (string) {
   var scope = new Scope({
-    print: {
-      call: function (val) {
-        console.log(val.tostring().val)
-      }
-    }
+    print: console.log.bind(console)
   });
   return scope.eval(string);
 };
 
 exports.attachParser = function (parser) {
+  parser.yy.F = Form
+  parser.yy.S = Symbol;
   parse = parser.parse.bind(parser);
 };
 
+Number.prototype.times = function (callback) {
+  var value;
+  for (var i = 0; i < this; i++) {
+    value = callback(i);
+  }
+  return value;
+};

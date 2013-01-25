@@ -155,7 +155,7 @@
       ["IDENT", "$$ = yy.S($1)"],
       ["form", "$$ = $1"],
       ["integer", "$$ = $1"],
-      ["CONSTANT", "$$ = $1 === 'true' ? true : $1 === 'false' ? false : null;"],
+      ["CONSTANT", "$$ = $1 === 'true' ? true : $1 === 'false' ? false : undefined;"],
       ["BUFFER", "$$ = new Buffer($1.substr(1, $1.length - 2).split(/\\s+/).map(function (b) { return parseInt(b, 16);}))"],
 
       ["expr IS TYPE", "$$ = [yy.F('is'), $1, $3]"],

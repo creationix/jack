@@ -29,18 +29,16 @@ function generate() {
 
 
 function ready() {
-  var filename = process.argv[2] || "sample.jk";
+  var filename = process.argv[2];
+  if (!filename) throw new Error("filename required");
   // console.log("Parsing: " + filename);
 
   var parser = require('./parser').parser;
-  parser.yy.F = runtime.Form
-  parser.yy.S = runtime.Symbol;
   runtime.attachParser(parser);
   fs.readFile(filename, "utf8", function (err, code) {
     if (err) throw err;
     var tree = parser.parse(code);
-    console.log(require('util').inspect(tree, false, 12, true));
     // console.log("Running program...")
-    // console.log(runtime.eval(code));
+    console.log(runtime.eval(code));
   });
 }
