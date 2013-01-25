@@ -1,17 +1,17 @@
-
+vars cache, fib
 -- Create an empty list to cache values we're seen already
-var cache = {}
+cache = {}
 
 -- Define a function to calculate fib that uses the closure cache
-var fib = {i|
+fib = {i|
   -- Special cases, these always return 1
   if i <= 2 { return 1 }
 
   -- Then look in the cache and return if it's already there
-  if cache.has(i) { return cache[i] }
+  if i in cache { return cache[i] }
 
   -- If not, calculate the new value, store in the cache and return
-  cache[i] = (self(i - 1)) + self(i - 2)
+  cache[i] = fib(i - 1) + fib(i - 2)
 }
 
 -- Call the function and return the fib of 10
