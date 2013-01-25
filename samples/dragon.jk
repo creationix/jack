@@ -1,25 +1,29 @@
+vars Dragon, pet
 
-class Dragon {name|
+Dragon = {name|
+  vars asleep, stuff-in-belly, stuff-in-intestine,
+       feed, walk, put-to-bed, toss, rock,
+       hungry?, poopy?, passage_of_time
 
-  var asleep = false
-  var stuff_in_belly     = 10 -- He's full.
-  var stuff_in_intestine =  0 -- He doesn't need to go.
+  asleep = false
+  stuff-in-belly     = 10 -- He's full.
+  stuff-in-intestine =  0 -- He doesn't need to go.
 
   print(name + ' is born.')
 
-  on feed {|
+  feed = {|
     print('You feed ' + name + '.')
-    stuff_in_belly = 10
+    stuff-in-belly = 10
     passage_of_time()
   }
 
-  on walk {|
+  walk = {|
     print('You walk ' + name + ".")
-    stuff_in_intestine = 0
+    stuff-in-intestine = 0
     passage_of_time
   }
 
-  on put_to_bed {|
+  put-to-bed = {|
     print('You put ' + name + ' to bed.')
     asleep = true
     3.times({|
@@ -36,13 +40,13 @@ class Dragon {name|
     }
   }
 
-  on toss {|
+  toss = {|
     print('You toss ' + name + ' up into the air.')
     print('He giggles, which singes your eyebrows.')
     passage_of_time()
   }
 
-  on rock {|
+  rock = {|
     print('You rock ' + name + ' gently.')
     asleep = true
     print('He briefly dozes off...')
@@ -53,19 +57,19 @@ class Dragon {name|
     }
   }
 
-  def hungry? {|
-    stuff_in_belly <= 2
+  hungry? = {|
+    stuff-in-belly <= 2
   }
 
-  def poopy? {|
-    stuff_in_intestine >= 8
+  poopy? = {|
+    stuff-in-intestine >= 8
   }
 
-  def passage_of_time {|
-    if stuff_in_belly > 0 {
+  passage_of_time = {|
+    if stuff-in-belly > 0 {
       -- Move food from belly to intestine
-      stuff_in_belly     = stuff_in_belly     - 1
-      stuff_in_intestine = stuff_in_intestine + 1
+      stuff-in-belly     = stuff-in-belly     - 1
+      stuff-in-intestine = stuff-in-intestine + 1
     } else { -- Our dragon is starving!
       if asleep {
         asleep = false
@@ -75,8 +79,8 @@ class Dragon {name|
       abort "died"
     }
 
-    if stuff_in_intestine >= 10 {
-      stuff_in_intestine = 0
+    if stuff-in-intestine >= 10 {
+      stuff-in-intestine = 0
       print('Whoops! ' + name + ' had an accident...')
     }
 
@@ -97,15 +101,24 @@ class Dragon {name|
     }
   }
 
+  -- Export the public interface to this closure object.
+  {
+   feed: feed
+   walk: walk
+   put-to-bed: put-to-bed
+   toss: toss
+   rock: rock
+  }
+
 }
 
-var pet = Dragon('Norbert')
+pet = Dragon('Norbert')
 pet.feed()
 pet.toss()
 pet.walk()
-pet.put_to_bed()
+pet.put-to-bed()
 pet.rock()
-pet.put_to_bed()
-pet.put_to_bed()
-pet.put_to_bed()
-pet.put_to_bed()
+pet.put-to-bed()
+pet.put-to-bed()
+pet.put-to-bed()
+pet.put-to-bed()
