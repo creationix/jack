@@ -3,7 +3,7 @@ vars Dragon, pet
 Dragon = {name|
   vars asleep, stuff-in-belly, stuff-in-intestine,
        feed, walk, put-to-bed, toss, rock,
-       hungry?, poopy?, passage_of_time
+       hungry?, poopy?, passage-of-time
 
   asleep = false
   stuff-in-belly     = 10 -- He's full.
@@ -14,13 +14,13 @@ Dragon = {name|
   feed = {|
     print('You feed ' + name + '.')
     stuff-in-belly = 10
-    passage_of_time()
+    passage-of-time()
   }
 
   walk = {|
     print('You walk ' + name + ".")
     stuff-in-intestine = 0
-    passage_of_time
+    passage-of-time
   }
 
   put-to-bed = {|
@@ -28,7 +28,7 @@ Dragon = {name|
     asleep = true
     3.times({|
       if asleep {
-        passage_of_time()
+        passage-of-time()
       }
       if asleep {
         print(name + ' snores, filling the room with smoke.')
@@ -43,14 +43,14 @@ Dragon = {name|
   toss = {|
     print('You toss ' + name + ' up into the air.')
     print('He giggles, which singes your eyebrows.')
-    passage_of_time()
+    passage-of-time()
   }
 
   rock = {|
     print('You rock ' + name + ' gently.')
     asleep = true
     print('He briefly dozes off...')
-    passage_of_time()
+    passage-of-time()
     if asleep {
       asleep = false
       print('...but wakes when you stop.')
@@ -65,7 +65,7 @@ Dragon = {name|
     stuff-in-intestine >= 8
   }
 
-  passage_of_time = {|
+  passage-of-time = {|
     if stuff-in-belly > 0 {
       -- Move food from belly to intestine
       stuff-in-belly     = stuff-in-belly     - 1
