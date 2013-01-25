@@ -42,18 +42,18 @@ true is Boolean --> true
 -- Functions and local variables
 -- Functions are small programs that you can embed in your program
 -- They have lexical closure meaning they can access variables in outer scopes.
-(arg1, arg2, arg3, ...){ ... } is Function --> true
+{arg1, arg2, arg3| body } is Function --> true
 vars square, cube
 -- A Pure function
-square = (x){ x * x }
+square = {x| x * x }
 -- Another pure function, but using the "square" value from the closure
-cube = (x){ x * square(x)}
+cube = {x| x * square(x)}
 -- Functions have their own nested scope and you need to define local variables
 -- at the top.
 -- Here is a self calling function with it's own vars
 vars a
 a = 1
-(){
+{|
   vars b
   b = 2
   a + b
@@ -87,8 +87,8 @@ person = {name: "Tim", age: 30}
 -- By default maps respond to @get, @set, @has, @keys, and @delete
 -- Disallows setting properties and echos key for any get
 echo = {
-  @has: (key) { true },
-  @get: (key) { key },
+  @has: {key| true },
+  @get: {key| key },
   @set: null,
   @delete: null,
 }
@@ -117,10 +117,10 @@ delete obj.3 --> obj@delete(3)
 -- @keys () --> Returns a list of possible known keys.
 -- @len () --> returns length of list-style containers
 #a --> a@len()
-for key, value in obj { ... } -- Loop over keys and values in an object with @keys
-for key, value in list { ... } -- Loop over keys and values in an object with @len
+for key, value in obj { do-something } -- Loop over keys and values in an object with @keys
+for key, value in list { do-something } -- Loop over keys and values in an object with @len
 -- keys will be integers from 0 to length - 1 for @len based items
-for value in list { ... } -- Loop over just values works for either type.
+for value in list { do-something } -- Loop over just values works for either type.
 -- @call (args...) -- Make this value callable as a function
 
 -- Arithmetic operations
