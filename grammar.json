@@ -5,7 +5,7 @@
       ["--.*",                            "/* ignore comments */"],
       ["<[0-9A-Fa-f][0-9A-Fa-f](\\s+[0-9A-Fa-f][0-9A-Fa-f])*>", "return 'BUFFER'"],
       ["(null|true|false)\\b",            "return 'CONSTANT'"],
-      ["(Integer|Boolean|Null|String|Buffer|Tuple|List|Object|Function|Coroutine)\\b", "return 'TYPE'"],
+      ["(Integer|Boolean|Null|String|Buffer|Tuple|List|Object|Function|Coroutine|Form)\\b", "return 'TYPE'"],
       ["return\\b",                       "return 'RETURN'"],
       ["abort\\b",                        "return 'ABORT'"],
       ["vars\\b",                         "return 'VARS'"],
@@ -19,6 +19,7 @@
       ["while\\b",                        "return 'WHILE'"],
       ["\"(?:[^\"\\\\]|\\\\.)*\"",        "return 'STRING'"],
       ["'(?:[^'\\\\]|\\\\.)*'",           "return 'STRING'"],
+      ["@[a-z]+",                         "return 'FORM'"],
       ["[a-zA-Z_]([-]?[a-zA-Z0-9_])*",    "return 'IDENT'"],
       ["(?:0|-?[1-9][0-9]*)",             "return 'INTEGER'"],
       [":",                               "return ':'"],
@@ -104,6 +105,7 @@
       ["params , IDENT", "$$ = $1.concat([$3])"]
     ],
     "key": [
+      ["form :", "$$ = $1"],
       ["IDENT :", "$$ = $1"],
       ["STRING :", "$$ = eval($1)"],
       ["[ expr ] :", "$$ = $2"]
@@ -135,9 +137,19 @@
     "integer": [
       ["INTEGER", "$$ = parseInt($1, 10)"]
     ],
+    "form": [
+      ["FORM", "$$ = yy.F($1.substr(1))"]
+    ],
+    "lookup": [
+      [". integer", "$$ = $2"],
+      [". IDENT", "$$ = $2"],
+      [". form", "$$ = $2"],
+      ["[ expr ]", "$$ = $2"]
+    ],
     "expr": [
       ["STRING", "$$ = eval($1);"],
       ["IDENT", "$$ = yy.S($1)"],
+      ["form", "$$ = $1"],
       ["integer", "$$ = $1"],
       ["CONSTANT", "$$ = $1 === 'true' ? true : $1 === 'false' ? false : null;"],
       ["BUFFER", "$$ = new Buffer($1.substr(1, $1.length - 2).split(/\\s+/).map(function (b) { return parseInt(b, 16);}))"],
@@ -179,13 +191,9 @@
       ["[ list ]", "$$ = [yy.F('list')].concat($2)"],
       ["{ pairs }", "$$ = [yy.F('object')].concat($2)"],
 
-      ["expr . integer", "$$ = [yy.F('get'), $1, $3]"],
-      ["expr . IDENT", "$$ = [yy.F('get'), $1, $3]"],
-      ["expr [ expr ]", "$$ = [yy.F('get'), $1, $3]"],
+      ["expr lookup", "$$ = [yy.F('get'), $1, $2]"],
 
-      ["expr . integer = expr", "$$ = [yy.F('set'), $1, $3, $5]"],
-      ["expr . IDENT = expr", "$$ = [yy.F('set'), $1, $3, $5]"],
-      ["expr [ expr ] = expr", "$$ = [yy.F('set'), $1, $3, $6]"],
+      ["expr lookup = expr", "$$ = [yy.F('set'), $1, $2, $4]"],
 
       ["expr ( list )", "$$ = [yy.F('call'), $1].concat($3)"],
 
@@ -200,9 +208,7 @@
       ["if ELIF expr { code }", "$$ = $1.concat([$3, $5])"]
     ],
     "statement": [
-      ["DELETE expr . integer", "$$ = [yy.F('delete'), $2, $4]"],
-      ["DELETE expr . IDENT", "$$ = [yy.F('delete'), $2, $4]"],
-      ["DELETE expr [ expr ]", "$$ = [yy.F('delete'), $2, $4]"],
+      ["DELETE expr lookup", "$$ = [yy.F('delete'), $2, $3]"],
       ["VARS params", "$$ = [yy.F('vars')].concat($2)"],
       ["RETURN expr", "$$ = [yy.F('return'), $2]"],
       ["ABORT expr", "$$ = [yy.F('abort'), $2]"]
