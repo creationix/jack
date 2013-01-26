@@ -1,7 +1,37 @@
-locals names
+vars names, person, i, range
 names = ["Thorin", "Dwalin", "Balin", "Bifur", "Bofur", "Bombur", "Oin",
          "Gloin", "Ori", "Nori", "Dori", "Fili", "Kili", "Bilbo", "Gandalf"]
 
 for name in names {
-  print(name)
+  if name != "Bilbo" && name != "Gandalf" {
+    print(name)
+  }
+}
+
+person = {name: "Tim", age: 30}
+for key, value in person {
+  print(key + " = " + value)
+}
+
+i = 0
+while i < 10 {
+  i = i + 1
+  print(i)
+}
+
+range = {n|
+  vars i, v
+  i = 0
+  {|
+    v = i
+    i = i + 1
+    if (v < n) { v }
+  }
+}
+
+for i in range(10) {
+  print(i + 1)
+}
+for i in range(10) {
+  print(10 - i)
 }

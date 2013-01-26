@@ -156,6 +156,22 @@ Scope.prototype.unm = function (a) {
   return -this.run(a);
 };
 
+Scope.prototype.or = function (a, b) {
+  return this.run(a) || this.run(b);
+};
+
+Scope.prototype.and = function (a, b) {
+  return this.run(a) && this.run(b);
+};
+
+Scope.prototype.xor = function (a, b) {
+  return !this.run(a) !== !this.run(b);
+};
+
+Scope.prototype.not = function (a) {
+  return !this.run(a);
+};
+
 Scope.prototype.set = function (obj, key, value) {
   obj = this.run(obj);
   key = this.run(key);
@@ -180,13 +196,6 @@ Scope.prototype.abort = function (message) {
   // throw new Error(message);
 };
 
-Scope.prototype.var = function (name, value) {
-  // console.log("VAR", {name:name,value:value});
-  if (hasOwn.call(this.scope, name)) {
-    return this.abort("Attempt to redeclare local variable '" + name + "'");
-  }
-  return this.scope[name] = this.run(value);
-};
 
 Scope.prototype.assign = function (name, value) {
   // console.log("ASSIGN", {name:name,value:value});
@@ -219,53 +228,79 @@ Scope.prototype.if = function () {
   }
 };
 
-Scope.prototype.while = function (cond, code) {
+Scope.prototype.while = function (cond) {
   var child = this.spawn();
+  var code = slice.call(arguments, 1);
   var ret;
-  while (child.run(cond).toboolean().val) {
+  while (child.run(cond)) {
     ret = child.runCodes(code);
   }
   return ret;
 };
 
-Scope.prototype.forin = function (name, val, filter, code) {
-  val = this.run(val);
+Scope.prototype.for = function (list, names) {
+  list = this.run(list);
+  var code = slice.call(arguments, 2);
   var child = this.spawn();
   var ret;
-  for (var i = 0, l = val.length(); i < l; i++) {
-    var item = val.get(new classes.Integer(i));
-    child.scope[name] = item;
-    var cond = child.run(filter).toboolean();
-    if (cond.val) {
+  if (typeof list === "function") {
+    var i = 0;
+    var item;
+    while ((item = list()) !== undefined) {
+      if (names.length === 2) {
+        child.scope[names[0]] = i;
+        child.scope[names[1]] = item;
+      }
+      else {
+        child.scope[names[0]] = item;
+      }
       ret = child.runCodes(code);
     }
   }
-  return ret || new classes.Null();
-};
-
-Scope.prototype.mapin = function (name, val, filter, code) {
-  val = this.run(val);
-  var child = this.spawn();
-  var result = [];
-  for (var i = 0, l = val.length(); i < l; i++) {
-    var item = val.get(new classes.Integer(i));
-    child.scope[name] = item;
-    var cond = child.run(filter).toboolean();
-    if (cond.val) {
-      result.push(child.runCodes(code));
+  else if (Array.isArray(list)) {
+    for (var i = 0, l = list.length; i < l; i++) {
+      var item = list[i];
+      if (names.length === 2) {
+        child.scope[names[0]] = i;
+        child.scope[names[1]] = item;
+      }
+      else {
+        child.scope[names[0]] = item;
+      }
+      ret = child.runCodes(code);
     }
   }
-  return new classes.List(result);
+  else {
+    var keys = Object.keys(list);
+    for (var i = 0, l = keys.length; i < l; i++) {
+      var key = keys[i];
+      var item = list[key];
+      if (names.length === 2) {
+        child.scope[names[0]] = key;
+        child.scope[names[1]] = item;
+      }
+      else {
+        child.scope[names[0]] = item;
+      }
+      ret = child.runCodes(code);
+    }
+  }
+  return ret;
 };
 
-Scope.prototype.list = function (items) {
-  items = items.map(this.run, this);
-  return new classes.List(items);
+
+Scope.prototype.list = function () {
+  return map.call(arguments, this.run, this);
 };
 
-Scope.prototype.map = function (pairs) {
-  pairs = pairs.map(this.run, this);
-  return new classes.Map(pairs);
+Scope.prototype.object = function () {
+  var obj = Object.create(null);
+  for (var i = 0, l = arguments.length; i < l; i += 2) {
+    var key = this.run(arguments[i]);
+    var value = this.run(arguments[i + 1]);
+    obj[key] = value;
+  }
+  return obj;
 };
 
 var inspect = require('util').inspect;
