@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 var fs = require('fs');
 var pathJoin = require('path').join;
 var runtime = require('./runtime');
