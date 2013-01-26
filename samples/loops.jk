@@ -1,0 +1,7 @@
+locals names
+names = ["Thorin", "Dwalin", "Balin", "Bifur", "Bofur", "Bombur", "Oin",
+         "Gloin", "Ori", "Nori", "Dori", "Fili", "Kili", "Bilbo", "Gandalf"]
+
+for name in names {
+  print(name)
+}
