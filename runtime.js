@@ -76,14 +76,6 @@ Scope.prototype.vars = function () {
   }
 };
 
-Scope.prototype.object = function () {
-  var obj = {};
-  for (var i = 0, l = arguments.length; i < l; i += 2) {
-    obj[this.run(arguments[i])] = this.run(arguments[i + 1]);
-  }
-  return obj;
-};
-
 Scope.prototype.fn = function () {
   var closure = this.scope;
   var codes = slice.call(arguments);
@@ -125,7 +117,9 @@ Scope.prototype.neq = function (a, b) {
 };
 
 Scope.prototype.in = function (val, item) {
-  return this.run(item) in this.run(val);
+  val = this.run(val);
+  item = this.run(item);
+  return typeof val === "object" && item in val;
 };
 
 Scope.prototype.add = function (a, b) {
@@ -172,6 +166,11 @@ Scope.prototype.not = function (a) {
   return !this.run(a);
 };
 
+Scope.prototype.len = function (obj) {
+  obj = this.run(obj);
+  return obj.length;
+};
+
 Scope.prototype.set = function (obj, key, value) {
   obj = this.run(obj);
   key = this.run(key);
@@ -183,6 +182,12 @@ Scope.prototype.get = function (obj, key) {
   obj = this.run(obj);
   key = this.run(key);
   return obj[key];
+};
+
+Scope.prototype.delete = function (obj, key) {
+  obj = this.run(obj);
+  key = this.run(key);
+  delete obj[key];
 };
 
 Scope.prototype.return = function (val) {
@@ -293,6 +298,25 @@ Scope.prototype.list = function () {
   return map.call(arguments, this.run, this);
 };
 
+function Tuple(len) {
+  Array.call(this, len);
+  this.length = len;
+}
+Tuple.prototype.__proto__ = Array.prototype;
+Tuple.prototype.inspect = function () {
+  return "(" + this.map(inspect).join(", ") + ")";
+};
+
+Scope.prototype.tuple = function () {
+  var l = arguments.length;
+  var tuple = new Tuple(l);
+  for (var i = 0; i < l; i++) {
+    tuple[i] = this.run(arguments[i]);
+  }
+  return tuple;
+};
+
+
 Scope.prototype.object = function () {
   var obj = Object.create(null);
   for (var i = 0, l = arguments.length; i < l; i += 2) {
@@ -301,6 +325,44 @@ Scope.prototype.object = function () {
     obj[key] = value;
   }
   return obj;
+};
+
+var is = {
+  Integer: function (val) {
+    return val >>> 0 === val;
+  },
+  Null: function (val) {
+    return val === undefined;
+  },
+  Boolean: function (val) {
+    return val === true || val === false;
+  },
+  String: function (val) {
+    return typeof val === "string";
+  },
+  Buffer: function (val) {
+    return Buffer.isBuffer(val);
+  },
+  Function: function (val) {
+    return typeof val === "function"
+  },
+  Tuple: function (val) {
+    return val instanceof Tuple;
+  },
+  List: function (val) {
+    return Array.isArray(val);
+  },
+  Object: function (val) {
+    return val && val.__proto__ === null;
+  }
+
+
+}
+
+Scope.prototype.is = function (a, b) {
+  a = this.run(a);
+  console.log("IS", a, b);
+  return is[b](a);
 };
 
 var inspect = require('util').inspect;
@@ -320,7 +382,15 @@ Scope.prototype.eval = function (string) {
 
 exports.eval = function (string) {
   var scope = new Scope({
-    print: console.log.bind(console)
+    print: console.log.bind(console),
+    range: function (n) {
+      var i = 0, v;
+      return function () {
+        v = i;
+        i++;
+        if (v < n) return v;
+      };
+    }
   });
   return scope.eval(string);
 };

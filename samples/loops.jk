@@ -1,4 +1,4 @@
-vars names, person, i, range
+vars names, person, i
 names = ["Thorin", "Dwalin", "Balin", "Bifur", "Bofur", "Bombur", "Oin",
          "Gloin", "Ori", "Nori", "Dori", "Fili", "Kili", "Bilbo", "Gandalf"]
 
@@ -19,15 +19,6 @@ while i < 10 {
   print(i)
 }
 
-range = {n|
-  vars i, v
-  i = 0
-  {|
-    v = i
-    i = i + 1
-    if (v < n) { v }
-  }
-}
 
 for i in range(10) {
   print(i + 1)

@@ -1,3 +1,4 @@
+vars person, echo, m, key, obj, value, list, do-something, a, b, expr, body, alive, i, names, range
 --------------------------------------------------------------------------------
 -- Primitives
 
@@ -67,6 +68,7 @@ a = 1
 -- Tuples must have at least 2 items in them. They are fixed length structs
 -- essentially.
 (1, 2) is Tuple --> true
+print((1, 2, 3))
 
 -- Lists
 [1,2,3,4] is List --> true
@@ -98,6 +100,8 @@ echo["Monkey"]   --> "Monkey"
 echo[true]       --> true
 echo.Monkey = "Frod" --! throws unsupported metamethod error
 
+obj = {}
+value = 42
 --------------------------------------------------------------------------------
 -- Supported metamethods are:
 -- @has (key) --> Boolean if key is in collection
@@ -117,6 +121,7 @@ delete obj.3 --> obj@delete(3)
 -- @keys () --> Returns a list of possible known keys.
 -- @len () --> returns length of list-style containers
 #a --> a@len()
+list = [1,2,3]
 for key, value in obj { do-something } -- Loop over keys and values in an object with @keys
 for key, value in list { do-something } -- Loop over keys and values in an object with @len
 -- keys will be integers from 0 to length - 1 for @len based items
