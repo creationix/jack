@@ -203,7 +203,6 @@ Scope.prototype.abort = function (message) {
 
 
 Scope.prototype.assign = function (name, value) {
-  // console.log("ASSIGN", {name:name,value:value});
   var scope = this.scope;
   while (scope) {
     if (hasOwn.call(scope, name)) return scope[name] = this.run(value);
@@ -213,7 +212,6 @@ Scope.prototype.assign = function (name, value) {
 };
 
 Scope.prototype.lookup = function (name) {
-  // console.log("LOOKUP", {name:name});
   if (name in this.scope) {
     return this.scope[name];
   }
@@ -355,14 +353,13 @@ var is = {
   Object: function (val) {
     return val && val.__proto__ === null;
   }
-
-
 }
 
 Scope.prototype.is = function (a, b) {
   a = this.run(a);
-  console.log("IS", a, b);
-  return is[b](a);
+  var fn = is[b];
+  if (!fn) return this.abort("Unknown type " + b);
+  return fn(a);
 };
 
 var inspect = require('util').inspect;
