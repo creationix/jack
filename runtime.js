@@ -162,10 +162,14 @@ Scope.prototype.neq = function (a, b) {
   return this.run(a) !== this.run(b);
 };
 
-Scope.prototype.in = function (val, item) {
+Scope.prototype.in = function (val, key) {
   val = this.run(val);
-  item = this.run(item);
-  return typeof val === "object" && item in val;
+  key = this.run(key);
+  var meta = getMeta(val);
+  if (meta.has) {
+    return meta.has(key);
+  }
+  return typeof val === "object" && key in val;
 };
 
 Scope.prototype.add = function (a, b) {

@@ -6,3 +6,5 @@ echo = {
 }
 
 [echo.name, echo.age, echo[true], echo[false], echo.1, echo.2]
+
+print("name" in echo)
