@@ -71,6 +71,33 @@ function metaGet(obj, key) {
     return meta.get(key);
   }
 }
+function metaHas(obj, key) {
+  var meta = getMeta(obj);
+  if (key instanceof Form) {
+    return key.value in meta;
+  }
+  if (Object.prototype.hasOwnProperty.call(obj, key)) {
+    return true;
+  }
+  if (meta.has) {
+    return meta.has();
+  }
+  return false;
+}
+function metaDelete(obj, key) {
+  var meta = getMeta(obj);
+  if (key instanceof Form) {
+    delete meta[key.name];
+    return;
+  }
+  if (Object.prototype.hasOwnProperty.call(obj, key)) {
+    delete obj[key];
+    return;
+  }
+  if (meta.delete) {
+    return meta.delete(key);
+  }
+}
 
 function Scope(parent) {
   this.scope = Object.create(parent || null);
@@ -166,11 +193,7 @@ Scope.prototype.neq = function (a, b) {
 Scope.prototype.in = function (val, key) {
   val = this.run(val);
   key = this.run(key);
-  var meta = getMeta(val);
-  if (meta.has) {
-    return meta.has(key);
-  }
-  return typeof val === "object" && key in val;
+  return metaHas(val, key);
 };
 
 Scope.prototype.add = function (a, b) {
@@ -221,7 +244,6 @@ Scope.prototype.len = function (obj) {
   obj = this.run(obj);
   var meta = getMeta(obj);
   if (meta.len) return meta.len();
-  return obj.length;
 };
 
 Scope.prototype.set = function (obj, key, value) {
@@ -240,11 +262,7 @@ Scope.prototype.get = function (obj, key) {
 Scope.prototype.delete = function (obj, key) {
   obj = this.run(obj);
   key = this.run(key);
-  var meta = getMeta(obj);
-  if (meta.delete) {
-    return meta.delete(key);
-  }
-  delete obj[key];
+  return metaDelete(obj, key);
 };
 
 Scope.prototype.return = function (val) {
