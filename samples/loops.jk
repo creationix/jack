@@ -1,4 +1,4 @@
-vars names, person, i
+vars names, person, i, doubles, lengths, cubeRange
 names = ["Thorin", "Dwalin", "Balin", "Bifur", "Bofur", "Bombur", "Oin",
          "Gloin", "Ori", "Nori", "Dori", "Fili", "Kili", "Bilbo", "Gandalf"]
 
@@ -19,9 +19,53 @@ while i < 10 {
   print(i)
 }
 
+print("range")
 for i in range(10) {
   print(i + 1)
 }
 for i in range(10) {
   print(10 - i)
+}
+
+-- Dynamic object that gives the first 10 doubles
+doubles = {
+  @len: {| 10 }
+  @get: {key|
+    if key is Integer { key * key }
+  }
+}
+
+print("Doubles")
+for k, v in doubles {
+  print([k, v])
+}
+
+-- Dynamic object that has names list as keys and string lenth as values
+lengths = {
+  @keys: {| names }
+  @get: {key|
+    if key is String { #key }
+  }
+}
+
+print ("Lengths")
+for k, v in lengths {
+  print([k, v])
+}
+
+
+cubeRange = {n|
+  vars i, v
+  i = 0
+  {
+    @call: {|
+      v = i
+      i = i + 1
+      if v < n { v * v * v }
+    }
+  }
+}
+
+for i in cubeRange(5) {
+  print("cube", i)
 }

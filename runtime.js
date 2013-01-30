@@ -32,6 +32,15 @@ function getMeta(obj) {
   }
   var meta = {};
   metas.set(obj, meta);
+  if (Array.isArray(obj)) {
+    meta.len = function () { return obj.length; };
+  }
+  else if (typeof obj === "function") {
+    meta.call = obj;
+  }
+  else {
+    meta.keys = function () { return Object.keys(obj); };
+  }
   return meta;
 }
 function metaSet(obj, key, value) {
@@ -283,10 +292,24 @@ Scope.prototype.for = function (list, names) {
   var code = slice.call(arguments, 2);
   var child = this.spawn();
   var ret;
-  if (typeof list === "function") {
+  var meta = getMeta(list);
+  if (meta.call) {
     var i = 0;
     var item;
-    while ((item = list()) !== undefined) {
+    while ((item = meta.call()) !== undefined) {
+      if (names.length === 2) {
+        child.scope[names[0]] = i++;
+        child.scope[names[1]] = item;
+      }
+      else {
+        child.scope[names[0]] = item;
+      }
+      ret = child.runCodes(code);
+    }
+  }
+  else if (meta.len) {
+    for (var i = 0, l = meta.len(); i < l; i++) {
+      var item = metaGet(list, i);
       if (names.length === 2) {
         child.scope[names[0]] = i;
         child.scope[names[1]] = item;
@@ -297,24 +320,11 @@ Scope.prototype.for = function (list, names) {
       ret = child.runCodes(code);
     }
   }
-  else if (Array.isArray(list)) {
-    for (var i = 0, l = list.length; i < l; i++) {
-      var item = list[i];
-      if (names.length === 2) {
-        child.scope[names[0]] = i;
-        child.scope[names[1]] = item;
-      }
-      else {
-        child.scope[names[0]] = item;
-      }
-      ret = child.runCodes(code);
-    }
-  }
-  else {
-    var keys = Object.keys(list);
+  else if (meta.keys) {
+    var keys = meta.keys();
     for (var i = 0, l = keys.length; i < l; i++) {
       var key = keys[i];
-      var item = list[key];
+      var item = metaGet(list, key);
       if (names.length === 2) {
         child.scope[names[0]] = key;
         child.scope[names[1]] = item;
