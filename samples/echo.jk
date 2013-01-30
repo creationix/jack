@@ -1,0 +1,9 @@
+vars echo
+
+echo = {
+  @get: {key| key}
+  @has: {key| true}
+}
+print(echo);
+
+[echo.name, echo.age, echo[true], echo[false], echo.1, echo.2]
