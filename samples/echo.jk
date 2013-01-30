@@ -3,8 +3,11 @@ vars echo
 echo = {
   @get: {key| key}
   @has: {key| true}
+  @delete: {key| print("Can't delete", key) }
 }
 
 [echo.name, echo.age, echo[true], echo[false], echo.1, echo.2]
 
 print("name" in echo)
+
+delete echo.name

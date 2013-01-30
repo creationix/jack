@@ -237,6 +237,10 @@ Scope.prototype.get = function (obj, key) {
 Scope.prototype.delete = function (obj, key) {
   obj = this.run(obj);
   key = this.run(key);
+  var meta = getMeta(obj);
+  if (meta.delete) {
+    return meta.delete(key);
+  }
   delete obj[key];
 };
 
