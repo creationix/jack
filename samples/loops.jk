@@ -34,6 +34,7 @@ doubles = {
     if key is Integer { key * key }
   }
 }
+print("#doubles", #doubles)
 
 print("Doubles")
 for k, v in doubles {
@@ -66,6 +67,11 @@ cubeRange = {n|
   }
 }
 
-for i in cubeRange(5) {
-  print("cube", i)
+print("Cubes")
+for k, v in cubeRange(5) {
+  print([k, v])
+}
+print("String")
+for k, v in "Hello World" {
+  print([k, v])
 }

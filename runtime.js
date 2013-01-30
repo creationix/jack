@@ -26,16 +26,19 @@ Symbol.prototype.inspect = function () {
 };
 
 var metas = new WeakMap();
+var pmetas = new Map();
 function getMeta(obj) {
-  if (metas.has(obj)) {
-    return metas.get(obj);
+  var type = typeof obj;
+  var mtab = (type === "object" || type === "function") ? metas : pmetas;
+  if (mtab.has(obj)) {
+    return mtab.get(obj);
   }
   var meta = {};
-  metas.set(obj, meta);
-  if (Array.isArray(obj)) {
+  mtab.set(obj, meta);
+  if (Array.isArray(obj) || type === "string") {
     meta.len = function () { return obj.length; };
   }
-  else if (typeof obj === "function") {
+  else if (type === "function") {
     meta.call = obj;
   }
   else {
@@ -44,7 +47,6 @@ function getMeta(obj) {
   return meta;
 }
 function metaSet(obj, key, value) {
-  if (typeof obj !== "object") return;
   var meta = getMeta(obj);
   if (key instanceof Form) {
     return meta[key.name] = value;
@@ -58,12 +60,11 @@ function metaSet(obj, key, value) {
   return obj[key] = value;
 }
 function metaGet(obj, key) {
-  if (typeof obj !== "object") return;
   var meta = getMeta(obj);
   if (key instanceof Form) {
     return meta[key.name];
   }
-  if (key in obj) {
+  if (Object.prototype.hasOwnProperty.call(obj, key)) {
     return obj[key];
   }
   if (meta.get) {
@@ -218,6 +219,8 @@ Scope.prototype.not = function (a) {
 
 Scope.prototype.len = function (obj) {
   obj = this.run(obj);
+  var meta = getMeta(obj);
+  if (meta.len) return meta.len();
   return obj.length;
 };
 
