@@ -26,14 +26,14 @@ Dragon = {name|
   put-to-bed = {|
     print('You put ' + name + ' to bed.')
     asleep = true
-    3.times({|
+    for i in range(3) {
       if asleep {
         passage-of-time()
       }
       if asleep {
         print(name + ' snores, filling the room with smoke.')
       }
-    })
+    }
     if asleep {
       asleep = false
       print(name + ' wakes up slowly.')

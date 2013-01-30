@@ -25,6 +25,43 @@ Symbol.prototype.inspect = function () {
   return "\033[35m:" + this.name + "\033[0m";
 };
 
+var metas = new WeakMap();
+function getMeta(obj) {
+  if (metas.has(obj)) {
+    return metas.get(obj);
+  }
+  var meta = {};
+  metas.set(obj, meta);
+  return meta;
+}
+function metaSet(obj, key, value) {
+  if (typeof obj !== "object") return;
+  var meta = getMeta(obj);
+  if (key instanceof Form) {
+    return meta[key.name] = value;
+  }
+  if (key in obj) {
+    return obj[key] = value;
+  }
+  if (meta.set) {
+    return meta.set(key, value);
+  }
+  return obj[key] = value;
+}
+function metaGet(obj, key) {
+  if (typeof obj !== "object") return;
+  var meta = getMeta(obj);
+  if (key instanceof Form) {
+    return meta[key.name];
+  }
+  if (key in obj) {
+    return obj[key];
+  }
+  if (meta.get) {
+    return meta.get(key);
+  }
+}
+
 function Scope(parent) {
   this.scope = Object.create(parent || null);
 }
@@ -175,13 +212,13 @@ Scope.prototype.set = function (obj, key, value) {
   obj = this.run(obj);
   key = this.run(key);
   value = this.run(value);
-  return obj[key] = value;
+  return metaSet(obj, key, value);
 };
 
 Scope.prototype.get = function (obj, key) {
   obj = this.run(obj);
   key = this.run(key);
-  return obj[key];
+  return metaGet(obj, key);
 };
 
 Scope.prototype.delete = function (obj, key) {
@@ -315,12 +352,13 @@ Scope.prototype.tuple = function () {
 };
 
 
+
 Scope.prototype.object = function () {
   var obj = Object.create(null);
   for (var i = 0, l = arguments.length; i < l; i += 2) {
     var key = this.run(arguments[i]);
     var value = this.run(arguments[i + 1]);
-    obj[key] = value;
+    metaSet(obj, key, value);
   }
   return obj;
 };
