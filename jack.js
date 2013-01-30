@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/local/bin/node --harmony-collections
 var fs = require('fs');
 var pathJoin = require('path').join;
 var runtime = require('./runtime');
