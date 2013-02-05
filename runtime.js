@@ -58,20 +58,15 @@ function metaSet(obj, key, value) {
   if (meta.set) {
     return meta.set(key, value);
   }
-  return obj.set(key, value);
+  return obj[key] = value;
 }
 function metaGet(obj, key) {
   var meta = getMeta(obj);
   if (key instanceof Form) {
     return meta[key.name];
   }
-  if (typeof obj === 'string' || Array.isArray(obj)) {
-    if (obj.hasOwnProperty(key)) {
-      return obj[key];
-    }
-  }
-  else if (obj.has(key)) {
-    return obj.get(key);
+  if (obj && Object.prototype.hasOwnProperty.call(obj, key)) {
+    return obj[key];
   }
   if (meta.get) {
     return meta.get(key);
@@ -82,7 +77,7 @@ function metaHas(obj, key) {
   if (key instanceof Form) {
     return key.value in meta;
   }
-  if (obj.has(key)) {
+  if (Object.prototype.hasOwnProperty.call(obj, key)) {
     return true;
   }
   if (meta.has) {
@@ -96,8 +91,8 @@ function metaDelete(obj, key) {
     delete meta[key.name];
     return;
   }
-  if (obj.has(key)) {
-    obj.delete(key);
+  if (Object.prototype.hasOwnProperty.call(obj, key)) {
+    delete obj[key];
     return;
   }
   if (meta.delete) {
@@ -216,7 +211,7 @@ Scope.prototype.mul = function (a, b) {
 };
 
 Scope.prototype.div = function (a, b) {
-  return this.run(a) / this.run(b);
+  return Math.floor(this.run(a) / this.run(b));
 };
 
 Scope.prototype.pow = function (a, b) {
@@ -398,9 +393,8 @@ Scope.prototype.tuple = function () {
 };
 
 
-
 Scope.prototype.object = function () {
-  var obj = new Map();
+  var obj = Object.create(null);
   for (var i = 0, l = arguments.length; i < l; i += 2) {
     var key = this.run(arguments[i]);
     var value = this.run(arguments[i + 1]);
@@ -462,6 +456,12 @@ exports.eval = function (string) {
         i++;
         if (v < n) return v;
       };
+    },
+    rand: function (n) {
+      return Math.floor(Math.random() * n);
+    },
+    inspect: function (val, d) {
+      return inspect(val, false, d, true);
     }
   });
   return scope.eval(string);

@@ -15,4 +15,4 @@ fib = {i|
 }
 
 -- Call the function and return the fib of 10
-fib(42)
+print(fib(42))
