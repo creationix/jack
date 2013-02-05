@@ -162,11 +162,12 @@ Scope.prototype.fn = function () {
 
 Scope.prototype.call = function (val) {
   val = this.run(val);
-  if (!val instanceof Function) {
-    return this.abort("Attempt to call non-function");
+  var meta = getMeta(val);
+  if (!meta.call) {
+    return this.abort("Attempt to call non-callable value");
   }
   try {
-    return val.apply(null, slice.call(arguments, 1).map(this.run, this));
+    return meta.call.apply(null, slice.call(arguments, 1).map(this.run, this));
   }
   catch (err) {
     if (err.code === "RETURN") return err.value;
@@ -439,18 +440,9 @@ Scope.prototype.is = function (a, b) {
   return fn(a);
 };
 
-var inspect = require('util').inspect;
 
 Scope.prototype.eval = function (string) {
   var codes = parse(string);
-  console.log(inspect(codes, false, 15, true));
-  // console.log({
-  //   originalLength: Buffer.byteLength(string),
-  //   msgpackLength: require('msgpack-js').encode(codes).length,
-  //   jsonLength: Buffer.byteLength(JSON.stringify(codes)),
-  //   binaryLength: exports.save(codes).length
-  // });
-
   return this.runCodes(codes);
 };
 
