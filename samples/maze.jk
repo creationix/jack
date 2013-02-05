@@ -1,0 +1,121 @@
+vars Maze, shuffle, get-root, check-wall, display
+
+-- Shuffle a list in-place
+shuffle = {list|
+  vars length
+  length = #list
+  for i in range(length) {
+    vars j, t
+    j = rand(length)
+    t = list[i]
+    list[i] = list[j]
+    list[j] = t
+  }
+}
+
+-- Recursivly find the root of a set.
+get-root = {node|
+  if node.parent {
+    get-root(node.parent)
+  }
+  else {
+    node
+  }
+}
+
+check-wall = {first, second|
+  vars first-root, second-root
+  first-root = get-root(first)
+  second-root = get-root(second)
+  if first-root == second-root {
+    true
+  }
+  else {
+    first-root.parent = second-root
+    false
+  }
+}
+
+Maze = {width, height|
+  vars sets, order
+  sets = []
+  order = []
+  for i in range(width * height) {
+    sets[i] = {}
+    order[i * 2] = i * 2
+    order[i * 2 + 1] = i * 2 + 1
+  }
+  shuffle(order)
+  for i in order {
+    vars first, second
+    if i >= #sets {
+      -- Right wall
+      first = sets[i - sets.length]
+      if i % width == width - 1 {
+        first.right = true
+        -- Skip right wall for last column of cells
+      }
+      else {
+        second = sets[i - sets.length + 1]
+        first.right = check-wall(first, second)
+      }
+    }
+    else {
+      -- Bottom Wall
+      first = sets[i]
+      if i / width == height - 1 {
+        first.bottom = true
+      }
+      else {
+        second = sets[i + width]
+        first.bottom = check-wall(first, second)
+      }
+    }
+  }
+  {
+    width: width
+    height: height
+    sets: sets
+  }
+}
+
+display = {maze|
+  vars map
+  map = "██"
+  for x in range(maze.width) {
+    map = map + "████"
+  }
+  for y in range(maze.height) {
+    map = map + "\n██"
+    for x in range(maze.width) {
+      vars item
+      item = maze.sets[y * maze.width + x]
+      map = map + if item.right { "  ██" } else { "    " }
+    }
+    map = map + "\n██"
+    for x in range(maze.width) {
+      vars item, itemr, itemb
+      item = maze.sets[y * maze.width + x]
+      itemr = maze.sets[y * maze.width + x + 1];
+      itemb = maze.sets[y * maze.width + x + maze.width];
+      map = map + if item.bottom { "██" } else { "  " }
+      map = map + if item.right || item.bottom || itemr.bottom || itemb.right { "██" } else { "  " }
+    }
+  }
+  map = map + "\n"
+}
+
+-- Sample output for a 5x5 maze
+-- ██████████████████████
+-- ██  ██              ██
+-- ██  ██████  ██  ██████
+-- ██          ██      ██
+-- ██  ██████  ██  ██████
+-- ██      ██  ██      ██
+-- ██  ██████████████  ██
+-- ██      ██          ██
+-- ██  ██████  ██████  ██
+-- ██      ██      ██  ██
+-- ██████████████████████
+
+print(display(Maze(10, 10)))
