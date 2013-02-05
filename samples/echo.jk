@@ -4,10 +4,13 @@ echo = {
   @get: {key| key}
   @has: {key| true}
   @delete: {key| print("Can't delete", key) }
+  @call: {a,b|a+b}
 }
 
-[echo.name, echo.age, echo[true], echo[false], echo.1, echo.2]
+print([echo.name, echo.age, echo[true], echo[false], echo.1, echo.2])
 
 print("name" in echo)
 
-delete echo.name
+--delete echo.name
+
+print(echo(1, 2))

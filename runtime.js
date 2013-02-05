@@ -1,6 +1,7 @@
 // This will be a compiler when the runtime is attached to a jison parser.
 var parse;
 var assert = require('assert');
+var inspect = require('util').inspect;
 
 var forms = {}
 exports.Form = Form;
@@ -57,15 +58,20 @@ function metaSet(obj, key, value) {
   if (meta.set) {
     return meta.set(key, value);
   }
-  return obj[key] = value;
+  return obj.set(key, value);
 }
 function metaGet(obj, key) {
   var meta = getMeta(obj);
   if (key instanceof Form) {
     return meta[key.name];
   }
-  if (Object.prototype.hasOwnProperty.call(obj, key)) {
-    return obj[key];
+  if (typeof obj === 'string' || Array.isArray(obj)) {
+    if (obj.hasOwnProperty(key)) {
+      return obj[key];
+    }
+  }
+  else if (obj.has(key)) {
+    return obj.get(key);
   }
   if (meta.get) {
     return meta.get(key);
@@ -76,7 +82,7 @@ function metaHas(obj, key) {
   if (key instanceof Form) {
     return key.value in meta;
   }
-  if (Object.prototype.hasOwnProperty.call(obj, key)) {
+  if (obj.has(key)) {
     return true;
   }
   if (meta.has) {
@@ -90,8 +96,8 @@ function metaDelete(obj, key) {
     delete meta[key.name];
     return;
   }
-  if (Object.prototype.hasOwnProperty.call(obj, key)) {
-    delete obj[key];
+  if (obj.has(key)) {
+    obj.delete(key);
     return;
   }
   if (meta.delete) {
@@ -394,7 +400,7 @@ Scope.prototype.tuple = function () {
 
 
 Scope.prototype.object = function () {
-  var obj = Object.create(null);
+  var obj = new Map();
   for (var i = 0, l = arguments.length; i < l; i += 2) {
     var key = this.run(arguments[i]);
     var value = this.run(arguments[i + 1]);
