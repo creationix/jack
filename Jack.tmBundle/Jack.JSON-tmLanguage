@@ -18,10 +18,10 @@
       "match": "(true|false|null)\\b"
     },
     { "name": "constant.numeric",
-      "match": "(0|-?[1-9][0-9]*)"
+      "match": "(-?([1-9][0-9]*|0x[0-9a-fA-F]+)|0)"
     },
     { "name": "support.function",
-      "match": "(print|rand|range|inspect|iterator)\\b"
+      "match": "(print|rand|range|inspect|iterator|bind)\\b"
     },
     { "name": "support.function.constructor",
       "match": "(Integer|Boolean|Null|String|Buffer|Tuple|List|Object|Function|Coroutine)\\b"

@@ -21,7 +21,9 @@
       ["'(?:[^'\\\\]|\\\\.)*'",           "return 'STRING'"],
       ["@[a-z]+",                         "return 'FORM'"],
       ["[a-zA-Z_]([-]?[a-zA-Z0-9_])*[?!]?","return 'IDENT'"],
-      ["(?:0|-?[1-9][0-9]*)",             "return 'INTEGER'"],
+      ["-?0x[0-9a-fA-F]+",                "return 'HEX'"],
+      ["-?[1-9][0-9]*",                   "return 'INTEGER'"],
+      ["0",                               "return 'ZERO'"],
       [":",                               "return ':'"],
 
       ["\\|\\|",                          "return '||'"],
@@ -139,7 +141,9 @@
       ["expr2 , expr", "$$ = $1.concat($3)"]
     ],
     "integer": [
-      ["INTEGER", "$$ = parseInt($1, 10)"]
+      ["ZERO", "$$ = 0"],
+      ["INTEGER", "$$ = parseInt($1, 10)"],
+      ["HEX", "$$ = parseInt($1.substr(2), 16)"]
     ],
     "form": [
       ["FORM", "$$ = yy.F($1.substr(1))"]
