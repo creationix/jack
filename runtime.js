@@ -504,7 +504,13 @@ exports.eval = function (string) {
     inspect: function inspect(val, d) {
       return inspect(val, false, d, true);
     },
-    iterator: iterator
+    iterator: iterator,
+    bind: function (fn) {
+      var args = slice.call(arguments, 1);
+      return function partial() {
+        return fn.apply(this, args.concat(slice.call(arguments)));
+      };
+    }
   });
   return scope.eval(string);
 };
