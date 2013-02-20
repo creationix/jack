@@ -10,7 +10,6 @@
       ["abort\\b",                        "return 'ABORT'"],
       ["vars\\b",                         "return 'VARS'"],
       ["for\\b",                          "return 'FOR'"],
-      ["map\\b",                          "return 'MAP'"],
       ["delete\\b",                       "return 'DELETE'"],
       ["in\\b",                           "return 'IN'"],
       ["is\\b",                           "return 'IS'"],
@@ -206,7 +205,6 @@
       ["expr ( list )", "$$ = [yy.F('call'), $1].concat($3)"],
 
       ["FOR iterator block", "$$ = [yy.F('for')].concat($2).concat($3)"],
-      ["MAP iterator block", "$$ = [yy.F('map')].concat($2).concat($3)"],
       ["WHILE expr block", "$$ = [yy.F('while'), $2].concat($3)"],
       ["if", "$$ = $1"],
       ["if ELSE { code }", "$$ = $1.concat([$4])"]

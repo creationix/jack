@@ -77,6 +77,8 @@ for k, v in "Hello World" {
 }
 
 
-print(map i in range(10) {i})
-print(map i in range(20) if i % 3 {i})
+print([i for i in range(10)])
+print([i for i in range(20) if i % 3])
+
+
 
