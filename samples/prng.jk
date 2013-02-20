@@ -1,9 +1,9 @@
+vars prng
 
 -- A meta-dynamic object with pseudo random keys and values
 -- The keys are 0-255 in pseudo random order and for each
 -- key a pseudo random value is calculated.
 -- Everything is dynamic using iterators, including the keys
-vars prng
 prng = {
   @get: {key|
     ((key + 117) * 321) % 256
@@ -13,13 +13,37 @@ prng = {
       @get: {key|
         ((key + 17) * 13) % 256
       },
-      @keys: {|
-        range(256)
-      }
+      @keys: bind(range, 256)
     }
   }
 }
 
 for key, value in prng {
   print(key, value)
+}
+
+-- The same output values (not keys) could be done with this custom iterator
+prng = {|
+  vars i, k, v
+  i = 0
+  {|
+    if (i < 256) {
+      k = ((i + 17) * 13) % 256
+      i = i + 1
+      v = ((k + 117) * 321) % 256
+    }
+  }
+}()
+
+
+for value in prng {
+  print(value)
+}
+
+-- Or done simply as
+for i in range(256) {
+  vars k, v
+  k = ((i + 17) * 13) % 256
+  v = ((k + 117) * 321) % 256
+  print(k, v)
 }
