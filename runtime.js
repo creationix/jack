@@ -464,7 +464,7 @@ Scope.prototype.eval = function (string) {
 exports.eval = function (string) {
   var scope = new Scope({
     print: console.log.bind(console),
-    range: function (n) {
+    range: function range(n) {
       var i = 0, v;
       return function () {
         v = i;
@@ -472,11 +472,35 @@ exports.eval = function (string) {
         if (v < n) return v;
       };
     },
-    rand: function (n) {
+    rand: function rand(n) {
       return Math.floor(Math.random() * n);
     },
-    inspect: function (val, d) {
+    inspect: function inspect(val, d) {
       return inspect(val, false, d, true);
+    },
+    iterator: function iterator(list) {
+      var meta = getMeta(list);
+      if (meta.call) {
+        return list;
+      }
+      if (meta.len) {
+        var i = 0, length = meta.len();
+        return function () {
+          if (i < length) {
+            return metaGet(list, i++);
+          }
+        };
+      }
+      if (meta.keys) {
+        var it = iterator(meta.keys());
+        return function () {
+          var key = it();
+          if (key) {
+            return metaGet(list, key);
+          }
+        };
+      }
+      throw new Error("Can't iterate over value that doesn't have @call, @len, or @keys");
     }
   });
   return scope.eval(string);

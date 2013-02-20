@@ -9,7 +9,7 @@
       "match": ";"
     },
     { "name": "keyword.control",
-      "match": "(return|if|elif|else|while|for|map|in)\\b"
+      "match": "(return|if|elif|else|while|for|in|map)\\b"
     },
     { "name": "keyword.language",
       "match": "(vars|delete|is)\\b"
@@ -20,11 +20,14 @@
     { "name": "constant.numeric",
       "match": "(0|-?[1-9][0-9]*)"
     },
+    { "name": "support.function",
+      "match": "(print|rand|range|inspect|iterator)\\b"
+    },
     { "name": "support.function.constructor",
       "match": "(Integer|Boolean|Null|String|Buffer|Tuple|List|Object|Function|Coroutine)\\b"
     },
     {
-      "match": "{([a-zA-Z0-9_ ]*)\\|",
+      "match": "{([a-zA-Z0-9_, ]*)\\|",
       "captures": {
         "1": {"name": "variable.parameter"}
       }

@@ -1,0 +1,39 @@
+
+vars names, imap, ifilter, each, transform
+
+imap = {cb, it|
+  vars value
+  {|
+    if value = it() {
+      cb(value)
+    }
+  }
+}
+
+ifilter = {cb, it|
+  vars value
+  {|
+    while ((value = it()) && !cb(value)) {}
+    value
+  }
+}
+
+each = {cb, it|
+  for value in it { cb(value) }
+}
+
+names = ["Thorin", "Dwalin", "Balin", "Bifur", "Bofur", "Bombur", "Oin",
+         "Gloin", "Ori", "Nori", "Dori", "Fili", "Kili", "Bilbo", "Gandalf"]
+
+-- Using for
+for name in names if #name < 5 { print("Name: " + name) }
+
+-- Using iterators and custom transform functions
+each(print, imap({n| "Name: " + n}, ifilter({n| #n < 5}, iterator(names))))
+
+-- Combine the transforms into a single function for easy reuse
+transform = {list|
+  imap({n| "Name: " + n}, ifilter({n| #n < 5}, iterator(list)))
+}
+
+each(print, transform(names))

@@ -24,7 +24,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(return|if|elif|else|while|for|map|in)\b</string>
+			<string>(return|if|elif|else|while|for|in|map)\b</string>
 			<key>name</key>
 			<string>keyword.control</string>
 		</dict>
@@ -48,6 +48,12 @@
 		</dict>
 		<dict>
 			<key>match</key>
+			<string>(print|rand|range|inspect|iterator)\b</string>
+			<key>name</key>
+			<string>support.function</string>
+		</dict>
+		<dict>
+			<key>match</key>
 			<string>(Integer|Boolean|Null|String|Buffer|Tuple|List|Object|Function|Coroutine)\b</string>
 			<key>name</key>
 			<string>support.function.constructor</string>
@@ -62,7 +68,7 @@
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>{([a-zA-Z0-9_ ]*)\|</string>
+			<string>{([a-zA-Z0-9_, ]*)\|</string>
 		</dict>
 		<dict>
 			<key>match</key>
