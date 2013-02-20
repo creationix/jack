@@ -1,0 +1,25 @@
+
+-- A meta-dynamic object with pseudo random keys and values
+-- The keys are 0-255 in pseudo random order and for each
+-- key a pseudo random value is calculated.
+-- Everything is dynamic using iterators, including the keys
+vars prng
+prng = {
+  @get: {key|
+    ((key + 117) * 321) % 256
+  },
+  @keys: {|
+    {
+      @get: {key|
+        ((key + 17) * 13) % 256
+      },
+      @keys: {|
+        range(256)
+      }
+    }
+  }
+}
+
+for key, value in prng {
+  print(key, value)
+}
