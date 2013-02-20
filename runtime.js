@@ -318,7 +318,7 @@ Scope.prototype.while = function (cond) {
   return ret;
 };
 
-function iterator(list) {
+function iValues(list) {
   var meta = getMeta(list);
   if (meta.call) {
     return meta.call;
@@ -332,11 +332,68 @@ function iterator(list) {
     };
   }
   if (meta.keys) {
-    var it = iterator(meta.keys());
+    var it = iValues(meta.keys());
     return function () {
       var key = it();
       if (key !== undefined) {
         return metaGet(list, key);
+      }
+    };
+  }
+  throw new Error("Can't iterate over value that doesn't have @call, @len, or @keys");
+}
+
+function iPairs(list) {
+  var meta = getMeta(list);
+  if (meta.keys) {
+    var it = iValues(meta.keys());
+    return function () {
+      var key = it();
+      if (key !== undefined) {
+        return [key, metaGet(list, key)];
+      }
+    };
+  }
+  if (meta.len) {
+    var i = 0, length = meta.len();
+    return function () {
+      if (i < length) {
+        var k = i++;
+        return [k, metaGet(list, k)];
+      }
+    };
+  }
+  if (meta.call) {
+    var k = 0;
+    return function () {
+      var next = meta.call();
+      if (next !== undefined) {
+        return [k++, next];
+      }
+    };
+  }
+  throw new Error("Can't iterate over value that doesn't have @call, @len, or @keys");
+}
+
+function iKeys(list) {
+  var meta = getMeta(list);
+  if (meta.keys) {
+    return iValues(meta.keys());
+  }
+  if (meta.len) {
+    var i = 0, length = meta.len();
+    return function () {
+      if (i < length) {
+        return i++;
+      }
+    };
+  }
+  if (meta.call) {
+    var i = 0;
+    return function () {
+      var next = meta.call();
+      if (next !== undefined) {
+        return i++;
       }
     };
   }
@@ -380,9 +437,8 @@ Scope.prototype.iterate = function (list, names, filter, code, callback) {
     }
   }
   else if (meta.keys) {
-    var keyIt = iterator(meta.keys());
+    var keyIt = iValues(meta.keys());
     var key;
-    console.log("keyIt", keyIt)
     while ((key = keyIt()) !== undefined) {
       var item = metaGet(list, key);
       if (names.length === 2) {
@@ -496,20 +552,107 @@ exports.eval = function (string) {
         v = i;
         i++;
         if (v < n) return v;
+        else i = 0;
       };
     },
     rand: function rand(n) {
       return Math.floor(Math.random() * n);
     },
-    inspect: function inspect(val, d) {
+    inspect: function (val, d) {
       return inspect(val, false, d, true);
     },
-    iterator: iterator,
     bind: function (fn) {
       var args = slice.call(arguments, 1);
       return function partial() {
         return fn.apply(this, args.concat(slice.call(arguments)));
       };
+    },
+    "i-values": iValues,
+    "i-pairs": iPairs,
+    "i-keys": iKeys,
+    "i-map": function (callback, it) {
+      it = iValues(it);
+      return function () {
+        var next = it();
+        if (next !== undefined) return callback(next);
+      };
+    },
+    "i-filter": function (callback, it) {
+      it = iValues(it);
+      return function () {
+        var next;
+        while ((next = it()) !== undefined && !callback(next));
+        return next;
+      };
+    },
+    "i-chunk": function (size, it) {
+      it = iValues(it);
+      return function () {
+        var next, chunk = [];
+        while (chunk.length < size && (next = it()) !== undefined) {
+          chunk.push(next);
+        }
+        if (chunk.length) return chunk;
+      };
+    },
+    "i-all?": function (callback, it) {
+      it = iValues(it);
+      var next;
+      while ((next = it()) !== undefined) {
+        if (!callback(next)) return false;
+      }
+      return true;
+    },
+    "i-any?": function (callback, it) {
+      it = iValues(it);
+      var next;
+      while ((next = it()) !== undefined) {
+        if (callback(next)) return true;
+      }
+      return false;
+    },
+    "i-collect": function (it) {
+      it = iValues(it);
+      var arr = [], next;
+      while ((next = it()) !== undefined) {
+        arr.push(next);
+      }
+      return arr;
+    },
+    "i-zip": function () {
+      var its = slice.call(arguments).map(iValues);
+      var num = its.length;
+      var alive = true;
+      return function () {
+        if (!alive) { return; }
+        var part = [];
+        var good = false;
+        for (var i = 0; i < num; i++) {
+          var item = part[i] = its[i]();
+          if (item === undefined) {
+            alive = false;
+            return;
+          }
+        }
+        return part;
+      };
+    },
+    "i-merge": function (it) {
+      it = iValues(it);
+      var obj = Object.create(null);
+      var pair;
+      while ((pair = it()) !== undefined) {
+        obj[metaGet(pair, 0)] = metaGet(pair, 1);
+      }
+      return obj;
+    },
+    "i-each": function (callback, it) {
+      var next;
+      var ret;
+      while ((next = it()) !== undefined) {
+        ret = callback(next);
+      }
+      return ret;
     }
   });
   return scope.eval(string);

@@ -3,7 +3,7 @@
   "fileTypes": ["jk"],
   "patterns": [
     { "name": "comment.line.jack",
-      "match": "(--)(?!\\[\\[).*$\\n?"
+      "match": "(--).*$\\n?"
     },
     { "name": "punctuation.terminator.statement",
       "match": ";"
@@ -21,10 +21,13 @@
       "match": "(-?([1-9][0-9]*|0x[0-9a-fA-F]+)|0)"
     },
     { "name": "support.function",
-      "match": "(print|rand|range|inspect|iterator|bind)\\b"
+      "match": "(print|rand|range|inspect|bind|i-keys|i-values|i-pairs|i-map|i-filter|i-chunk|i-collect|i-zip|i-merge|i-each)\\b"
+    },
+    { "name": "support.function",
+      "match": "(i-any[?]|i-all[?])"
     },
     { "name": "support.function.constructor",
-      "match": "(Integer|Boolean|Null|String|Buffer|Tuple|List|Object|Function|Coroutine)\\b"
+      "match": "(Integer|Boolean|Null|String|Buffer|List|Object|Function)\\b"
     },
     {
       "match": "{([a-zA-Z0-9_, ]*)\\|",
@@ -98,10 +101,6 @@
       "match": "#"
     },
     {
-      "name": "storage.type.execute",
-      "match": "!"
-    },
-    {
       "name": "meta.brace.curly",
       "match": "\\{|\\}"
     },
@@ -115,7 +114,7 @@
     },
     {
       "name": "keyword.operator",
-      "match": "\\+|-|\\*|\\/|%|^|<|>|~=|==|<=|>=|~|&&|\\|\\||\\^\\^|\\?|:"
+      "match": "\\+|-|\\*|\\/|%|^|<|>|!=|==|<=|>=|~|&&|\\|\\||\\^\\^|\\?|:"
     }
  ],
   "uuid": "79497c46-d13d-4b50-8389-c4c8cac6f3a5"

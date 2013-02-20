@@ -12,7 +12,7 @@
 	<array>
 		<dict>
 			<key>match</key>
-			<string>(--)(?!\[\[).*$\n?</string>
+			<string>(--).*$\n?</string>
 			<key>name</key>
 			<string>comment.line.jack</string>
 		</dict>
@@ -48,13 +48,19 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(print|rand|range|inspect|iterator|bind)\b</string>
+			<string>(print|rand|range|inspect|bind|i-keys|i-values|i-pairs|i-map|i-filter|i-chunk|i-collect|i-zip|i-merge|i-each)\b</string>
 			<key>name</key>
 			<string>support.function</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(Integer|Boolean|Null|String|Buffer|Tuple|List|Object|Function|Coroutine)\b</string>
+			<string>(i-any[?]|i-all[?])</string>
+			<key>name</key>
+			<string>support.function</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>(Integer|Boolean|Null|String|Buffer|List|Object|Function)\b</string>
 			<key>name</key>
 			<string>support.function.constructor</string>
 		</dict>
@@ -180,12 +186,6 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>!</string>
-			<key>name</key>
-			<string>storage.type.execute</string>
-		</dict>
-		<dict>
-			<key>match</key>
 			<string>\{|\}</string>
 			<key>name</key>
 			<string>meta.brace.curly</string>
@@ -204,7 +204,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\+|-|\*|\/|%|^|&lt;|&gt;|~=|==|&lt;=|&gt;=|~|&amp;&amp;|\|\||\^\^|\?|:</string>
+			<string>\+|-|\*|\/|%|^|&lt;|&gt;|!=|==|&lt;=|&gt;=|~|&amp;&amp;|\|\||\^\^|\?|:</string>
 			<key>name</key>
 			<string>keyword.operator</string>
 		</dict>

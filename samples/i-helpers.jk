@@ -1,0 +1,66 @@
+vars it, p
+
+p = {label, value|
+  print("\n" + label)
+  print(inspect(value))
+}
+-- Create an array from 0 to 15
+p("range", i-collect(range(5)))
+
+-- Create an array from 0 to 15 and break up in chunks of 4
+p("chunked range", i-collect(i-chunk(4, range(16))))
+
+-- Check if all or none items in stream pass test.
+p("all < 60 in range(60)", i-all?({i|i<60}, range(60)))
+p("any < 60 in range(60)", i-any?({i|i>60}, range(60)))
+p("all < 60 in range(70)", i-all?({i|i<60}, range(70)))
+p("any < 60 in range(70)", i-any?({i|i>60}, range(70)))
+
+-- Zip three different collections together
+p("zipped", i-collect(i-zip(
+  range(10),
+  [1,2,3,4,5],
+  i-map({i|i*i}, range(10))
+)))
+
+-- Chunk a single iterator into groups of 3 using izip
+it = range(30)
+p("zip chunk", i-collect(i-zip(it, it, it)))
+
+it = {
+  Code: 200
+  Content-Type: "text/html"
+  Content-Length: 12
+  Server: "Jack"
+  E-Tag: '"3dac7436dceae"'
+  Body: "Hello World\n"
+}
+print("\nvalue")
+print(inspect(it))
+p("keys", i-collect(i-keys(it)))
+p("values", i-collect(i-values(it)))
+p("pairs", i-collect(i-pairs(it)))
+p("merged pairs", i-merge(i-pairs(it)))
+
+p("merge string to map", i-merge(i-zip(
+  "abcdefgghijklmno"
+  i-map({i|i+0x60}, range(16)),
+)))
+
+it = ["red", "green", "blue", "orange", "purple", "yellow"]
+print("\nvalue")
+print(inspect(it))
+p("keys", i-collect(i-keys(it)))
+p("values", i-collect(i-values(it)))
+p("pairs", i-collect(i-pairs(it)))
+p("merged pairs", i-merge(i-pairs(it)))
+
+it = range(10)
+print("\nvalue")
+print(inspect(it))
+print("collected")
+print(inspect(i-collect(it)))
+p("keys", i-collect(i-keys(it)))
+p("values", i-collect(i-values(it)))
+p("pairs", i-collect(i-pairs(it)))
+p("merged pairs", i-merge(i-pairs(it)))

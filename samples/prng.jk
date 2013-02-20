@@ -1,5 +1,6 @@
 vars prng
 
+
 -- A meta-dynamic object with pseudo random keys and values
 -- The keys are 0-255 in pseudo random order and for each
 -- key a pseudo random value is calculated.
@@ -9,25 +10,24 @@ prng = {
     ((k + 117) * 321) % 256
   },
   @keys: {|
-    {
-      @get: {i|
-        ((i + 17) * 13) % 256
-      },
-      @keys: bind(range, 256)
-    }
+    i-map({i|
+      ((i + 17) * 13) % 256
+    }, range(10))
   }
 }
 
+print("\nCustom Object")
 for key, value in prng {
   print(key, value)
 }
 
 -- The same output values (not keys) could be done with this custom iterator
 prng = {|
-  vars i, k, v
+  vars i
   i = 0
   {|
-    if (i < 256) {
+    if (i < 10) {
+      vars k, v
       k = ((i + 17) * 13) % 256
       i = i + 1
       v = ((k + 117) * 321) % 256
@@ -36,12 +36,14 @@ prng = {|
 }()
 
 
+print("\nCustom Iterator")
 for value in prng {
   print(value)
 }
 
 -- Or done simply as
-for i in range(256) {
+print("\nInline")
+for i in range(10) {
   vars k, v
   k = ((i + 17) * 13) % 256
   v = ((k + 117) * 321) % 256
