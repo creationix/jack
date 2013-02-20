@@ -5,13 +5,13 @@ vars prng
 -- key a pseudo random value is calculated.
 -- Everything is dynamic using iterators, including the keys
 prng = {
-  @get: {key|
-    ((key + 117) * 321) % 256
+  @get: {k|
+    ((k + 117) * 321) % 256
   },
   @keys: {|
     {
-      @get: {key|
-        ((key + 17) * 13) % 256
+      @get: {i|
+        ((i + 17) * 13) % 256
       },
       @keys: bind(range, 256)
     }
