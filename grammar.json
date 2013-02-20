@@ -197,21 +197,23 @@
       ["[ list ]", "$$ = [yy.F('list')].concat($2)"],
       ["{ pairs }", "$$ = [yy.F('object')].concat($2)"],
 
+      ["[ expr FOR iterator ]", "$$ = [yy.F('map')].concat($4).concat([$2])"],
+
       ["expr lookup", "$$ = [yy.F('get'), $1, $2]"],
 
       ["expr lookup = expr", "$$ = [yy.F('set'), $1, $2, $4]"],
 
       ["expr ( list )", "$$ = [yy.F('call'), $1].concat($3)"],
 
-      ["FOR iterator", "$$ = [yy.F('for')].concat($2)"],
-      ["MAP iterator", "$$ = [yy.F('map')].concat($2)"],
+      ["FOR iterator block", "$$ = [yy.F('for')].concat($2).concat($3)"],
+      ["MAP iterator block", "$$ = [yy.F('map')].concat($2).concat($3)"],
       ["WHILE expr block", "$$ = [yy.F('while'), $2].concat($3)"],
       ["if", "$$ = $1"],
       ["if ELSE { code }", "$$ = $1.concat([$4])"]
     ],
     "iterator": [
-      ["loopvars IN expr block", "$$ = [$3, $1, undefined].concat($4)"],
-      ["loopvars IN expr IF expr block", "$$ = [$3, $1, $5].concat($6)"]
+      ["loopvars IN expr", "$$ = [$3, $1, undefined]"],
+      ["loopvars IN expr IF expr", "$$ = [$3, $1, $5]"]
     ],
     "loopvars": [
       ["IDENT", "$$ = [$1]"],
