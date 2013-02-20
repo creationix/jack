@@ -10,6 +10,7 @@
       ["abort\\b",                        "return 'ABORT'"],
       ["vars\\b",                         "return 'VARS'"],
       ["for\\b",                          "return 'FOR'"],
+      ["map\\b",                          "return 'MAP'"],
       ["delete\\b",                       "return 'DELETE'"],
       ["in\\b",                           "return 'IN'"],
       ["is\\b",                           "return 'IS'"],
@@ -202,11 +203,19 @@
 
       ["expr ( list )", "$$ = [yy.F('call'), $1].concat($3)"],
 
-      ["FOR IDENT IN expr block", "$$ = [yy.F('for'), $4, [$2]].concat($5)"],
-      ["FOR IDENT , IDENT IN expr block", "$$ = [yy.F('for'), $6, [$2, $4]].concat($7)"],
+      ["FOR iterator", "$$ = [yy.F('for')].concat($2)"],
+      ["MAP iterator", "$$ = [yy.F('map')].concat($2)"],
       ["WHILE expr block", "$$ = [yy.F('while'), $2].concat($3)"],
       ["if", "$$ = $1"],
       ["if ELSE { code }", "$$ = $1.concat([$4])"]
+    ],
+    "iterator": [
+      ["loopvars IN expr block", "$$ = [$3, $1, undefined].concat($4)"],
+      ["loopvars IN expr IF expr block", "$$ = [$3, $1, $5].concat($6)"]
+    ],
+    "loopvars": [
+      ["IDENT", "$$ = [$1]"],
+      ["IDENT , IDENT", "$$ = [$1, $3]"]
     ],
     "if": [
       ["IF expr { code }", "$$ = [yy.F('if'), $2, $4]"],

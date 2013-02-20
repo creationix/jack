@@ -75,3 +75,8 @@ print("String")
 for k, v in "Hello World" {
   print([k, v])
 }
+
+
+print(map i in range(10) {i})
+print(map i in range(20) if i % 3 {i})
+

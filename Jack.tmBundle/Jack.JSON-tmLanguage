@@ -9,7 +9,7 @@
       "match": ";"
     },
     { "name": "keyword.control",
-      "match": "(return|abort|if|elif|else|while|for|in|coro|this|yield|emit)\\b"
+      "match": "(return|if|elif|else|while|for|map|in)\\b"
     },
     { "name": "keyword.language",
       "match": "(vars|delete|is)\\b"

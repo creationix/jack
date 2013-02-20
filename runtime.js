@@ -318,9 +318,8 @@ Scope.prototype.while = function (cond) {
   return ret;
 };
 
-Scope.prototype.for = function (list, names) {
+Scope.prototype.iterate = function (list, names, filter, code, callback) {
   list = this.run(list);
-  var code = slice.call(arguments, 2);
   var child = this.spawn();
   var ret;
   var meta = getMeta(list);
@@ -335,7 +334,9 @@ Scope.prototype.for = function (list, names) {
       else {
         child.scope[names[0]] = item;
       }
+      if (filter && !child.run(filter)) continue;
       ret = child.runCodes(code);
+      if (callback) callback(ret);
     }
   }
   else if (meta.len) {
@@ -348,7 +349,9 @@ Scope.prototype.for = function (list, names) {
       else {
         child.scope[names[0]] = item;
       }
+      if (filter && !child.run(filter)) continue;
       ret = child.runCodes(code);
+      if (callback) callback(ret);
     }
   }
   else if (meta.keys) {
@@ -363,10 +366,22 @@ Scope.prototype.for = function (list, names) {
       else {
         child.scope[names[0]] = item;
       }
+      if (filter && !child.run(filter)) continue;
       ret = child.runCodes(code);
+      if (callback) callback(ret);
     }
   }
   return ret;
+};
+
+Scope.prototype.for = function (list, names, filter) {
+  return this.iterate(list, names, filter, slice.call(arguments, 2));
+};
+
+Scope.prototype.map = function (list, names, filter) {
+  var result = [];
+  this.iterate(list, names, filter, slice.call(arguments, 2), result.push.bind(result));
+  return result;
 };
 
 

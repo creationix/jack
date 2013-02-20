@@ -24,7 +24,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(return|abort|if|elif|else|while|for|in|coro|this|yield|emit)\b</string>
+			<string>(return|if|elif|else|while|for|map|in)\b</string>
 			<key>name</key>
 			<string>keyword.control</string>
 		</dict>
