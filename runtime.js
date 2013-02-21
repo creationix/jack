@@ -271,6 +271,7 @@ Scope.prototype.return = function (val) {
 };
 
 Scope.prototype.abort = function (message) {
+  message = this.run(message);
   console.error(message);
   process.exit();
   // console.log("ABORT", {message:message});
