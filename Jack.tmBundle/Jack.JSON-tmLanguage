@@ -9,13 +9,13 @@
       "match": ";"
     },
     { "name": "keyword.control",
-      "match": "(return|if|elif|else|while|for|in)\\b"
+      "match": "(return|if|elif|else|while|for|in)(?![a-zA-Z0-9_-])"
     },
     { "name": "keyword.language",
-      "match": "(vars|delete|is)\\b"
+      "match": "(vars|delete|is)(?![a-zA-Z0-9_-])"
     },
     { "name": "constant.language",
-      "match": "(true|false|null)\\b"
+      "match": "(true|false|null)(?![a-zA-Z0-9_-])"
     },
     { "name": "constant.numeric",
       "match": "(-?([1-9][0-9]*|0x[0-9a-fA-F]+)|0)"
@@ -41,7 +41,7 @@
     { "name": "entity.name.tag",
       "match": "[a-zA-Z_]([-]?[a-zA-Z0-9_])*[?!]?:"
     },
-    { "name": "variable.other",
+    { "name": "variable",
       "match": "[a-zA-Z_]([-]?[a-zA-Z0-9_])*[?!]?"
     },
     { "name": "string.quoted.single",

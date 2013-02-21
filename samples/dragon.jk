@@ -1,6 +1,7 @@
 vars Dragon, pet
 
 Dragon = {name|
+  in-
   vars asleep, stuff-in-belly, stuff-in-intestine,
        feed, walk, put-to-bed, toss, rock,
        hungry?, poopy?, passage-of-time
