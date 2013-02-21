@@ -134,7 +134,6 @@ var hasOwn = Object.prototype.hasOwnProperty;
 var slice = Array.prototype.slice;
 var map = Array.prototype.map;
 
-
 Scope.prototype.spawn = function () {
   return new Scope(this.scope);
 };
