@@ -24,7 +24,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(return|if|elif|else|while|for|in)(?![a-zA-Z0-9_-])</string>
+			<string>(abort|return|if|elif|else|while|for|in)(?![a-zA-Z0-9_-])</string>
 			<key>name</key>
 			<string>keyword.control</string>
 		</dict>
@@ -204,7 +204,7 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\+|-|\*|\/|%|^|&lt;|&gt;|!=|==|&lt;=|&gt;=|~|&amp;&amp;|\|\||\^\^|\?|:</string>
+			<string>\+|-|\*|\/|%|^|&lt;=|&gt;=|!=|==|&lt;|&gt;|~|&amp;&amp;|\|\||\^\^|\?|:</string>
 			<key>name</key>
 			<string>keyword.operator</string>
 		</dict>

@@ -9,7 +9,7 @@
       "match": ";"
     },
     { "name": "keyword.control",
-      "match": "(return|if|elif|else|while|for|in)(?![a-zA-Z0-9_-])"
+      "match": "(abort|return|if|elif|else|while|for|in)(?![a-zA-Z0-9_-])"
     },
     { "name": "keyword.language",
       "match": "(vars|delete|is)(?![a-zA-Z0-9_-])"
@@ -114,7 +114,7 @@
     },
     {
       "name": "keyword.operator",
-      "match": "\\+|-|\\*|\\/|%|^|<|>|!=|==|<=|>=|~|&&|\\|\\||\\^\\^|\\?|:"
+      "match": "\\+|-|\\*|\\/|%|^|<=|>=|!=|==|<|>|~|&&|\\|\\||\\^\\^|\\?|:"
     }
  ],
   "uuid": "79497c46-d13d-4b50-8389-c4c8cac6f3a5"
