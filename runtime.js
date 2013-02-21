@@ -36,7 +36,7 @@ function getMeta(obj) {
   }
   var meta = {};
   mtab.set(obj, meta);
-  if (Array.isArray(obj) || type === "string") {
+  if (Array.isArray(obj) || type === "string" || Buffer.isBuffer(obj)) {
     meta.len = function () { return obj.length; };
   }
   else if (type === "function") {

@@ -64,3 +64,12 @@ p("keys", i-collect(i-keys(it)))
 p("values", i-collect(i-values(it)))
 p("pairs", i-collect(i-pairs(it)))
 p("merged pairs", i-merge(i-pairs(it)))
+
+it = <de ad be ef 01 23 45 67 89 ab cd ef>
+
+print("\nvalue")
+print(inspect(it))
+p("keys", i-collect(i-keys(it)))
+p("values", i-collect(i-values(it)))
+p("pairs", i-collect(i-pairs(it)))
+p("merged pairs", i-merge(i-pairs(it)))
