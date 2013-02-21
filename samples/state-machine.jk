@@ -1,0 +1,110 @@
+-- 0                -> ZERO
+-- -?[1-9][0-9]*    -> INT
+-- -?0x[0-9a-fA-F]+ -> HEX
+
+-- STATES
+-- 0 INVALID
+-- 1 START
+--   '0' -> ZERO
+--   '-' -> NEG
+--   [1-9] -> DEC
+-- 2 ZERO *
+--   'x' -> HEX1
+-- 3 NEG
+--   '0' -> HEX0
+--   [1-9] -> DEC
+-- 4 DEC *
+--   [0-9] -> DEC
+-- 5 HEX0
+--   [xX] -> HEX1
+-- 6 HEX1
+--   [0-9a-fA-F] -> HEX2
+-- 7 HEX2 *
+--   [0-9a-fA-F] -> HEX2
+
+vars machine, newParser, parser, input
+
+machine = {
+  START: {c|
+    if c == '0' { 'ZERO' }
+    elif c == '-' { 'NEG' }
+    elif c >= '1' && c <= '9' { 'DEC' }
+    elif c == ' ' || c == '\t' || c == '\r' || c == '\n' { 'SPACE' }
+    else { 'INVALID' }
+  }
+  SPACE: {c|
+    if c == ' ' || c == '\t' || c == '\r' || c == '\n' { 'SPACE' }
+    else { 'ACCEPT' }
+  }
+  ZERO: {c|
+    if c == 'x' || c == 'X' { 'HEX1' }
+    else { 'ACCEPT' }
+  }
+  NEG: {c|
+    if c == '0' { 'HEX0' }
+    elif c >= '1' && c <= '9' { 'DEC' }
+    else { 'INVALID' }
+  }
+  DEC: {c|
+    if c >= '0' && c <= '9' { 'DEC' }
+    else { 'ACCEPT' }
+  }
+  HEX0: {c|
+    if c == 'x' || c == 'X' { 'HEX1' }
+    else { 'INVALID' }
+  }
+  HEX1: {c|
+    if c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F' {
+      'HEX2'
+    }
+    else { 'INVALID' }
+  }
+  HEX2: {c|
+    if c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F' {
+      'HEX2'
+    }
+    else { 'ACCEPT' }
+  }
+}
+
+newParser = {callback|
+  vars state, token, newState, process
+  state = "START"
+  token = ''
+
+  process = {c|
+    newState = machine[state](c)
+    if newState == 'ACCEPT' {
+      callback([state, token])
+      token = ''
+      state = "START"
+      process(c)
+    }
+    elif newState == 'INVALID' {
+      for c in token + c {
+        callback(c)
+      }
+      token = ''
+      state = 'START'
+    }
+    else {
+      token = token + c
+      state = newState
+    }
+  }
+
+  {chunk| for c in chunk { process(c) } }
+}
+
+input = [
+  "42 -42 0   \r\n0x42\n-0x42\tbob\r"
+  "0012", "3456 1 -", "1 0 -0 0x", "fde -0xdb", "c fred 5", "\0"
+]
+
+parser = newParser({token|
+  print("TOKEN", inspect(token))
+})
+for chunk in input {
+  print("INPUT", inspect(chunk))
+  parser(chunk)
+}
