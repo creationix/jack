@@ -1,39 +1,33 @@
 -- 0                -> ZERO
 -- -?[1-9][0-9]*    -> INT
 -- -?0x[0-9a-fA-F]+ -> HEX
+-- [-][-][^\r\n]*   -> COMMENT
+-- '([^'\r\n]|\.)*' -> STRING
+-- "([^"\r\n]|\.)*" -> STRING
+-- [a-zA-Z_](-?[a-zA-Z0-9_])*[?!]? -> IDENT
+-- [ \t]+ -> WHITE
+-- [\r\n]+ -> NEWLINE
 
--- STATES
--- 0 INVALID
--- 1 START
---   '0' -> ZERO
---   '-' -> NEG
---   [1-9] -> DEC
--- 2 ZERO *
---   'x' -> HEX1
--- 3 NEG
---   '0' -> HEX0
---   [1-9] -> DEC
--- 4 DEC *
---   [0-9] -> DEC
--- 5 HEX0
---   [xX] -> HEX1
--- 6 HEX1
---   [0-9a-fA-F] -> HEX2
--- 7 HEX2 *
---   [0-9a-fA-F] -> HEX2
-
-vars machine, newParser, parser, input
+vars machine, filters, newParser, input, parser, keywords
 
 machine = {
   START: {c|
     if c == '0' { 'ZERO' }
     elif c == '-' { 'NEG' }
     elif c >= '1' && c <= '9' { 'DEC' }
-    elif c == ' ' || c == '\t' || c == '\r' || c == '\n' { 'SPACE' }
+    elif c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_' { 'IDENT' }
+    elif c == ' ' || c == '\t' { 'SPACE' }
+    elif c == '\n' || c == '\r' { 'NEWLINE' }
+    elif c == '"' { 'DQUOTE' }
+    elif c == "'" { 'SQUOTE' }
     else { 'INVALID' }
   }
   SPACE: {c|
-    if c == ' ' || c == '\t' || c == '\r' || c == '\n' { 'SPACE' }
+    if c == ' ' || c == '\t' { 'SPACE' }
+    else { 'ACCEPT' }
+  }
+  NEWLINE: {c|
+    if c == '\n' || c == '\r' { 'NEWLINE' }
     else { 'ACCEPT' }
   }
   ZERO: {c|
@@ -43,7 +37,12 @@ machine = {
   NEG: {c|
     if c == '0' { 'HEX0' }
     elif c >= '1' && c <= '9' { 'DEC' }
+    elif c == '-' { 'COMMENT' }
     else { 'INVALID' }
+  }
+  COMMENT: {c|
+    if c == '\r' || c == '\n' { 'ACCEPT' }
+    else { 'COMMENT' }
   }
   DEC: {c|
     if c >= '0' && c <= '9' { 'DEC' }
@@ -55,17 +54,80 @@ machine = {
   }
   HEX1: {c|
     if c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F' {
-      'HEX2'
+      'HEX'
     }
     else { 'INVALID' }
   }
-  HEX2: {c|
+  HEX: {c|
     if c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F' {
-      'HEX2'
+      'HEX'
     }
     else { 'ACCEPT' }
   }
+  IDENT: {c|
+    if c == '-' { 'DASH' }
+    elif c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '_' {
+      'IDENT'
+    }
+    elif c == '?' || c == '!' { 'IDENT2' }
+    else { 'ACCEPT' }
+  }
+  IDENT2: {c|
+    'ACCEPT'
+  }
+  DASH: {c|
+    if c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '_' {
+      'IDENT'
+    }
+    else { 'INVALID' }
+  }
+  SQUOTE: {c|
+    if c == "'" { 'STRING' }
+    elif c == '\\' { 'SESCAPE' }
+    elif c == '\r' || c == '\n' { 'INVALID' }
+    else { 'SQUOTE' }
+  }
+  SESCAPE: {c| 'SQUOTE' }
+  DQUOTE: {c|
+    print("DQUOTE", c)
+    if c == '"' { 'STRING' }
+    elif c == '\\' { 'DESCAPE' }
+    elif c == '\r' || c == '\n' { 'INVALID' }
+    else { 'DQUOTE' }
+  }
+  DESCAPE: {c| 'DQUOTE' }
+  STRING: {c| 'ACCEPT' }
 }
+
+keywords = {
+  "return": 'RETURN'
+  "abort": 'ABORT'
+  "vars": 'VARS'
+  "for": 'FOR'
+  "delete": 'DELETE'
+  "in": 'IN'
+  "is": 'IS'
+  "if": 'IF'
+  "elif": 'ELIF'
+  "else": 'ELSE'
+  "while": 'WHILE'
+}
+filters = {
+  ZERO: {v| ["INTEGER", 0]}
+  DEC: {v| ["INTEGER", parseint(v, 10)] }
+  HEX: {v| ["INTEGER", parseint(v, 16)] }
+  SPACE: {v| ["SPACE"] }
+  NEWLINE: {v| ["NEWLINE"] }
+  STRING: {v| abort("TODO: STRING") }
+  IDENT: {v|
+    if v == 'null' { ['CONSTANT', null] }
+    elif v == 'true' { ['CONSTANT', true] }
+    elif v == 'false' { ['CONSTANT', false] }
+    if v in keywords { [keywords[v]] }
+    else { ["IDENT", v] }
+  }
+}
+filters.IDENT2 = filters.IDENT
 
 newParser = {callback|
   vars state, token, newState, process
@@ -75,7 +137,7 @@ newParser = {callback|
   process = {c|
     newState = machine[state](c)
     if newState == 'ACCEPT' {
-      callback([state, token])
+      callback(filters[state](token))
       token = ''
       state = "START"
       process(c)
@@ -97,12 +159,21 @@ newParser = {callback|
 }
 
 input = [
-  "42 -42 0   \r\n0x42\n-0x42\tbob\r"
+  "0 1 -1  \r\n0x42\n-0x42\tbob\r"
   "0012", "3456 1 -", "1 0 -0 0x", "fde -0xdb", "c fred 5", "\0"
+  "vars fib, cache\n"
+  "cache = {}\n"
+  "fib = {n|\n"
+  "  vars value"
+  "  if n <= 2 { 1 }\n"
+  "  value = cache[n]\n"
+  "  if value { value }\n"
+  "  else { value = fib(n - 1) + fib(n - 2) }\n"
+  "}\n"
 ]
 
 parser = newParser({token|
-  print("TOKEN", inspect(token))
+  print(inspect(token))
 })
 for chunk in input {
   print("INPUT", inspect(chunk))
