@@ -37,6 +37,9 @@ Joystick = {path, callback|
         -- Queue another read if there was something
         read()
       }
+      else {
+        callback({type: "END"})
+      }
     })
   }
   read()
@@ -51,6 +54,7 @@ Player = {path, name|
   x = rand(0x1000)
   y = rand(0x400)
   Joystick(path, {event|
+
     if event.type == "AXIS" {
       if event.number == 1 {
         my = event.value
@@ -58,6 +62,9 @@ Player = {path, name|
       elif event.number == 0 {
         mx = event.value
       }
+    }
+    elif event.type == "END" {
+      name = "\033[0mX"
     }
 --    print(name, inspect(event))
   })

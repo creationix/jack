@@ -556,12 +556,11 @@ exports.eval = function (string) {
         check();
       });
       stream.on('end', function (err) {
-        dataQueue.push();
+        dataQueue.push(undefined);
         check();
       });
       stream.on("error", function (err) {
-        console.error(err);
-        dataQueue.push();
+        dataQueue.push(undefined);
         check();
       });
       return function (callback) {
