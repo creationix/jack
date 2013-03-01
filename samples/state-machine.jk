@@ -1,6 +1,6 @@
 -- 0                -> ZERO
--- -?[1-9][0-9]*    -> INT
--- -?0x[0-9a-fA-F]+ -> HEX
+-- [1-9][0-9]*    -> INT
+-- 0x[0-9a-fA-F]+ -> HEX
 -- [-][-][^\r\n]*   -> COMMENT
 -- '([^'\r\n]|\.)*' -> STRING
 -- "([^"\r\n]|\.)*" -> STRING
@@ -72,9 +72,7 @@ machine = {
     elif c == '?' || c == '!' { 'IDENT2' }
     else { 'ACCEPT' }
   }
-  IDENT2: {c|
-    'ACCEPT'
-  }
+  IDENT2: {c| 'ACCEPT' }
   DASH: {c|
     if c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '_' {
       'IDENT'
@@ -89,7 +87,6 @@ machine = {
   }
   SESCAPE: {c| 'SQUOTE' }
   DQUOTE: {c|
-    print("DQUOTE", c)
     if c == '"' { 'STRING' }
     elif c == '\\' { 'DESCAPE' }
     elif c == '\r' || c == '\n' { 'INVALID' }
@@ -100,6 +97,9 @@ machine = {
 }
 
 keywords = {
+  "null": 'NULL'
+  "true": 'TRUE'
+  "false": 'FALSE'
   "return": 'RETURN'
   "abort": 'ABORT'
   "vars": 'VARS'
@@ -113,18 +113,48 @@ keywords = {
   "while": 'WHILE'
 }
 filters = {
+  COMMENT: {v| ["COMMENT", substr(v,2)]}
   ZERO: {v| ["INTEGER", 0]}
   DEC: {v| ["INTEGER", parseint(v, 10)] }
   HEX: {v| ["INTEGER", parseint(v, 16)] }
   SPACE: {v| ["SPACE"] }
   NEWLINE: {v| ["NEWLINE"] }
-  STRING: {v| abort("TODO: STRING") }
   IDENT: {v|
-    if v == 'null' { ['CONSTANT', null] }
-    elif v == 'true' { ['CONSTANT', true] }
-    elif v == 'false' { ['CONSTANT', false] }
     if v in keywords { [keywords[v]] }
     else { ["IDENT", v] }
+  }
+  STRING: {v|
+    vars state, quote, string
+    state = 0
+    string = ""
+    for c in v {
+      if state == 0 {
+        state = 1
+        quote = c
+      }
+      elif state == 1 {
+        if c == '\\' {
+          state = 2
+        }
+        if c == quote {
+          state = 3
+        }
+        else {
+          string = string + c
+        }
+      }
+      elif state == 2 {
+        string = string + if (c == '\\') { '\\\\' }
+        elif (c == 'r') { '\r' }
+        elif (c == 't') { '\t' }
+        elif (c == 'n') { '\n' }
+        elif (c == 'b') { '\b' }
+        elif (c == '0') { '\0' }
+        else { c }
+        state = 1
+      }
+    }
+    return ["STRING", string]
   }
 }
 filters.IDENT2 = filters.IDENT
@@ -143,6 +173,9 @@ newParser = {callback|
       process(c)
     }
     elif newState == 'INVALID' {
+      -- For now we just dump the data as chars
+      -- We should probably do something more intellegent in this case
+      -- like backtrack so "-0" can be matched as '-' ['INTEGER', 0]
       for c in token + c {
         callback(c)
       }
@@ -162,14 +195,9 @@ input = [
   "0 1 -1  \r\n0x42\n-0x42\tbob\r"
   "0012", "3456 1 -", "1 0 -0 0x", "fde -0xdb", "c fred 5", "\0"
   "vars fib, cache\n"
-  "cache = {}\n"
-  "fib = {n|\n"
-  "  vars value"
-  "  if n <= 2 { 1 }\n"
-  "  value = cache[n]\n"
-  "  if value { value }\n"
-  "  else { value = fib(n - 1) + fib(n - 2) }\n"
-  "}\n"
+  "null true false 0 1 'hello' 'world'"
+  "0xdeadbeef\n-0\n"
+  source
 ]
 
 parser = newParser({token|

@@ -545,6 +545,14 @@ Scope.prototype.eval = function (string) {
 
 exports.eval = function (string) {
   var scope = new Scope({
+    lines: string.split("\n"),
+    source: string,
+    substr: function (string, start, len) {
+      return string.substr(start, len);
+    },
+    parseint: function (num, base) {
+      return parseInt(num, base || 10);
+    },
     print: console.log.bind(console),
     range: function range(n) {
       var i = 0, v;
