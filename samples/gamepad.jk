@@ -42,15 +42,14 @@ Joystick = {path, callback|
   read()
 }
 
-vars draw, players, Player
+vars sprites, Player, Bot
 
-draw = {x, y, char|
-  write("\033[" + y + ";" + x + "H" + char)
-}
+sprites = []
 
-players = []
-Player = {path, x, y, name|
-  vars mx, my
+Player = {path, name|
+  vars mx, my, x, y
+  x = rand(0x1000)
+  y = rand(0x400)
   Joystick(path, {event|
     if event.type == "AXIS" {
       if event.number == 1 {
@@ -62,24 +61,42 @@ Player = {path, x, y, name|
     }
 --    print(name, inspect(event))
   })
-  players[#players] = {
+  sprites[#sprites] = {
     tick: {delta|
       x = x + mx * delta / 0x4000
       y = y + my * delta / 0x4000
       if x < 0 { x = 0 }
       if y < 0 { y = 0 }
-      draw(x / 100, y / 100, name)
+      write("\033[" + (y / 100) + ";" + (x / 100) + "H" + name)
     }
   }
 }
 
-Player("/dev/input/js0", 100, 100, "\033[32;1m◉")
-Player("/dev/input/js1", 200, 200, "\033[31;1m◉")
-Player("/dev/input/js2", 300, 300, "\033[34;1m◉")
+Bot = {name|
+  vars x, y
+  x = rand(0x1000)
+  y = rand(0x400)
+  sprites[#sprites] = {
+    tick: {delta|
+      x = x + (rand(0x1000) - 0x800) * delta / 0x400
+      y = y + (rand(0x1000) - 0x800) * delta / 0x800
+      if x < 0 { x = 0 }
+      if y < 0 { y = 0 }
+      write("\033[" + (y / 100) + ";" + (x / 100) + "H" + name)
+    }
+  }
+}
+
+Player("/dev/input/js0", "\033[32;1m◉")
+Player("/dev/input/js1", "\033[31;1m◉")
+Player("/dev/input/js2", "\033[34;1m◉")
+Bot("\033[33;1m★")
+Bot("\033[35;1m★")
+Bot("\033[36;1m★")
 
 interval(33, {delta|
   write("\033[2J")
-  for player in players {
+  for player in sprites {
     player.tick(delta)
   }
   write("\033[30m")
