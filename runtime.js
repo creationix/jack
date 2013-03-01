@@ -547,6 +547,28 @@ exports.eval = function (string) {
   var scope = new Scope({
     lines: string.split("\n"),
     source: string,
+    'read-stream': function (path) {
+      var stream = require('fs').createReadStream(path);
+      var dataQueue = [];
+      var readQueue = [];
+      stream.on('data', function (chunk) {
+        dataQueue.push(chunk);
+        check();
+      });
+      stream.on('end', function (err) {
+        dataQueue.push();
+        check();
+      });
+      return function (callback) {
+        readQueue.push(callback);
+        check();
+      };
+      function check() {
+        while (dataQueue.length && readQueue.length) {
+          readQueue.pop()(dataQueue.pop());
+        }
+      }
+    },
     substr: function (string, start, len) {
       return string.substr(start, len);
     },

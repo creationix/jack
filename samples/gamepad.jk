@@ -1,0 +1,37 @@
+vars input, read, int16
+input = read-stream("/dev/input/js0")
+
+-- Read a signed 16-bit integer from an offset
+int16 = {buffer, offset|
+  vars value
+  value = buffer[offset] + buffer[offset + 1] * 256
+  if value >= 0x8000 {
+    value - 0x10000
+  }
+  else {
+    value
+  }
+}
+
+read = {|
+  input({chunk|
+    vars offset, type, event
+    for i in range(#chunk / 8) {
+      offset = i * 8
+      event = {
+        value: int16(chunk, offset + 4)
+        number: chunk[offset + 7]
+      }
+      type = chunk[offset + 6]
+      if type >= 0x80 {
+        type = type - 0x80
+        event.init = true
+      }
+      event.type = if type == 0x01 { "BUTTON" }
+      elif type == 0x02 { "AXIS" }
+      print(inspect(event))
+    }
+    if chunk { read() }
+  })
+}
+read()
