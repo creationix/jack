@@ -1,37 +1,86 @@
-vars input, read, int16
-input = read-stream("/dev/input/js0")
+vars Joystick, parse
 
--- Read a signed 16-bit integer from an offset
-int16 = {buffer, offset|
-  vars value
-  value = buffer[offset] + buffer[offset + 1] * 256
-  if value >= 0x8000 {
-    value - 0x10000
+-- Parse an event
+parse = {chunk, offset|
+  vars event, type, value
+  -- The value is a signed 16-bit integer at offset + 4
+  value = chunk[offset + 4] + chunk[offset + 5] * 256
+  if value >= 0x8000 { value = value - 0x10000 }
+  event = {
+    value: value
+    number: chunk[offset + 7]
   }
-  else {
-    value
+  type = chunk[offset + 6]
+  if type >= 0x80 {
+    type = type - 0x80
+    event.init = true
   }
+  event.type = if type == 0x01 { "BUTTON" }
+  elif type == 0x02 { "AXIS" }
+  event
 }
 
-read = {|
-  input({chunk|
-    vars offset, type, event
-    for i in range(#chunk / 8) {
-      offset = i * 8
-      event = {
-        value: int16(chunk, offset + 4)
-        number: chunk[offset + 7]
+-- Object factory for Joysticks
+Joystick = {path, callback|
+  vars input, read
+  -- Create an async read-stream from the linux input device
+  input = read-stream(path)
+
+  -- Start an async loop to read the data
+  -- TODO: Add fibers and suspending so this callback
+  read = {|
+    input({chunk|
+      if chunk {
+        for i in range(#chunk / 8) {
+          callback(parse(chunk, i * 8))
+        }
+        -- Queue another read if there was something
+        read()
       }
-      type = chunk[offset + 6]
-      if type >= 0x80 {
-        type = type - 0x80
-        event.init = true
+    })
+  }
+  read()
+}
+
+vars draw, players, Player
+
+draw = {x, y, char|
+  write("\033[" + y + ";" + x + "H" + char)
+}
+
+players = []
+Player = {path, x, y, name|
+  vars mx, my
+  Joystick(path, {event|
+    if event.type == "AXIS" {
+      if event.number == 1 {
+        my = event.value
       }
-      event.type = if type == 0x01 { "BUTTON" }
-      elif type == 0x02 { "AXIS" }
-      print(inspect(event))
+      elif event.number == 0 {
+        mx = event.value
+      }
     }
-    if chunk { read() }
+--    print(name, inspect(event))
   })
+  players[#players] = {
+    tick: {delta|
+      x = x + mx * delta / 0x4000
+      y = y + my * delta / 0x4000
+      if x < 0 { x = 0 }
+      if y < 0 { y = 0 }
+      draw(x / 100, y / 100, name)
+    }
+  }
 }
-read()
+
+Player("/dev/input/js0", 100, 100, "\033[32;1m◉")
+Player("/dev/input/js1", 200, 200, "\033[31;1m◉")
+Player("/dev/input/js2", 300, 300, "\033[34;1m◉")
+
+interval(33, {delta|
+  write("\033[2J")
+  for player in players {
+    player.tick(delta)
+  }
+  write("\033[30m")
+})

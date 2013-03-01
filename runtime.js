@@ -210,7 +210,7 @@ Scope.prototype.mul = function (a, b) {
 };
 
 Scope.prototype.div = function (a, b) {
-  return Math.floor(this.run(a) / this.run(b));
+  return Math.round(this.run(a) / this.run(b));
 };
 
 Scope.prototype.pow = function (a, b) {
@@ -559,6 +559,11 @@ exports.eval = function (string) {
         dataQueue.push();
         check();
       });
+      stream.on("error", function (err) {
+        console.error(err);
+        dataQueue.push();
+        check();
+      });
       return function (callback) {
         readQueue.push(callback);
         check();
@@ -569,11 +574,22 @@ exports.eval = function (string) {
         }
       }
     },
+    'interval': function (ms, callback) {
+      var before = Date.now();
+      setInterval(function () {
+        var now = Date.now();
+        callback(now - before);
+        before = now;
+      }, ms);
+    },
     substr: function (string, start, len) {
       return string.substr(start, len);
     },
     parseint: function (num, base) {
       return parseInt(num, base || 10);
+    },
+    write: function (string) {
+      process.stdout.write(string);
     },
     print: console.log.bind(console),
     range: function range(n) {
