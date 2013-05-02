@@ -24,6 +24,6 @@ Jack is a scripting language aimed at kids learning to program as well as profes
 
 My guiding principle while adding language features and semantics is:
 
-> Keep it Simple, Keep is Safe
+> Keep it Simple, Keep it Safe
 
 See the examples folder for syntax examples.
