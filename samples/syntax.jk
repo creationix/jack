@@ -89,10 +89,10 @@ person = {name: "Tim", age: 30}
 -- By default maps respond to @get, @set, @has, @keys, and @delete
 -- Disallows setting properties and echos key for any get
 echo = {
-  @has: {key| true },
-  @get: {key| key },
-  @set: null,
-  @delete: null,
+  @has: {key| true }
+  @get: {key| key }
+  @set: null
+  @delete: null
 }
 "Monkey" in echo --> true
 echo.Monkey      --> "Monkey"
