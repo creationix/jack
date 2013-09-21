@@ -1,9 +1,7 @@
 " Vim syntax file
 setlocal iskeyword+=:
-" Language:     Juliet's todo files
-" Maintainer:   Juliet Kemp 
-" Last Change:  Sept 14, 2011
-" Version:      1
+" Language:     Jack Script
+" Maintainer:   Tim Caswell
 
 if exists("b:current_syntax")
   finish
@@ -27,7 +25,7 @@ syn match jackNumber "\<[1-9][0-9]*\>"
 syn match jackNumber "\<0[xX]\x\+\>"
 syn keyword jackType Integer Boolean Null String Buffer List Object Function
 syn keyword jackConditional if elif else
-syn keyword jackRepeat for in while
+syn keyword jackRepeat for in while split and
 syn keyword jackKeyword vars delete is 
 syn keyword jackException abort
 syn keyword jackFunction print rand range inspect bind i-collect i-keys i-values i-pairs i-map i-filter i-chunk i-collect i-zip i-merge i-each i-any? i-all?

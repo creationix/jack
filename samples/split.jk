@@ -1,0 +1,12 @@
+
+base = {bootstrap, target-dir|
+  split {
+    copy("res", target-dir)
+  } and {
+    if newer("src/*.less", target-dir + "/style.css") {
+      lessc("src/" + bootstrap + ".less", target-dir + "/style.css")
+    }
+  } and {
+    build("src/" + bootstrap + ".js", target-dir + "/app.js")
+  }
+}

@@ -13,6 +13,8 @@
       ["delete\\b",                       "return 'DELETE'"],
       ["in\\b",                           "return 'IN'"],
       ["is\\b",                           "return 'IS'"],
+      ["split\\b",                        "return 'SPLIT'"],
+      ["\\s*and\\b",                      "return 'AND'"],
       ["if\\b",                           "return 'IF'"],
       ["\\s*elif\\b",                     "return 'ELIF'"],
       ["\\s*else\\b",                     "return 'ELSE'"],
@@ -211,6 +213,7 @@
       ["FOR iterator block", "$$ = [yy.F('for')].concat($2).concat($3)"],
       ["WHILE expr block", "$$ = [yy.F('while'), $2].concat($3)"],
       ["if", "$$ = $1"],
+      ["split", "$$ = $1"],
       ["if ELSE { code }", "$$ = $1.concat([$4])"]
     ],
     "iterator": [
@@ -220,6 +223,10 @@
     "loopvars": [
       ["IDENT", "$$ = [$1]"],
       ["IDENT , IDENT", "$$ = [$1, $3]"]
+    ],
+    "split": [
+      ["SPLIT { code }", "$$ = [yy.F('split'), $3]"],
+      ["split AND { code }", "$$ = $1.concat([$4])"]
     ],
     "if": [
       ["IF expr { code }", "$$ = [yy.F('if'), $2, $4]"],
