@@ -3,7 +3,7 @@ var parse;
 var assert = require('assert');
 var inspect = require('util').inspect;
 
-var forms = {}
+var forms = {};
 exports.Form = Form;
 function Form(name) {
   if (forms[name]) return forms[name];
@@ -14,12 +14,13 @@ function Form(name) {
 Form.prototype.inspect = function () {
   return "\033[34;1m@" + this.name + "\033[0m";
 };
-var symbols = {}
+var symbols = {};
 exports.Symbol = Symbol;
 function Symbol(name) {
   if (symbols[name]) return symbols[name];
   if (!(this instanceof Symbol)) return new Symbol(name);
   this.name = name;
+  this.depth = name.lastIndexOf(":") + 1;
   symbols[name] = this;
 }
 Symbol.prototype.inspect = function () {
@@ -116,6 +117,9 @@ Scope.prototype.run = function (code) {
     return this[form].apply(this, code.slice(1));
   }
   if (code instanceof Symbol) {
+    if (code.depth) {
+      return new Symbol(code.name.substr(1));
+    }
     return this.lookup(code.name);
   }
   return code;
@@ -128,7 +132,7 @@ Scope.prototype.runCodes = function (codes) {
     result = this.run(code);
   }
   return result;
-}
+};
 
 var hasOwn = Object.prototype.hasOwnProperty;
 var slice = Array.prototype.slice;
@@ -704,7 +708,7 @@ exports.eval = function (string) {
 };
 
 exports.attachParser = function (parser) {
-  parser.yy.F = Form
+  parser.yy.F = Form;
   parser.yy.S = Symbol;
   parse = parser.parse.bind(parser);
 };

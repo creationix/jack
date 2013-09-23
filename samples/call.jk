@@ -1,3 +1,4 @@
 vars add-code
 add-code = [ @fn, [ @params, 'a', 'b' ],[ @add, :a, :b ] ]
+print(add-code)
 
