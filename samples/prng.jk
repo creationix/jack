@@ -8,7 +8,7 @@ vars prng
 prng = {
   @get: {k|
     ((k + 117) * 321) % 256
-  },
+  }
   @keys: {|
     i-map({i|
       ((i + 17) * 13) % 256

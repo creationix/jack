@@ -1,3 +1,5 @@
 parser.js
 node_modules
 *.cache
+tags
+.zedstate
