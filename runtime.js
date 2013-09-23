@@ -169,6 +169,10 @@ Scope.prototype.escape = function (expr) {
   return expr;
 };
 
+Scope.prototype.exec = function (expr) {
+  return this.run(this.run(expr));
+};
+
 Scope.prototype.call = function (val) {
   val = this.run(val);
   var meta = getMeta(val);
@@ -557,9 +561,6 @@ exports.eval = function (string) {
     lines: string.split("\n"),
     source: string,
     parse: parse,
-    run: function (code) {
-      return scope.run(code);
-    },
     'read-stream': function (path) {
       var stream = require('fs').createReadStream(path);
       var dataQueue = [];

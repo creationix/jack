@@ -1,4 +1,22 @@
-vars add-code
-add-code = [ @fn, [ @params, 'a', 'b' ],[ @add, :a, :b ] ]
-print(add-code)
-print(parse("{a,b|a+b}"))
+vars code, fn, op
+-- Creating a function constructor manually
+code = [ @fn, [ @params, 'a', 'b' ],[ @add, :a, :b ] ]
+print(code)
+-- Creating a function constructor using parse
+code = parse("{a,b|a+b}")[0]
+print(code)
+-- Creating a function constructor using escape
+code = escape {a,b|a+b}
+print(code)
+-- Mess with code
+code[2][0] = @mul
+print(code)
+-- Turn code into live function
+fn = exec code
+print(fn, fn(2, 3))
+
+-- Run some code dynamic directly
+op = if rand(2) { @add } else { @sub }
+code = [op, 1, 2]
+print("code", code)
+print("result", exec code)
