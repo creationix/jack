@@ -39,9 +39,13 @@ function ready() {
   fs.readFile(filename, "utf8", function (err, code) {
     if (err) throw err;
     var tree = parser.parse(code);
-    var inspect = require('util').inspect;
-    console.log(inspect(tree, false, 15, true));
-    // console.log("Running program...")
-    runtime.eval(code);
+    if (process.env.DUMP) {
+      var inspect = require('util').inspect;
+      console.log(inspect(tree, false, 15, true));
+    }
+    else {
+      // console.log("Running program...")
+      runtime.eval(code);
+    }
   });
 }
