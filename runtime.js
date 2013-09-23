@@ -551,6 +551,7 @@ exports.eval = function (string) {
   var scope = new Scope({
     lines: string.split("\n"),
     source: string,
+    parse: parse,
     'read-stream': function (path) {
       var stream = require('fs').createReadStream(path);
       var dataQueue = [];
