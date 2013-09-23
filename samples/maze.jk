@@ -81,7 +81,7 @@ Maze = {width, height|
 
 display = {maze|
   vars map
-  map = "██"
+  map = "\n██"
   for x in range(maze.width) {
     map = map + "████"
   }
@@ -118,4 +118,4 @@ display = {maze|
 -- ██      ██      ██  ██
 -- ██████████████████████
 
-print(display(Maze(20, 20)))
+print(display(Maze(32, 24)))
