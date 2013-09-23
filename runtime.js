@@ -155,13 +155,18 @@ Scope.prototype.vars = function () {
 };
 
 Scope.prototype.fn = function () {
-  var closure = this.scope;
+  var scope = this.scope;
   var codes = slice.call(arguments);
-  return function jackFunction() {
-    var child = new Scope(closure);
+  return jackFunction;
+  function jackFunction() {
+    var child = new Scope(scope);
     child.arguments = arguments;
     return child.runCodes(codes);
-  };
+  }
+};
+
+Scope.prototype.escape = function (expr) {
+  return expr;
 };
 
 Scope.prototype.call = function (val) {
@@ -552,6 +557,9 @@ exports.eval = function (string) {
     lines: string.split("\n"),
     source: string,
     parse: parse,
+    run: function (code) {
+      return scope.run(code);
+    },
     'read-stream': function (path) {
       var stream = require('fs').createReadStream(path);
       var dataQueue = [];
