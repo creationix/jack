@@ -223,7 +223,7 @@ Scope.prototype.mul = function (a, b) {
 };
 
 Scope.prototype.div = function (a, b) {
-  return Math.round(this.run(a) / this.run(b));
+  return Math.floor(this.run(a) / this.run(b));
 };
 
 Scope.prototype.pow = function (a, b) {

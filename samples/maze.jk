@@ -118,4 +118,4 @@ display = {maze|
 -- ██      ██      ██  ██
 -- ██████████████████████
 
-print(display(Maze(10, 10)))
+print(display(Maze(20, 20)))
