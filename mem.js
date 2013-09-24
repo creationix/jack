@@ -47,16 +47,17 @@ function Memory(stdlib, foreign, heap) {
       }
       offset = (offset - v) | 0;
     }
-    
+
     // Record this new slot
     H32[offset] = size;
     // Calculate the data offset in bytes for user data.
-    var ptr = (offset + 1) << 2;
+    // Add in pointer type tag.
+    var ptr = (offset + 1) | 0x80000000;
     // Increment the offset for the next malloc
     offset = (offset + size) | 0;
     return ptr;
   }
-  
+
   function combine() {
     var i = 1;
     for (;;) {
@@ -78,14 +79,17 @@ function Memory(stdlib, foreign, heap) {
   // Free is very fast.  It simply marks a section as free.
   // Also it moves the offset to the newly freed slot.
   function free(ptr) {
-    ptr = ptr|0;
-    if (ptr === 0) return;
-    var start = (ptr >> 2) - 1;
+    // Ensure the first two bits are "10"
+    if (((ptr >> 30) & 3) !== 2) return 0;
+    // Mask off the remaining 30 bits
+    ptr &= 0x3fffffff;
+    var start = (ptr - 1) | 0;
     var size = H32[start] | 0;
     H32[start] = -size | 0;
     for (var i = 1; i < size; ++i) {
       H32[start + i] = 0;
     }
+    return 1;
   }
 
   return { malloc: malloc, free: free, combine: combine };
@@ -104,8 +108,9 @@ function store(str) {
   var b = new Buffer(str);
   var ptr = mem.malloc(b.length + 1);
   if (!ptr) throw "ENOMEM";
+  var start = ptr << 2;
   for (var i = 0; i <= b.length; i++) {
-    H[ptr + i] = b[i];
+    H[start + i] = b[i];
   }
   return ptr;
 }
@@ -119,13 +124,13 @@ for (var i = 0; i < 40; i++) {
   dump();
   if (Math.random() > 0.3) {
     var ptr = ptrs.splice(Math.floor(Math.random() * ptrs.length), 1);
-    mem.free(ptr);
+    if (!mem.free(ptr)) throw "EINVALID";
     dump();
   }
 }
 while (ptrs.length) {
   var ptr = ptrs.splice(Math.floor(Math.random() * ptrs.length), 1);
-  mem.free(ptr);
+  if (!mem.free(ptr)) throw "EINVALID";
   dump();
 }
 // mem.combine();
