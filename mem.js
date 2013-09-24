@@ -52,7 +52,7 @@ function Memory(stdlib, foreign, heap) {
     H32[offset] = size;
     // Calculate the data offset in bytes for user data.
     // Add in pointer type tag.
-    var ptr = (offset + 1) | 0x80000000;
+    var ptr = (offset + 1) << 2;
     // Increment the offset for the next malloc
     offset = (offset + size) | 0;
     return ptr;
@@ -82,8 +82,8 @@ function Memory(stdlib, foreign, heap) {
     // Ensure the first two bits are "10"
     if (((ptr >> 30) & 3) !== 2) return 0;
     // Mask off the remaining 30 bits
-    ptr &= 0x3fffffff;
-    var start = (ptr - 1) | 0;
+    ptr = ptr | 0;
+    var start = (ptr - 1) >> 2;
     var size = H32[start] | 0;
     H32[start] = -size | 0;
     for (var i = 1; i < size; ++i) {
@@ -92,7 +92,86 @@ function Memory(stdlib, foreign, heap) {
     return 1;
   }
 
-  return { malloc: malloc, free: free, combine: combine };
+
+  function writeNull(offset) {
+    H[offset | 0] = 0;
+    return offset;
+  }
+
+  function writeBool(val, offset) {
+    H32[offset >> 2] = (1 << 24) | val;
+    return offset;
+  }
+
+  function writeInt(val, offset) {
+    H[offset | 0] = 2;
+    H32[(offset + 4) >> 2] = val | 0;
+    return offset;
+  }
+
+  function writeForm(val, offset) {
+    H[offset | 0] = 4;
+    H32[(offset + 4) >> 2] = val | 0;
+    return offset;
+  }
+
+  function writeString(ptr, length, offset) {
+    H32[offset >> 2] = (8 << 24) | length;
+    H32[(offset + 4) >> 2] = ptr | 0;
+    return offset;
+  }
+
+  function writeBuffer(ptr, length, offset) {
+    H32[offset >> 2] = (9 << 24) | length;
+    H32[(offset + 4) >> 2] = ptr | 0;
+    return offset;
+  }
+
+  function writeTuple(ptr, length, offset) {
+    H32[offset >> 2] = (10<<24) | length;
+    H32[(offset + 4) >> 2] = ptr | 0;
+    return offset;
+  }
+
+  // function len(ptr) {
+  //   var type = H[ptr] | 0;
+  //   // 0 - null
+  //   if (type === 0) return nullLen() | 0;
+  //   // 1 - int32
+  //   if (type === 1) return intLen(H32[(ptr >> 2) + 1] | 0) | 0;
+  //   // 2 - false
+  //   if (type === 2) return falseLen() | 0;
+  //   // 3 - true
+  //   if (type === 3) return trueLen() | 0;
+  //   // 4 - form
+  //   if (type === 4) return formLen(H32[(ptr + 4) >> 2] | 0) | 0;
+  //   // 5 - symbol
+  //   if (type === 5) return symbolLen(H32[(ptr + 4) >> 2] | 0) | 0;
+  //   // 8 - string
+  //   if (type === 8) return stringLen((ptr + 4) | 0, H32[ptr >> 2] & 0xffffff) | 0;
+  //   // 9 - buffer
+  //   if (type === 9) return bufferLen((ptr + 4) | 0, H32[ptr >> 2] & 0xffffff) | 0;
+  //   // a - tuple
+  //   if (type === 10) return tupleLen((ptr + 4) | 0, H32[ptr >> 2] & 0xffffff) | 0;
+  //   // b - list
+  //   if (type === 11) return listLen((ptr + 4) | 0) | 0;
+  //   // c - map
+  //   if (type === 11) return mapLen((ptr + 4) | 0) | 0;
+  //   // e - code
+  //   if (type === 11) return codeLen((ptr + 4) | 0) | 0;
+  //   // f - scope
+  //   if (type === 11) return scopeLen((ptr + 4) | 0) | 0;
+  // }
+
+  return { malloc: malloc, free: free, combine: combine,
+    writeNull: writeNull,
+    writeBool: writeBool,
+    writeInt: writeInt,
+    writeString: writeString,
+    writeBuffer: writeBuffer,
+    writeTuple: writeTuple,
+    writeForm: writeForm,
+  };
 }
 
 var stdlib = (function () { return this; }());
@@ -104,37 +183,81 @@ for (var i = 0; i < H.length; ++i) {
 }
 var mem = Memory(stdlib, {}, heap);
 
-function store(str) {
-  var b = new Buffer(str);
-  var ptr = mem.malloc(b.length + 1);
-  if (!ptr) throw "ENOMEM";
-  var start = ptr << 2;
-  for (var i = 0; i <= b.length; i++) {
-    H[start + i] = b[i];
-  }
-  return ptr;
-}
-
-var words = ["Hello", "World", "true", "false", "yes", "no", "A Long Message", "More Detailed"];
-var ptrs = [];
-
-for (var i = 0; i < 40; i++) {
-  dump();
-  ptrs.push(store(words[Math.floor(Math.random() * words.length)]));
-  dump();
-  if (Math.random() > 0.3) {
-    var ptr = ptrs.splice(Math.floor(Math.random() * ptrs.length), 1);
-    if (!mem.free(ptr)) throw "EINVALID";
-    dump();
-  }
-}
-while (ptrs.length) {
-  var ptr = ptrs.splice(Math.floor(Math.random() * ptrs.length), 1);
-  if (!mem.free(ptr)) throw "EINVALID";
-  dump();
-}
-// mem.combine();
+// writeTuple([0, 1, 2, true, false, null, "Hello", new Buffer([1,2,3])]);
+writeTuple([new Form("get"), new Form("get")])
 dump();
+
+function writeTuple(items, ptr) {
+  ptr = ptr || mem.malloc(8);
+  var length = items.length;
+  var ext = mem.malloc(length * 8);
+  for (var i = 0; i < length; ++i) {
+    write(items[i], ext + i * 8);
+  }
+  return mem.writeTuple(ext, length, ptr);
+}
+
+function write(val, ptr) {
+  var length, ext, i, buffer;
+  ptr = ptr || mem.malloc(8);
+  if (!ptr) throw "ENOMEM";
+  if (typeof val === "string") {
+    buffer = new Buffer(val);
+    length = buffer.length;
+    ext = mem.malloc(length);
+    if (!ext) throw "ENOMEM";
+    for (i = 0; i < length; ++i) H[ext + i] = buffer[i];
+    return mem.writeString(ext, length, ptr);
+  }
+  if (Buffer.isBuffer(val)) {
+    length = val.length;
+    ext = mem.malloc(length);
+    if (!ext) throw "ENOMEM";
+    for (i = 0; i < length; ++i) H[ext + i] = val[i];
+    return mem.writeBuffer(ext, length, ptr);
+  }
+  if (val === null) return mem.writeNull(ptr);
+  if (typeof val === "boolean") return mem.writeBool(val ? 1 : 0, ptr);
+  if (val|0 === val) return mem.writeInt(val, ptr);
+  if (val instanceof Form) {
+    buffer = new Buffer(val.name);
+    return mem.writeForm(
+      buffer[0] << 0 |
+      buffer[1] << 8 |
+      buffer[2] << 16 |
+      buffer[3] << 24, ptr);
+  }
+  throw "TYPE NOT SUPPORTED";
+}
+
+function Form(name) {
+  this.name = name;
+}
+
+function Symbol(name) {
+  this.symbol = symbol;
+}
+
+// var words = ["Hello", "World", "true", "false", "yes", "no", "A Long Message", "More Detailed"];
+// var ptrs = [];
+
+// for (var i = 0; i < 40; i++) {
+//   dump();
+//   ptrs.push(store(words[Math.floor(Math.random() * words.length)]));
+//   dump();
+//   if (Math.random() > 0.3) {
+//     var ptr = ptrs.splice(Math.floor(Math.random() * ptrs.length), 1);
+//     if (!mem.free(ptr)) throw "EINVALID";
+//     dump();
+//   }
+// }
+// while (ptrs.length) {
+//   var ptr = ptrs.splice(Math.floor(Math.random() * ptrs.length), 1);
+//   if (!mem.free(ptr)) throw "EINVALID";
+//   dump();
+// }
+// // mem.combine();
+// dump();
 
 
 function dump() {
