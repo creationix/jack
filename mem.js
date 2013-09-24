@@ -1,63 +1,57 @@
+
+var highest = 0;
+
 function Memory(stdlib, foreign, heap) {
   "use asm";
 
   var H32 = new stdlib.Int32Array(heap);
-  var HU32 = new stdlib.Uint32Array(heap);
-  
-  var start = 0x1000;
-  
+  var offset = 1;
+
+  // Malloc is very simple.  It looks for the next exactly fitting slot.
+  // If no exact fits are found, it creates a new slot at the end.
   function malloc(len) {
+    process.stdout.write("malloc start=" + offset + ", len=" + len + ", ");
     len = len|0;
     if (len === 0) return 0;
-    // Add 8 and round up to the nearest word.
-    var size = (len + 11) >> 2;
-    var offset = start >> 2;
+    // Add 4 and round up to the nearest word.
+    var size = (len + 7) >> 2;
+    var start = offset;
+    var end = 0;
     for(;;) {
-      var v = H32[offset] >> 2;
-      if (v > 0) {
-        offset += v;
+      var v = H32[offset];
+      if (end && offset >= start) {
+        offset = end;
+        break;
+      }
+      if (v === 0) {
+        end = offset;
+        offset = 1;
         continue;
       }
-      if (v < 0) {
-        if (size === -v) break;
-        if (size <= (-v - 12)) {
-          var nSize = v + size;
-          H32[offset + size] =
-          H32[offset + size + nSize] = -nSize << 2;
-          break;
-        }
-        offset -= v >> 2;
-        continue;
-      }
-      break;
+      if (size === -v || v === 0) break;
+      process.stdout.write(".");
+      if (v > 0) offset += v;
+      else offset -= v;
     }
-    H32[offset] = H32[offset + size - 1] = size << 2;
-
-    return (offset + 1) << 2;
+    highest = Math.max(offset + size, highest);
+    H32[offset] = size;
+    var ptr = (offset + 1) << 2;
+    process.stdout.write("end=" + offset + "\n");
+    offset += size;
+    return ptr;
   }
 
+  // Free is very fast.  It simply marks a section as free.
+  // Also it moves the offset to the newly freed slot.
   function free(ptr) {
+    console.log("free", {ptr:ptr});
     ptr = ptr|0;
     if (ptr === 0) return;
-    // Offset of start in words
-    var offset = (ptr >> 2) - 1;
-    // Size in words
-    var size = H32[offset] >> 2;
-    if (size <= 0) throw "INVALID SIZE: " + size
-    // Next size in words
-    var nOffset, nSize;
-    while ((nSize = -H32[nOffset = (offset + size)] >> 2) > 0) {
-      H32[nOffset] = 0;
-      H32[nOffset + nSize - 1] = 0;
-      size = (size + nSize) | 0;
-    }
-    if (H32[offset + size] === 0) {
-      H32[offset] = 0;
-      H32[offset + size - 1] = 0;
-    }
-    else {
-      H32[offset] = -size << 2;
-      H32[offset + size - 1] = -size << 2;
+    offset = (ptr >> 2) - 1;
+    var size = H32[offset] | 0;
+    H32[offset] = -size | 0;
+    for (var i = offset + 1; i < offset + size; i++) {
+      H32[i] = 0;
     }
   }
 
@@ -65,35 +59,66 @@ function Memory(stdlib, foreign, heap) {
 }
 
 var stdlib = (function () { return this; }());
-var heap = new ArrayBuffer(1024*1024*16);
+var heap = new ArrayBuffer(1024);
 var H32 = new stdlib.Int32Array(heap);
 var H = new stdlib.Uint8Array(heap);
+for (var i = 0; i < H.length; ++i) {
+  H[i] = 0;
+}
 var mem = Memory(stdlib, {}, heap);
 
-dump();
-var ptr = mem.malloc(13);
-dump();
-var ptr2 = mem.malloc(10);
-dump();
-mem.free(ptr);
-dump();
-ptr = mem.malloc(4);
-dump();
-var ptr3 = mem.malloc(4);
-dump();
-mem.free(ptr);
-dump();
-mem.free(ptr3);
-dump();
-mem.free(ptr2);
-dump();
-ptr = mem.malloc(20);
+function store(str) {
+  var b = new Buffer(str);
+  var ptr = mem.malloc(b.length + 1);
+  for (var i = 0; i <= b.length; i++) {
+    H[ptr + i] = b[i];
+  }
+  return ptr;
+}
+
+var words = ["Hello", "World", "true", "false", "yes", "no"];
+var ptrs = [];
+
+for (var i = 0; i < 30; i++) {
+  dump();
+  ptrs.push(store(words[Math.floor(Math.random() * words.length)]));
+  dump();
+  if (Math.random() > 0.3) {
+    var ptr = ptrs.splice(Math.floor(Math.random() * ptrs.length), 1);
+    mem.free(ptr);
+    dump();
+  }
+}
+// var ptr = store("Hello");
+// dump();
+// cstring(ptr);
+// var ptr2 = store("World");
+// // var ptr2 = mem.malloc(10);
+// dump();
+// cstring(ptr2);
+// mem.free(ptr);
+// dump();
+// ptr = store("true");
+// dump();
+// cstring(ptr);
+// var ptr3 = store("false");
+// dump();
+// cstring(ptr3);
+// mem.free(ptr);
+// dump();
+// mem.free(ptr3);
+// dump();
+// mem.free(ptr2);
+// dump();
+// ptr = mem.malloc(20);
+// dump();
+// cstring(ptr);
 
 
 function dump() {
   var parts = [];
-  for (var i = 0x1000; i < 0x1040; i += 4) {
-    parts.push(H32[i>>2]);
+  for (var i = 0; i < highest<<2; i += 4) {
+    parts.push(H32[i>>2].toString(16));
   }
   console.log(parts.join(" "));
 }
@@ -102,8 +127,8 @@ function cstring(ptr) {
   if (!ptr) return "(NULL)";
   var str = "";
   var i = 0;
-  while (H32[ptr] && i++ < 10) {
-    str += String.fromCharCode(H32[ptr++]);
+  while (H[ptr] && i++ < 10) {
+    str += String.fromCharCode(H[ptr++]);
   }
-  return str;
+  console.log("0x%s: %s", ptr.toString(16), str);
 }
