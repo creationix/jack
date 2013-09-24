@@ -92,7 +92,7 @@ function Memory(stdlib, foreign, heap) {
 }
 
 var stdlib = (function () { return this; }());
-var heap = new ArrayBuffer(0x70);
+var heap = new ArrayBuffer(0x80);
 var H32 = new stdlib.Int32Array(heap);
 var H = new stdlib.Uint8Array(heap);
 for (var i = 0; i < H.length; ++i) {
