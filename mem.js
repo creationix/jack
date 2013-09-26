@@ -1,4 +1,3 @@
-
 function Memory(stdlib, foreign, heap) {
   "use asm";
 
@@ -77,7 +76,6 @@ function Memory(stdlib, foreign, heap) {
   }
 
   // Free is very fast.  It simply marks a section as free.
-  // Also it moves the offset to the newly freed slot.
   function free(ptr) {
     // Ensure the first two bits are "10"
     if (((ptr >> 30) & 3) !== 2) return 0;
