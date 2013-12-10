@@ -1,6 +1,6 @@
 {
-  "name": "jack",
-  "version": "0.0.0",
+  "name": "jack-lang",
+  "version": "0.0.1",
   "description": "Jack Language",
   "main": "parse.js",
   "dependencies": {
