@@ -1,13 +1,13 @@
 vars code, fn, op
 -- Creating a function constructor manually
 code = [ @fn, [ @params, 'a', 'b' ],[ @add, :a, :b ] ]
-print(code)
+print("original code", code)
 -- Creating a function constructor using parse
 code = parse("{a,b|a+b}")[0]
-print(code)
+print("from string", code)
 -- Creating a function constructor using escape
 code = escape {a,b|a+b}
-print(code)
+print("from live function", code)
 -- Mess with code
 code[2][0] = @mul
 print(code)

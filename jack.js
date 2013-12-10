@@ -1,4 +1,4 @@
-#!/home/tim/Code/nvm/v0.10.18/bin/node --harmony-collections
+#!/usr/local/bin/node --harmony-collections
 var fs = require('fs');
 var pathJoin = require('path').join;
 var runtime = require('./runtime');
