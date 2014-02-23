@@ -26,7 +26,7 @@ syn match jackNumber "\<0[xX]\x\+\>"
 syn keyword jackType Integer Boolean Null String Buffer List Object Function
 syn keyword jackConditional if elif else
 syn keyword jackRepeat for in while split and
-syn keyword jackKeyword vars delete is 
+syn keyword jackKeyword vars delete is
 syn keyword jackException abort
 syn keyword jackFunction print rand range inspect bind i-collect i-keys i-values i-pairs i-map i-filter i-chunk i-collect i-zip i-merge i-each i-any? i-all?
 "syn match jackIdentifier \<[a-zA-Z_][a-zA-Z0-9_-]*[?!]*\>
